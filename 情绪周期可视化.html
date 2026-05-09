@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>情绪周期可视化 - 2026-05-08</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
+<style>
+:root{--bg:#0d1117;--card:#161b22;--card2:#1c2333;--border:#30363d;--text:#e6edf3;--muted:#8b949e;
+  --red:#f85149;--green:#3fb950;--blue:#58a6ff;--amber:#d29922;--purple:#bc8cff;--orange:#e3b341;--teal:#39d353;--cyan:#56d4dd;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'SF Pro Display',-apple-system,'PingFang SC',sans-serif;}
+.header{background:linear-gradient(135deg,#1a1f2e,#161b22);border-bottom:1px solid var(--border);
+  padding:20px 32px;display:flex;align-items:center;justify-content:space-between;}
+.header h1{font-size:20px;font-weight:700;}
+.header .sub{font-size:12px;color:var(--muted);margin-top:3px;}
+.badge{padding:4px 14px;border-radius:20px;font-size:12px;font-weight:600;}
+.badge-danger{background:#f8514922;border:1px solid #f8514955;color:var(--red);}
+.badge-warn{background:#d2992222;border:1px solid #d2992255;color:var(--amber);}
+.badge-safe{background:#3fb95022;border:1px solid #3fb95055;color:var(--green);}
+
+.advice-box{margin:20px 32px;border-radius:16px;overflow:hidden;border:2px solid #f8514944;
+  box-shadow:0 0 30px #f8514915;}
+.advice-header{padding:18px 24px;background:linear-gradient(135deg,#f8514918,transparent);
+  display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #f8514933;}
+.advice-header h2{font-size:18px;font-weight:700;color:#f85149;}
+.advice-header .risk{font-size:12px;padding:3px 12px;border-radius:12px;background:#f8514922;color:#f85149;}
+.advice-body{padding:20px 24px;background:var(--card);}
+.advice-signal{font-size:13px;color:var(--muted);margin-bottom:14px;padding:8px 12px;
+  background:var(--card2);border-radius:8px;border-left:3px solid #f85149;}
+.advice-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px;}
+.advice-item{padding:12px 14px;background:var(--card2);border-radius:10px;border:1px solid var(--border);}
+.advice-item .label{font-size:11px;color:var(--muted);margin-bottom:4px;}
+.advice-item .value{font-size:15px;font-weight:700;}
+.advice-item.full{grid-column:1/-1;}
+.advice-detail{margin-top:14px;padding:12px 14px;background:#f8514908;border:1px solid #f8514922;
+  border-radius:8px;font-size:13px;color:var(--muted);line-height:1.7;}
+.advice-detail strong{color:var(--text);}
+.mode-table{width:100%;border-collapse:collapse;margin-top:14px;font-size:12px;}
+.mode-table th{background:var(--card2);color:var(--muted);padding:8px 10px;text-align:center;font-weight:500;border:1px solid var(--border);}
+.mode-table td{padding:8px 10px;text-align:center;border:1px solid var(--border);}
+.mode-on{color:var(--green);font-weight:600;}
+.mode-off{color:var(--red);font-weight:600;}
+.mode-warn{color:var(--amber);font-weight:600;}
+
+.nav-tabs{display:flex;gap:0;padding:14px 32px 0;border-bottom:1px solid var(--border);overflow-x:auto;}
+.tab-btn{background:none;border:none;color:var(--muted);cursor:pointer;padding:8px 14px;
+  font-size:12px;font-weight:500;border-bottom:2px solid transparent;margin-bottom:-1px;
+  transition:all .2s;white-space:nowrap;}
+.tab-btn.active{color:var(--blue);border-bottom-color:var(--blue);}
+.tab-btn:hover{color:var(--text);}
+.main{padding:16px 32px;}
+.section{display:none;}
+.section.active{display:block;}
+.chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.chart-grid.single{grid-template-columns:1fr;}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;}
+.card-title{font-size:13px;font-weight:600;margin-bottom:3px;display:flex;align-items:center;gap:7px;}
+.card-sub{font-size:11px;color:var(--muted);margin-bottom:12px;}
+.dot{width:9px;height:9px;border-radius:50%;display:inline-block;}
+canvas{max-height:260px;}
+
+.signal-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:12px;}
+.signal-table th{background:var(--card2);color:var(--muted);padding:6px 8px;text-align:center;font-weight:500;border:1px solid var(--border);position:sticky;top:0;}
+.signal-table td{padding:5px 8px;text-align:center;border:1px solid #21262d;}
+.signal-table tr:hover td{background:#1f2937;}
+.pos{color:var(--green);font-weight:600;}
+.neg{color:var(--red);font-weight:600;}
+.cycle-0{color:var(--red);font-weight:700;}
+.cycle-1{color:var(--amber);font-weight:700;}
+.cycle-2{color:var(--green);font-weight:700;}
+.cycle-3{color:var(--orange);font-weight:700;}
+.phase-0{color:#f85149;font-weight:700;}
+.phase-1{color:#d29922;font-weight:700;}
+.phase-2{color:#e3b341;font-weight:700;}
+.phase-3{color:#d29922;font-weight:700;}
+.phase-4{color:#3fb950;font-weight:700;}
+.phase-5{color:#bc8cff;font-weight:700;}
+
+.rules-box{margin:20px 32px;padding:16px 20px;background:var(--card);border:1px solid var(--red)33;border-radius:12px;}
+.rules-box h3{color:var(--red);font-size:14px;margin-bottom:10px;}
+.rules-box ol{padding-left:20px;font-size:12px;color:var(--muted);line-height:2;}
+.rules-box li strong{color:var(--text);}
+
+.updated{font-size:11px;color:var(--muted);padding:8px 32px;text-align:right;border-top:1px solid var(--border);margin-top:16px;}
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <h1>情绪周期可视化 · 六阶段联动七周期</h1>
+    <div class="sub">基于竞价红绿差值信号 → 自动判定阶段周期 → 生成隔日操作建议</div>
+  </div>
+  <div class="badge badge-danger">极高风险 - 亏钱效应[ </div>
+</div>
+
+<div class="advice-box">
+  <div class="advice-header">
+    <h2>亏钱效应[ 延续 ]周期</h2>
+    <span class="risk">风险等级:极高</span>
+  </div>
+  <div class="advice-body">
+    <div class="advice-signal">1)隔日竞价绿差=-24([ 放大 ]停止开仓或者情绪诱空位试仓)  4)日内绿盘收敛=-3(放大)</div>
+    <div class="advice-grid">
+      <div class="advice-item"><div class="label">是否开仓</div><div class="value" style="color:#f85149">绝对不开仓</div></div>
+      <div class="advice-item"><div class="label">仓位上限</div><div class="value" style="color:#f85149">0成(空仓)</div></div>
+      <div class="advice-item"><div class="label">买什么</div><div class="value" style="font-size:13px">无合规标的</div></div>
+      <div class="advice-item"><div class="label">买哪里(挂单位置)</div><div class="value" style="font-size:13px">无买点</div></div>
+      <div class="advice-item full"><div class="label">止损位</div><div class="value" style="color:var(--red)">-</div></div>
+    </div>
+    <table class="mode-table">
+      <tr><th>模式</th><th>开关状态</th><th>挂单规则</th></tr>
+      <tr><td>龙头主升分歧低吸</td><td class="mode-off">关闭,绝对不做</td><td>无买点,只卖不买</td></tr>
+      <tr><td>断板反核</td><td class="mode-off">关闭,绝对不做</td><td>深水-7%~-9%或跌停价</td></tr>
+      <tr><td>龙头回调反包</td><td class="mode-off">关闭,绝对不做</td><td>-1%~-3%区间</td></tr>
+    </table>
+    <div class="advice-detail"><strong>操作要点:</strong>亏钱效应延续,核心高标批量A杀,接力资金出逃。铁律:绝对不开新仓,只卖不买,空仓等待冰点反转信号。</div>
+  </div>
+</div>
+
+<div class="nav-tabs">
+  <button class="tab-btn active" onclick="showTab('stage-cycle',this)">六阶段·七周期</button>
+  <button class="tab-btn" onclick="showTab('signal',this)">差值信号</button>
+  <button class="tab-btn" onclick="showTab('jgsg',this)">竞价vs收盘</button>
+  <button class="tab-btn" onclick="showTab('diff',this)">4项差值趋势</button>
+  <button class="tab-btn" onclick="showTab('overview',this)">综合概览</button>
+  <button class="tab-btn" onclick="showTab('height',this)">板块高度</button>
+  <button class="tab-btn" onclick="showTab('rawdata',this)">信号明细表</button>
+</div>
+
+<div class="main">
+
+<!-- ══════ Tab: 六阶段·七周期 ══════ -->
+<div id="sec-stage-cycle" class="section active">
+  <div class="chart-grid single" style="margin-bottom:16px;">
+    <div class="card">
+      <div class="card-title"><span class="dot" style="background:var(--amber)"></span>六阶段 · 七周期 联动折线图</div>
+      <div class="card-sub">六阶段数值: 冰点(0) 启动(1) 分歧(2) 发酵(3) 高潮(4) / 七周期数值: 亏延续(-3) 亏减弱(-2) 转换(0) 赚升温(2) 赚延续(3)</div>
+      <canvas id="c-stage-cycle" style="max-height:280px"></canvas>
+    </div>
+  </div>
+  <div class="chart-grid">
+    <div class="card">
+      <div class="card-title"><span class="dot" style="background:var(--purple)"></span>六阶段时序图</div>
+      <div class="card-sub">0=冰点 1=启动 2=分歧 3=发酵 4=高潮</div>
+      <canvas id="c-phase6" style="max-height:240px"></canvas>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot" style="background:var(--amber)"></span>七周期信号图</div>
+      <div class="card-sub">红=亏延续 橙=亏转赚 绿=赚延续 黄=赚转亏</div>
+      <canvas id="c-cycle4" style="max-height:240px"></canvas>
+    </div>
+  </div>
+  <div class="chart-grid" style="margin-top:16px;">
+    <div class="card">
+      <div class="card-title"><span class="dot" style="background:var(--cyan)"></span>周期信号累积得分</div>
+      <div class="card-sub">4项差值正负转换,反映整体赚亏效应方向</div>
+      <canvas id="c-score" style="max-height:240px"></canvas>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot" style="background:var(--blue)"></span>六阶段与涨停联动</div>
+      <div class="card-sub">背景色=阶段,折线=涨停/跌停趋势</div>
+      <canvas id="c-stage-ztdt" style="max-height:240px"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ Tab: 差值信号 ══════ -->
+<div id="sec-signal" class="section">
+  <div class="chart-grid single" style="margin-bottom:16px;">
+    <div class="card">
+      <div class="card-title"><span class="dot" style="background:var(--green)"></span>4项核心差值信号(近15日)</div>
+      <div class="card-sub">1)隔日竞价绿差(正=亏收敛) 2)隔日竞价红差(正=赚升温) 3)日内红盘扩容(正=赚延续) 4)日内绿盘收敛(正=亏收敛)</div>
+      <canvas id="c-4diff" style="max-height:280px"></canvas>
+    </div>
+  </div>
+  <div class="chart-grid">
+    <div class="card">
+      <div class="card-title"><span class="dot" style="background:var(--red)"></span>亏钱效应:1)隔日竞价绿差+4)日内绿盘收敛</div>
+      <div class="card-sub">双正=亏钱收敛(利好) / 双负=亏钱放大(利空)</div>
+      <canvas id="c-lose"></canvas>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot" style="background:var(--green)"></span>赚钱效应:2)隔日竞价红差+3)日内红盘扩容</div>
+      <div class="card-sub">双正=赚钱延续(利好) / 双负=赚钱消退(利空)</div>
+      <canvas id="c-earn"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ Tab: 竞价vs收盘 ══════ -->
+<div id="sec-jgsg" class="section">
+  <div class="chart-grid single" style="margin-bottom:16px;">
+    <div class="card">
+      <div class="card-title"><span class="dot" style="background:var(--green)"></span>竞价绿 vs 收盘绿(日内亏钱效应变化)</div>
+      <div class="card-sub">收盘绿>竞价绿=亏钱放大(日内恶化) / 收盘绿<竞价绿=亏钱收敛(日内修复)</div>
+      <canvas id="c-jg-sg" style="max-height:250px"></canvas>
+    </div>
+  </div>
+  <div class="chart-grid">
+    <div class="card">
+      <div class="card-title"><span class="dot" style="background:var(--red)"></span>竞价红 vs 收盘红(日内赚钱效应变化)</div>
+      <div class="card-sub">收盘红>竞价红=赚钱扩容(日内升温) / 收盘红<竞价红=赚钱兑现(日内降温)</div>
+      <canvas id="c-jr-sr" style="max-height:250px"></canvas>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot" style="background:var(--blue)"></span>竞价差 vs 收盘差(预判与验证)</div>
+      <div class="card-sub">背离=竞价预判失败 / 一致=竞价预判有效</div>
+      <canvas id="c-jd-sd"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ Tab: 4项差值趋势 ══════ -->
+<div id="sec-diff" class="section">
+  <div class="chart-grid">
+    <div class="card">
+      <div class="card-title"><span class="dot" style="background:var(--green)"></span>1) 隔日竞价绿盘差值</div>
+      <div class="card-sub">正=亏钱收敛(前日绿>今日绿) / 负=亏钱放大</div>
+      <canvas id="c-d1"></canvas>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot" style="background:var(--red)"></span>2) 隔日竞价红盘差值</div>
+      <div class="card-sub">正=赚钱升温(今日红>前日红) / 负=赚钱降温</div>
+      <canvas id="c-d2"></canvas>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot" style="background:var(--amber)"></span>3) 日内红盘扩容差值</div>
+      <div class="card-sub">正=赚钱延续(收盘红>竞价红) / 负=赚钱兑现</div>
+      <canvas id="c-d3"></canvas>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot" style="background:var(--teal)"></span>4) 日内绿盘收敛差值</div>
+      <div class="card-sub">正=亏钱收敛(竞价绿>收盘绿) / 负=亏钱放大</div>
+      <canvas id="c-d4"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ Tab: 综合概览 ══════ -->
+<div id="sec-overview" class="section">
+  <div class="chart-grid single" style="margin-bottom:16px;">
+    <div class="card">
+      <div class="card-title"><span class="dot" style="background:var(--red)"></span>涨停/跌停 综合柱状图</div>
+      <div class="card-sub">红柱=涨停 绿柱=跌停 蓝线=涨家数(右轴)</div>
+      <canvas id="c-overview" style="max-height:280px"></canvas>
+    </div>
+  </div>
+  <div class="chart-grid">
+    <div class="card">
+      <div class="card-title"><span class="dot" style="background:var(--blue)"></span>涨家数全览</div>
+      <div class="card-sub">5000+=极强 / 3000~5000=强 / &lt;1000=弱</div>
+      <canvas id="c-zj"></canvas>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot" style="background:var(--amber)"></span>涨跌比(涨停/跌停)</div>
+      <div class="card-sub">&gt;4=做多区 / 2~4=中性 / &lt;2=谨慎</div>
+      <canvas id="c-ratio"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ Tab: 板块高度 ══════ -->
+<div id="sec-height" class="section">
+  <div class="chart-grid">
+    <div class="card">
+      <div class="card-title"><span class="dot" style="background:var(--orange)"></span>现在板高度</div>
+      <div class="card-sub">当日连板最高板数</div>
+      <canvas id="c-board"></canvas>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot" style="background:var(--purple)"></span>高度 vs 实高度</div>
+      <div class="card-sub">理论高度与实际高度偏差</div>
+      <canvas id="c-h-rh"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ Tab: 信号明细表 ══════ -->
+<div id="sec-rawdata" class="section">
+  <div class="card">
+    <div class="card-title">差值信号明细表 - 51个交易日(最新在底部)</div>
+    <div class="card-sub"><span class="pos">绿色正数=利好信号</span> / <span class="neg">红色负数=利空信号</span> / 4项信号->周期判定->6阶段分类</div>
+    <div style="max-height:500px;overflow-y:auto;border-radius:8px;border:1px solid var(--border);">
+      <table class="signal-table">
+        <thead><tr>
+          <th>日期</th><th>涨停</th><th>跌停</th><th>涨家</th><th>涨跌比</th>
+          <th>竞绿</th><th>竞红</th><th>收绿</th><th>收红</th>
+          <th>1)隔日绿差</th><th>2)隔日红差</th><th>3)日内红扩</th><th>4)日内绿收</th>
+          <th>七周期</th><th>六阶段</th>
+        </tr></thead>
+        <tbody id="raw-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<div class="rules-box">
+  <h3>铁血纪律红线(触发任何一条立即停止交易)</h3>
+  <ol>
+    <li><strong>亏钱效应延续周期</strong>,绝对不开新仓,只卖不买</li>
+    <li>没有提前填完预案,绝对不做任何买入操作</li>
+    <li>单日账户回撤超5%,当日及次日无条件空仓</li>
+    <li>连续2笔交易触发止损,立即空仓复盘,禁止急于翻本</li>
+    <li>绝对不追高超过5%,绝不撤单改单追涨,严格按预案挂单</li>
+    <li>单只个股持仓周期绝不超过5个交易日,到期无论盈亏必须清仓</li>
+  </ol>
+</div>
+
+<div class="updated">生成时间:2026-05-09 17:40:02 / 数据源:C:\Users\黄晓斌\Desktop\每日复盘数据.xlsx / 心法:情绪为道 主线为法 抢筹为术</div>
+
+<script>
+const DATES=["02/24", "02/25", "02/26", "02/27", "03/02", "03/03", "03/04", "03/05", "03/06", "03/09", "03/10", "03/11", "03/12", "03/13", "03/16", "03/17", "03/18", "03/19", "03/20", "03/23", "03/24", "03/25", "03/26", "03/27", "03/30", "03/31", "04/01", "04/02", "04/03", "04/06", "04/07", "04/08", "04/09", "04/10", "04/13", "04/14", "04/15", "04/16", "04/17", "04/20", "04/21", "04/22", "04/23", "04/24", "04/27", "04/28", "04/29", "04/30", "05/06", "05/07", "05/08"];
+const DATES_FULL=["2026-02-24", "2026-02-25", "2026-02-26", "2026-02-27", "2026-03-02", "2026-03-03", "2026-03-04", "2026-03-05", "2026-03-06", "2026-03-09", "2026-03-10", "2026-03-11", "2026-03-12", "2026-03-13", "2026-03-16", "2026-03-17", "2026-03-18", "2026-03-19", "2026-03-20", "2026-03-23", "2026-03-24", "2026-03-25", "2026-03-26", "2026-03-27", "2026-03-30", "2026-03-31", "2026-04-01", "2026-04-02", "2026-04-03", "2026-04-06", "2026-04-07", "2026-04-08", "2026-04-09", "2026-04-10", "2026-04-13", "2026-04-14", "2026-04-15", "2026-04-16", "2026-04-17", "2026-04-20", "2026-04-21", "2026-04-22", "2026-04-23", "2026-04-24", "2026-04-27", "2026-04-28", "2026-04-29", "2026-04-30", "2026-05-06", "2026-05-07", "2026-05-08"];
+const ZT=[92, 75, 78, 91, 94, 85, 46, 79, 88, 42, 56, 53, 52, 68, 60, 52, 57, 28, 28, 28, 100, 84, 51, 93, 76, 53, 56, 32, 38, null, 101, 135, 61, 77, 86, 71, 57, 79, 76, 75, 65, 55, 50, 68, 84, 76, 119, 98, 125, 127, 125],DT=[15, 5, 5, 1, 21, 82, 21, 7, 5, 9, 7, 2, 6, 22, 10, 15, 14, 14, 23, 133, 8, 4, 13, 5, 16, 17, 14, 16, 41, null, 18, 12, 13, 12, 10, 10, 14, 9, 7, 17, 19, 15, 30, 37, 52, 54, 39, 52, 63, 54, 33],ZJ=[4000, 3748, 2485, 3185, 1112, 553, 1640, 3899, 4093, 1384, 4328, 1939, 1494, 1502, 2757, 867, 3456, 497, 625, 293, 5136, 4649, 916, 4184, 2817, 915, 4261, 1052, 716, null, 3977, 4915, 1140, 3977, 2378, 3723, 1712, 4092, 2396, 3211, 1949, 2671, 1312, 2001, 3191, 1680, 3761, 2687, 3662, 3260, 3391],ZTDT=[6.13, 15.0, 15.6, 91.0, 4.48, 1.04, 2.19, 11.29, 17.6, 4.67, 8.0, 26.5, 8.67, 3.09, 6.0, 3.47, 4.07, 2.0, 1.22, 0.21, 12.5, 21.0, 3.92, 18.6, 4.75, 3.12, 4.0, 2.0, 0.93, null, 5.61, 11.25, 4.69, 6.42, 8.6, 7.1, 4.07, 8.78, 10.86, 4.41, 3.42, 3.67, 1.67, 1.84, 1.62, 1.41, 3.05, 1.88, 1.98, 2.35, 3.79];
+const JG=[36, 35, 34, null, null, null, 37, 40, 45, 52, 70, 30, 21, 33, 33, 34, 28, 38, 74, 53, 29, 23, 28, 36, 42, 41, 23, 14, 22, null, 7, 25, 30, 20, 34, 15, 14, 28, 12, 21, 35, 35, 32, 41, 55, 27, 32, 18, 0, 14, 38],JH=[51, 43, 36, null, null, null, 54, 46, 25, 80, 38, 51, 36, 29, 32, 15, 41, 68, 26, 25, 33, 45, 39, 56, 46, 17, 32, 35, 27, null, 43, 49, 29, 50, 30, 41, 51, 32, 28, 39, 52, 52, 29, 18, 27, 14, 18, 41, 60, 49, 32],JD=[-15, -8, -2, null, null, null, -17, -6, 20, -28, 32, -21, -15, 4, 1, 19, -13, -30, 48, 28, -4, -22, -11, -20, -4, 24, -9, -21, -5, null, -36, -24, 1, -30, 4, -26, -37, -4, -16, -18, -17, -17, 3, 23, 28, 13, 14, -23, -60, -35, 6];
+const SG=[72, 49, 48, null, null, 65, 83, 50, 39, 41, 54, 29, 52, 100, 52, 58, 57, 74, 101, 80, 33, 23, 78, 76, 83, 80, 69, 51, 76, null, 6, 9, 50, 75, 25, 20, 49, 46, 47, 34, 62, 62, 29, 77, 78, 37, 33, 57, 2, 25, 41],SH=[105, 61, 76, null, null, 89, 55, 70, 93, 63, 66, 80, 77, 48, 77, 100, 77, 72, 35, 35, 96, 70, 80, 61, 42, 48, 60, 64, 14, null, 105, 63, 43, 62, 93, 73, 90, 54, 43, 98, 60, 60, 79, 58, 61, 88, 64, 79, 110, 99, 77],SD=[-33, -12, -28, null, null, -24, 28, -20, -54, -22, -12, -51, -25, 52, -25, -42, -20, 2, 66, 45, -63, -47, -2, 15, 41, 32, 9, -13, 62, null, -99, -54, 7, 13, -68, -53, -41, -8, 4, -64, 2, 2, -50, 19, 17, -51, -31, -22, -108, -74, -36];
+const GD=[null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 6.0, 7.0, null, 7.0, 7.0, 7.0, null, null, null, null, null, 5.0, null, 4.0, 5.0, 4.0],SGD=[null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 6.0, 6.0, 6.0, 7.0, 6.0, 4.0, 6.5, null, null, null, null, 5.5, null, null, 5.0, 4.0],BK=[null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 6.0, null, 6.0, 7.0, 6.0, 4.0, 4.0, 4.0, 5.0, null, null, 3.0, 4.0, 4.0, 5.0, 4.0],GB=[null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 34.0, 35.0, 35.0, 36.0];
+const DIFF1=[null, 1, 1, null, null, null, null, -3, -5, -7, -18, 40, 9, -12, 0, -1, 6, -10, -36, 21, 24, 6, -5, -8, -6, 1, 18, 9, -8, null, null, -18, -5, 10, -14, 19, 1, -14, 16, -9, -14, 0, 3, -9, -14, 28, -5, 14, 18, -14, -24],DIFF2=[null, -8, -7, null, null, null, null, -8, -21, 55, -42, 13, -15, -7, 3, -17, 26, 27, -42, -1, 8, 12, -6, 17, -10, -29, 15, 3, -8, null, null, 6, -20, 21, -20, 11, 10, -19, -4, 11, 13, 0, -23, -11, 9, -13, 4, 23, 19, -11, -17],DIFF3=[54, 18, 40, null, null, null, 1, 24, 68, -17, 28, 29, 41, 19, 45, 85, 36, 4, 9, 10, 63, 25, 41, 5, -4, 31, 28, 29, -13, null, 62, 14, 14, 12, 63, 32, 39, 22, 15, 59, 8, 8, 50, 40, 34, 74, 46, 38, 50, 50, 45],DIFF4=[-36, -14, -14, null, null, null, -46, -10, 6, 11, 16, 1, -31, -67, -19, -24, -29, -36, -27, -27, -4, 0, -50, -40, -41, -39, -46, -37, -54, null, 1, 16, -20, -55, 9, -5, -35, -18, -35, -13, -27, -27, 3, -36, -23, -10, -1, -39, -2, -11, -3];
+const CYCLE_CODES=[-1, 3, 3, -1, -1, -1, -1, 0, 3, 3, 3, 2, 3, 0, 0, 0, 2, 0, 0, 3, 2, 2, 0, 0, 0, 3, 2, 2, 0, -1, -1, 2, 0, 2, 3, 2, 2, 0, 3, 0, 0, 0, 2, 0, 0, 3, 0, 2, 2, 0, 0];
+const STAGE_CODES=[5, 4, 4, 5, 4, 1, 2, 4, 5, 3, 4, 4, 3, 1, 3, 0, 4, 0, 0, 0, 5, 5, 0, 5, 3, 1, 4, 2, 0, -1, 5, 5, 2, 5, 4, 5, 3, 5, 5, 4, 2, 2, 2, 1, 2, 0, 3, 3, 4, 3, 3];
+const CYCLES=["数据不足", "震荡分歧", "震荡分歧", "数据不足", "数据不足", "数据不足", "数据不足", "亏钱效应[ 延续 ]", "震荡分歧", "震荡分歧", "震荡分歧", "赚钱效应[ 升温 ]", "震荡分歧", "亏钱效应[ 扩散 ]", "亏钱效应[ 延续 ]", "亏钱效应[ 延续 ]", "赚钱效应[ 升温 ]", "亏钱效应[ 扩散 ]", "亏钱效应[ 延续 ]", "震荡分歧", "赚钱效应[ 升温 ]", "赚钱效应[ 延续 ]", "亏钱效应[ 扩散 ]", "亏钱效应[ 延续 ]", "亏钱效应[ 延续 ]", "震荡分歧", "赚钱效应[ 升温 ]", "赚钱效应[ 延续 ]", "亏钱效应[ 扩散 ]", "数据不足", "数据不足", "赚钱效应[ 升温 ]", "亏钱效应[ 扩散 ]", "赚钱效应[ 升温 ]", "震荡分歧", "赚钱效应[ 升温 ]", "赚钱效应[ 延续 ]", "亏钱效应[ 扩散 ]", "震荡分歧", "亏钱效应[ 扩散 ]", "亏钱效应[ 延续 ]", "亏钱效应[ 延续 ]", "偏赚钱", "亏钱效应[ 扩散 ]", "亏钱效应[ 延续 ]", "震荡分歧", "亏钱效应[ 扩散 ]", "赚钱效应[ 延续 ]", "赚钱效应[ 延续 ]", "亏钱效应[ 扩散 ]", "亏钱效应[ 延续 ]"];
+const STAGES=["高潮期", "发酵期", "发酵期", "高潮期", "发酵期", "退潮期", "分歧期", "发酵期", "高潮期", "启动期", "发酵期", "发酵期", "启动期", "退潮期", "启动期", "冰点期", "发酵期", "冰点期", "冰点期", "冰点期", "高潮期", "高潮期", "冰点期", "高潮期", "启动期", "退潮期", "发酵期", "分歧期", "冰点期", "未知", "高潮期", "高潮期", "分歧期", "高潮期", "发酵期", "高潮期", "启动期", "高潮期", "高潮期", "发酵期", "分歧期", "分歧期", "分歧期", "退潮期", "分歧期", "冰点期", "启动期", "启动期", "发酵期", "启动期", "启动期"];
+
+Chart.defaults.color='#8b949e';
+Chart.defaults.borderColor='#30363d';
+Chart.defaults.font.family="'PingFang SC',sans-serif";
+Chart.defaults.font.size=11;
+const TT={backgroundColor:'#1f2937',borderColor:'#30363d',borderWidth:1,titleColor:'#e6edf3',bodyColor:'#8b949e',padding:9};
+const GRID={color:'#21262d'};
+const XTICK={maxTicksLimit:16,maxRotation:45};
+function baseOpts(extra){return Object.assign({responsive:true,maintainAspectRatio:true,interaction:{mode:'index',intersect:false},plugins:{legend:{labels:{boxWidth:9,padding:10}},tooltip:TT},scales:{x:{grid:GRID,ticks:XTICK},y:{grid:GRID}}},extra||{});}
+function hline(y,color,label){return{type:'line',yMin:y,yMax:y,borderColor:color+'88',borderWidth:1,borderDash:[5,4],label:{display:true,content:label,color:color,backgroundColor:'transparent',font:{size:10}}};}
+
+// ── 六阶段·七周期 联动折线图 ──
+(function(){
+  var stageValMap={'冰点期':0,'启动期':1,'分歧期':2,'发酵期':3,'高潮期':4,'退潮期':5,'未知':-1};
+  var cycleValMap={'亏钱效应延续':-3,'亏钱效应扩散':-3,'亏钱效应减弱':-2,'亏钱->赚钱反转':-1,'偏亏钱':-1,
+    '震荡分歧':0,'偏赚钱':1,'赚钱效应升温':2,'赚钱效应延续':3,'赚钱->亏钱反转':-1,'数据不足':0,'未知':0};
+  var stageData=STAGES.map(function(s){return stageValMap[s]||0;});
+  var cycleData=CYCLES.map(function(c){return cycleValMap[c]||0;});
+
+  // 六阶段背景色带插件
+  var stageBgPlugin={id:'stageBgCycle',beforeDraw:function(chart){
+    var sData=chart.data._stageData;if(!sData)return;
+    var ctx=chart.ctx,meta=chart.getDatasetMeta(0);
+    if(!meta||!meta.data)return;
+    var xAxis=chart.scales.x,yAxis=chart.scales.y;
+    if(!xAxis||!yAxis)return;
+    var stageBgMap={'冰点期':'rgba(248,81,73,0.10)','启动期':'rgba(210,153,34,0.08)','分歧期':'rgba(210,153,34,0.05)',
+      '发酵期':'rgba(88,166,255,0.10)','高潮期':'rgba(63,185,80,0.10)','退潮期':'rgba(188,140,255,0.08)','未知':'rgba(139,148,158,0.03)'};
+    ctx.save();ctx.beginPath();
+    ctx.rect(xAxis.left,yAxis.top,xAxis.right-xAxis.left,yAxis.bottom-yAxis.top);
+    ctx.clip();
+    for(var i=0;i<sData.length;i++){
+      if(!meta.data[i])continue;
+      var px=meta.data[i].x,pw;
+      if(i<sData.length-1&&meta.data[i+1])pw=meta.data[i+1].x-px;
+      else if(i>0&&meta.data[i-1])pw=px-meta.data[i-1].x;
+      else pw=20;
+      ctx.fillStyle=stageBgMap[sData[i]]||'rgba(139,148,158,0.03)';
+      ctx.fillRect(px-pw/2,yAxis.top,pw,yAxis.bottom-yAxis.top);
+    }
+    ctx.restore();
+  }};
+  Chart.register(stageBgPlugin);
+
+  new Chart(document.getElementById('c-stage-cycle'),{
+    type:'line',
+    data:{
+      labels:DATES,_stageData:STAGES,
+      datasets:[
+        {label:'六阶段',data:stageData,borderColor:'#d29922',backgroundColor:'rgba(210,153,34,0.12)',borderWidth:2.5,tension:0.3,fill:true,pointRadius:4,pointHoverRadius:7,yAxisID:'y',order:1},
+        {label:'七周期',data:cycleData,borderColor:'#58a6ff',backgroundColor:'rgba(88,166,255,0.08)',borderWidth:2,tension:0.3,fill:false,pointRadius:3,pointHoverRadius:6,yAxisID:'y',order:2}
+      ]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:true,
+      interaction:{mode:'index',intersect:false},
+      plugins:{
+        legend:{labels:{boxWidth:12,padding:14}},
+        tooltip:{
+          backgroundColor:'rgba(22,27,34,0.97)',borderColor:'#30363d',borderWidth:1,
+          titleColor:'#e6edf3',bodyColor:'#8b949e',padding:12,
+          callbacks:{
+            title:function(items){return DATES_FULL[items[0].dataIndex];},
+            afterBody:function(items){
+              var i=items[0].dataIndex;
+              return['','六阶段: '+(STAGES[i]||'-')+' ('+stageData[i]+')',
+                '七周期: '+(CYCLES[i]||'-')+' ('+cycleData[i]+')','',
+                '涨停: '+(ZT[i]??'-')+'  跌停: '+(DT[i]??'-'),
+                '1)竞绿差: '+(DIFF1[i]!=null?DIFF1[i]:'-'),
+                '2)竞红差: '+(DIFF2[i]!=null?DIFF2[i]:'-'),
+                '3)红扩容: '+(DIFF3[i]!=null?DIFF3[i]:'-'),
+                '4)绿收敛: '+(DIFF4[i]!=null?DIFF4[i]:'-')];
+            }
+          }
+        }
+      },
+      scales:{
+        x:{grid:GRID,ticks:XTICK},
+        y:{grid:GRID,title:{display:true,text:'数值',color:'#8b949e',font:{size:11}}}
+      }
+    }
+  });
+})();
+
+// ── 六阶段时序图 ──
+new Chart('c-phase6',{type:'line',data:{labels:DATES,datasets:[
+  {label:'情绪阶段',data:STAGE_CODES,borderColor:'#bc8cff',backgroundColor:'rgba(188,140,255,.1)',
+    borderWidth:2,pointRadius:3,pointBackgroundColor:STAGE_CODES.map(function(v){return v===0?'#f85149':v===1?'#d29922':v===2?'#e3b341':v===3?'#d29922':v===4?'#3fb950':'#bc8cff';}),
+    tension:.3,fill:true,spanGaps:true}
+]},options:{responsive:true,maintainAspectRatio:true,interaction:{mode:'index',intersect:false},
+  plugins:{legend:{display:false},tooltip:TT,annotation:{annotations:{h0:hline(0,'#f85149','冰点'),h1:hline(1,'#d29922','启动'),h2:hline(2,'#e3b341','分歧'),h3:hline(3,'#d29922','发酵'),h4:hline(4,'#3fb950','高潮'),h5:hline(5,'#bc8cff','退潮')}}},
+  scales:{x:{grid:GRID,ticks:XTICK},y:{grid:GRID,min:-0.5,max:5,ticks:{stepSize:1,callback:function(v){return['冰点','启动','分歧','发酵','高潮','退潮'][v]||v;}}}}}});
+
+// ── 七周期信号图 ──
+new Chart('c-cycle4',{type:'bar',data:{labels:DATES,datasets:[
+  {label:'周期判定',data:CYCLE_CODES,backgroundColor:CYCLE_CODES.map(function(v){return v===0?'rgba(248,81,73,.7)':v===1?'rgba(210,153,34,.7)':v===2?'rgba(63,185,80,.7)':v===3?'rgba(227,179,65,.7)':'rgba(139,148,158,.4)';}),borderWidth:0}
+]},options:{responsive:true,maintainAspectRatio:true,
+  plugins:{legend:{display:false},tooltip:Object.assign({},TT,{callbacks:{label:function(ctx){return['亏延续','亏转赚','赚延续','赚转亏','不确定'][ctx.raw]||ctx.raw;}}}),annotation:{annotations:{h0:hline(0,'#ffffff','零线')}}},
+  scales:{x:{grid:GRID,ticks:XTICK},y:{grid:GRID,min:-0.5,max:3.5,ticks:{stepSize:1,callback:function(v){return['亏延续','亏转赚','赚延续','赚转亏'][v]||'';}}}}}});
+
+// ── 周期信号累积得分 ──
+(function(){
+  var SCORES=[];
+  for(var i=0;i<DATES.length;i++){var s=0;if(DIFF1[i]!==null)s+=DIFF1[i]>0?1:-1;if(DIFF2[i]!==null)s+=DIFF2[i]>0?1:-1;if(DIFF3[i]!==null)s+=DIFF3[i]>0?1:-1;if(DIFF4[i]!==null)s+=DIFF4[i]>0?1:-1;SCORES.push(s);}
+  new Chart('c-score',{type:'line',data:{labels:DATES,datasets:[
+    {label:'周期信号得分',data:SCORES,borderColor:'#56d4dd',backgroundColor:SCORES.map(function(v){return v>=0?'rgba(63,185,80,.1)':'rgba(248,81,73,.1)';}),borderWidth:2,pointRadius:2,tension:.3,fill:true}
+  ]},options:{responsive:true,maintainAspectRatio:true,interaction:{mode:'index',intersect:false},
+    plugins:{legend:{display:false},tooltip:TT,annotation:{annotations:{h0:hline(0,'#ffffff','零线'),h2:hline(2,'#3fb950','强做多'),hm2:hline(-2,'#f85149','强做空')}}},
+    scales:{x:{grid:GRID,ticks:XTICK},y:{grid:GRID}}}});
+})();
+
+// ── 六阶段与涨停联动 ──
+(function(){
+  var stageBgMap={'冰点期':'rgba(248,81,73,0.10)','启动期':'rgba(210,153,34,0.08)','分歧期':'rgba(210,153,34,0.05)',
+    '发酵期':'rgba(88,166,255,0.10)','高潮期':'rgba(63,185,80,0.10)','退潮期':'rgba(188,140,255,0.08)','未知':'rgba(139,148,158,0.03)'};
+  var stageBorderMap={'冰点期':'#f85149','启动期':'#d29922','分歧期':'#e3b341','发酵期':'#58a6ff','高潮期':'#3fb950','退潮期':'#bc8cff','未知':'#8b949e'};
+  function sc(s){return stageBorderMap[s]||'#8b949e';}
+  new Chart(document.getElementById('c-stage-ztdt'),{
+    type:'line',
+    data:{labels:DATES,_stageData:STAGES,
+      datasets:[
+        {label:'涨停数',data:ZT,type:'line',borderColor:'rgba(248,81,73,0.9)',backgroundColor:'transparent',borderWidth:2.5,tension:0.3,fill:false,yAxisID:'y',
+          pointBackgroundColor:CYCLES.map(function(c){if(!c||c==='数据不足')return'#8b949e';if(c.includes('赚钱'))return'#3fb950';if(c.includes('亏钱'))return'#f85149';return'#d29922';}),
+          pointBorderColor:STAGES.map(sc),pointBorderWidth:2.5,pointRadius:5,pointHoverRadius:8,order:1},
+        {label:'跌停数',data:DT,type:'line',borderColor:'rgba(63,185,80,0.85)',backgroundColor:'transparent',borderWidth:2,tension:0.3,fill:false,yAxisID:'y',
+          pointRadius:3,pointHoverRadius:6,order:2}
+      ]
+    },
+    options:{responsive:true,maintainAspectRatio:true,interaction:{mode:'index',intersect:false},
+      plugins:{legend:{labels:{boxWidth:12,padding:14}},
+        tooltip:{backgroundColor:'rgba(22,27,34,0.97)',borderColor:'#30363d',borderWidth:1,titleColor:'#e6edf3',bodyColor:'#8b949e',padding:12,
+          callbacks:{title:function(items){return DATES_FULL[items[0].dataIndex];},
+            afterBody:function(items){var i=items[0].dataIndex;return['','六阶段: '+(STAGES[i]||'-'),'七周期: '+(CYCLES[i]||'-')];}}
+        }
+      },
+      scales:{x:{grid:GRID,ticks:XTICK},y:{grid:GRID,title:{display:true,text:'数量',color:'#8b949e'}}}
+    }
+  });
+})();
+
+// ── 差值信号(近15日) ──
+var recentStart=Math.max(0,DATES.length-15);
+var recentDates=DATES.slice(recentStart);
+function sliceRecent(arr){return arr.slice(recentStart);}
+
+new Chart('c-4diff',{type:'bar',data:{labels:recentDates,datasets:[
+  {label:'1)隔日竞价绿差',data:sliceRecent(DIFF1),backgroundColor:sliceRecent(DIFF1).map(function(v){return v===null?'transparent':v>=0?'rgba(63,185,80,.7)':'rgba(248,81,73,.6)';}),borderColor:sliceRecent(DIFF1).map(function(v){return v===null?'transparent':v>=0?'#3fb950':'#f85149';}),borderWidth:1},
+  {label:'2)隔日竞价红差',data:sliceRecent(DIFF2),backgroundColor:sliceRecent(DIFF2).map(function(v){return v===null?'transparent':v>=0?'rgba(63,185,80,.7)':'rgba(248,81,73,.6)';}),borderColor:sliceRecent(DIFF2).map(function(v){return v===null?'transparent':v>=0?'#3fb950':'#f85149';}),borderWidth:1},
+  {label:'3)日内红盘扩容',data:sliceRecent(DIFF3),backgroundColor:sliceRecent(DIFF3).map(function(v){return v===null?'transparent':v>=0?'rgba(63,185,80,.7)':'rgba(248,81,73,.6)';}),borderColor:sliceRecent(DIFF3).map(function(v){return v===null?'transparent':v>=0?'#3fb950':'#f85149';}),borderWidth:1},
+  {label:'4)日内绿盘收敛',data:sliceRecent(DIFF4),backgroundColor:sliceRecent(DIFF4).map(function(v){return v===null?'transparent':v>=0?'rgba(63,185,80,.7)':'rgba(248,81,73,.6)';}),borderColor:sliceRecent(DIFF4).map(function(v){return v===null?'transparent':v>=0?'#3fb950':'#f85149';}),borderWidth:1}
+]},options:{responsive:true,maintainAspectRatio:true,interaction:{mode:'index',intersect:false},
+  plugins:{legend:{labels:{boxWidth:8,padding:8,font:{size:10}}},tooltip:TT,annotation:{annotations:{h0:hline(0,'#ffffff','零线')}}},
+  scales:{x:{grid:GRID,ticks:{maxTicksLimit:15,maxRotation:45}},y:{grid:GRID}}}});
+
+new Chart('c-lose',{type:'bar',data:{labels:DATES,datasets:[
+  {label:'1)隔日竞价绿差',data:DIFF1,backgroundColor:DIFF1.map(function(v){return v===null?'transparent':v>=0?'rgba(63,185,80,.7)':'rgba(248,81,73,.6)';}),borderWidth:0},
+  {label:'4)日内绿盘收敛',data:DIFF4,backgroundColor:DIFF4.map(function(v){return v===null?'transparent':v>=0?'rgba(63,185,80,.4)':'rgba(248,81,73,.35)';}),borderWidth:0}
+]},options:{responsive:true,maintainAspectRatio:true,interaction:{mode:'index',intersect:false},
+  plugins:{legend:{labels:{boxWidth:8,padding:8,font:{size:10}}},tooltip:TT,annotation:{annotations:{h0:hline(0,'#ffffff','零线')}}},
+  scales:{x:{grid:GRID,ticks:XTICK},y:{grid:GRID}}}});
+
+new Chart('c-earn',{type:'bar',data:{labels:DATES,datasets:[
+  {label:'2)隔日竞价红差',data:DIFF2,backgroundColor:DIFF2.map(function(v){return v===null?'transparent':v>=0?'rgba(63,185,80,.7)':'rgba(248,81,73,.6)';}),borderWidth:0},
+  {label:'3)日内红盘扩容',data:DIFF3,backgroundColor:DIFF3.map(function(v){return v===null?'transparent':v>=0?'rgba(63,185,80,.4)':'rgba(248,81,73,.35)';}),borderWidth:0}
+]},options:{responsive:true,maintainAspectRatio:true,interaction:{mode:'index',intersect:false},
+  plugins:{legend:{labels:{boxWidth:8,padding:8,font:{size:10}}},tooltip:TT,annotation:{annotations:{h0:hline(0,'#ffffff','零线')}}},
+  scales:{x:{grid:GRID,ticks:XTICK},y:{grid:GRID}}}});
+
+// ── 竞价vs收盘 ──
+new Chart('c-jg-sg',{type:'bar',data:{labels:DATES,datasets:[
+  {label:'竞价绿',data:JG,backgroundColor:'rgba(63,185,80,.6)',borderColor:'#3fb950',borderWidth:1},
+  {label:'收盘绿',data:SG,backgroundColor:'rgba(88,166,255,.6)',borderColor:'#58a6ff',borderWidth:1}
+]},options:baseOpts()});
+
+new Chart('c-jr-sr',{type:'bar',data:{labels:DATES,datasets:[
+  {label:'竞价红',data:JH,backgroundColor:'rgba(248,81,73,.6)',borderColor:'#f85149',borderWidth:1},
+  {label:'收盘红',data:SH,backgroundColor:'rgba(188,140,255,.6)',borderColor:'#bc8cff',borderWidth:1}
+]},options:baseOpts()});
+
+new Chart('c-jd-sd',{type:'line',data:{labels:DATES,datasets:[
+  {label:'竞价差',data:JD,borderColor:'#3fb950',borderWidth:1.5,pointRadius:1.5,tension:.3},
+  {label:'收盘差',data:SD,borderColor:'#d29922',borderWidth:1.5,pointRadius:1.5,tension:.3,borderDash:[4,3]}
+]},options:baseOpts({plugins:{...baseOpts().plugins,annotation:{annotations:{h0:hline(0,'#ffffff','零线')}}}})});
+
+// ── 4项差值趋势 ──
+function diffBar(id,data,label){
+  new Chart(id,{type:'bar',data:{labels:DATES,datasets:[{label:label,data:data,
+    backgroundColor:data.map(function(v){return v===null?'transparent':v>=0?'rgba(63,185,80,.7)':'rgba(248,81,73,.65)';}),
+    borderColor:data.map(function(v){return v===null?'transparent':v>=0?'#3fb950':'#f85149';}),borderWidth:1}]},
+    options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{display:false},tooltip:TT,annotation:{annotations:{h0:hline(0,'#ffffff','零线')}}},
+    scales:{x:{grid:GRID,ticks:XTICK},y:{grid:GRID}}}});
+}
+diffBar('c-d1',DIFF1,'1)隔日竞价绿差');
+diffBar('c-d2',DIFF2,'2)隔日竞价红差');
+diffBar('c-d3',DIFF3,'3)日内红盘扩容');
+diffBar('c-d4',DIFF4,'4)日内绿盘收敛');
+
+// ── 综合概览 ──
+new Chart('c-overview',{type:'bar',data:{labels:DATES,datasets:[
+  {label:'涨停数',data:ZT,backgroundColor:'rgba(248,81,73,.75)',borderColor:'#f85149',borderWidth:1,yAxisID:'y',order:2},
+  {label:'跌停数',data:DT,backgroundColor:'rgba(63,185,80,.65)',borderColor:'#3fb950',borderWidth:1,yAxisID:'y',order:3},
+  {label:'涨家数',data:ZJ,type:'line',borderColor:'#58a6ff',backgroundColor:'transparent',borderWidth:1.5,pointRadius:0,tension:.3,yAxisID:'y2',order:1}
+]},options:{responsive:true,maintainAspectRatio:true,interaction:{mode:'index',intersect:false},
+  plugins:{legend:{labels:{boxWidth:9,padding:10}},tooltip:TT},
+  scales:{x:{grid:GRID,ticks:XTICK},y:{grid:GRID,title:{display:true,text:'涨/跌停数',color:'#8b949e'}},
+    y2:{position:'right',grid:{display:false},title:{display:true,text:'涨家数',color:'#58a6ff'},ticks:{color:'#58a6ff'}}}}});
+
+new Chart('c-zj',{type:'line',data:{labels:DATES,datasets:[
+  {label:'涨家数',data:ZJ,borderColor:'#58a6ff',backgroundColor:'rgba(88,166,255,.08)',borderWidth:2,pointRadius:1.5,tension:.3,fill:true}
+]},options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{display:false},tooltip:TT,
+  annotation:{annotations:{h5k:hline(5000,'#58a6ff','极强'),h3k:hline(3000,'#d29922','强'),h1k:hline(1000,'#f85149','弱')}}},
+  scales:{x:{grid:GRID,ticks:XTICK},y:{grid:GRID}}}});
+
+new Chart('c-ratio',{type:'line',data:{labels:DATES,datasets:[
+  {label:'涨跌比',data:ZTDT,borderColor:'#d29922',backgroundColor:'rgba(210,153,34,.08)',borderWidth:2,pointRadius:2,
+    pointBackgroundColor:ZTDT.map(function(v){return v===null?'transparent':v>=4?'#3fb950':v>=2?'#d29922':'#f85149';}),tension:.3,fill:true}
+]},options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{display:false},tooltip:TT,
+  annotation:{annotations:{h4:hline(4,'#3fb950','做多'),h2:hline(2,'#d29922','中性'),h1:hline(1,'#f85149','警戒')}}},
+  scales:{x:{grid:GRID,ticks:XTICK},y:{grid:GRID,min:0}}}});
+
+// ── 板块高度 ──
+new Chart('c-board',{type:'line',data:{labels:DATES,datasets:[
+  {label:'现在板',data:BK,borderColor:'#e3b341',backgroundColor:'rgba(227,179,65,.1)',borderWidth:2,pointRadius:3,tension:.2,fill:true,spanGaps:false}
+]},options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{display:false},tooltip:TT},
+  scales:{x:{grid:GRID,ticks:XTICK},y:{grid:GRID,min:2,max:10,ticks:{stepSize:1}}}}});
+
+new Chart('c-h-rh',{type:'line',data:{labels:DATES,datasets:[
+  {label:'高度',data:GD,borderColor:'#e3b341',borderWidth:2,pointRadius:3,tension:.2,spanGaps:false},
+  {label:'实高度',data:SGD,borderColor:'#39d353',borderWidth:2,pointRadius:3,tension:.2,borderDash:[4,3],spanGaps:false}
+]},options:{responsive:true,maintainAspectRatio:true,interaction:{mode:'index',intersect:false},
+  plugins:{legend:{labels:{boxWidth:9,padding:10}},tooltip:TT},
+  scales:{x:{grid:GRID,ticks:XTICK},y:{grid:GRID,min:2,max:10,ticks:{stepSize:1}}}}});
+
+// ── 信号明细表 ──
+(function(){
+  var tbody=document.getElementById('raw-tbody');
+  for(var i=0;i<DATES.length;i++){
+    var d1=DIFF1[i],d2=DIFF2[i],d3=DIFF3[i],d4=DIFF4[i];
+    var fmtDiff=function(v){return v===null?'-':(v>0?'<span class="pos">+'+v+'</span>':(v<0?'<span class="neg">'+v+'</span>':'0'));};
+    var cycleCls=['cycle-0','cycle-1','cycle-2','cycle-3'][CYCLE_CODES[i]]||'';
+    var cycleLbl=CYCLES[i]||'-';
+    var phaseCls=['phase-0','phase-1','phase-2','phase-3','phase-4','phase-5'][STAGE_CODES[i]]||'';
+    var phaseLbl=STAGES[i]||'-';
+    tbody.insertAdjacentHTML('beforeend',
+      '<tr><td>'+DATES_FULL[i]+'</td><td>'+(ZT[i]??'-')+'</td><td>'+(DT[i]??'-')+'</td><td>'+(ZJ[i]??'-')+'</td><td>'+(ZTDT[i]??'-')+'</td>'+
+      '<td>'+(JG[i]??'-')+'</td><td>'+(JH[i]??'-')+'</td><td>'+(SG[i]??'-')+'</td><td>'+(SH[i]??'-')+'</td>'+
+      '<td>'+fmtDiff(d1)+'</td><td>'+fmtDiff(d2)+'</td><td>'+fmtDiff(d3)+'</td><td>'+fmtDiff(d4)+'</td>'+
+      '<td class="'+cycleCls+'">'+cycleLbl+'</td><td class="'+phaseCls+'">'+phaseLbl+'</td></tr>');
+  }
+})();
+
+function showTab(name,btn){
+  document.querySelectorAll('.section').forEach(function(s){s.classList.remove('active');});
+  document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.remove('active');});
+  document.getElementById('sec-'+name).classList.add('active');
+  btn.classList.add('active');
+}
+</script>
+</body>
+</html>
