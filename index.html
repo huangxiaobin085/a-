@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>情绪周期可视化 - 2026-05-08</title>
+<title>情绪周期可视化 - 2026-05-11</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
 <style>
@@ -21,21 +21,21 @@ body{background:var(--bg);color:var(--text);font-family:'SF Pro Display',-apple-
 .badge-warn{background:#d2992222;border:1px solid #d2992255;color:var(--amber);}
 .badge-safe{background:#3fb95022;border:1px solid #3fb95055;color:var(--green);}
 
-.advice-box{margin:20px 32px;border-radius:16px;overflow:hidden;border:2px solid #f8514944;
-  box-shadow:0 0 30px #f8514915;}
-.advice-header{padding:18px 24px;background:linear-gradient(135deg,#f8514918,transparent);
-  display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #f8514933;}
-.advice-header h2{font-size:18px;font-weight:700;color:#f85149;}
-.advice-header .risk{font-size:12px;padding:3px 12px;border-radius:12px;background:#f8514922;color:#f85149;}
+.advice-box{margin:20px 32px;border-radius:16px;overflow:hidden;border:2px solid #3fb95044;
+  box-shadow:0 0 30px #3fb95015;}
+.advice-header{padding:18px 24px;background:linear-gradient(135deg,#3fb95018,transparent);
+  display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #3fb95033;}
+.advice-header h2{font-size:18px;font-weight:700;color:#3fb950;}
+.advice-header .risk{font-size:12px;padding:3px 12px;border-radius:12px;background:#3fb95022;color:#3fb950;}
 .advice-body{padding:20px 24px;background:var(--card);}
 .advice-signal{font-size:13px;color:var(--muted);margin-bottom:14px;padding:8px 12px;
-  background:var(--card2);border-radius:8px;border-left:3px solid #f85149;}
+  background:var(--card2);border-radius:8px;border-left:3px solid #3fb950;}
 .advice-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px;}
 .advice-item{padding:12px 14px;background:var(--card2);border-radius:10px;border:1px solid var(--border);}
 .advice-item .label{font-size:11px;color:var(--muted);margin-bottom:4px;}
 .advice-item .value{font-size:15px;font-weight:700;}
 .advice-item.full{grid-column:1/-1;}
-.advice-detail{margin-top:14px;padding:12px 14px;background:#f8514908;border:1px solid #f8514922;
+.advice-detail{margin-top:14px;padding:12px 14px;background:#3fb95008;border:1px solid #3fb95022;
   border-radius:8px;font-size:13px;color:var(--muted);line-height:1.7;}
 .advice-detail strong{color:var(--text);}
 .mode-table{width:100%;border-collapse:collapse;margin-top:14px;font-size:12px;}
@@ -119,39 +119,39 @@ canvas{max-height:260px;}
 
 <div class="header">
   <div>
-    <h1>情绪周期可视化 · 六阶段联动七周期 + 情绪温度计</h1>
-    <div class="sub">竞价/收盘红绿差值信号 → 情绪温度 → 六阶段七周期 → 隔日操作建议</div>
+    <h1>高标情绪周期 - 温度计 - [ 竞价 ] 每日操作建议</h1>
+    <div class="sub">更新时间 : 2026-05-11 10:14:34 </div>
   </div>
   <div style="display:flex;align-items:center;gap:10px;">
     <div style="text-align:right;margin-right:8px;">
-      <div style="font-size:24px;font-weight:800;color:#58a6ff">43.9°</div>
+      <div style="font-size:24px;font-weight:800;color:#e3b341">68.7°</div>
       <div style="font-size:11px;color:var(--muted)">情绪温度</div>
     </div>
-    <div class="badge badge-warn">[ 极高 ]风险 - 亏钱效应[ </div>
+    <div class="badge badge-safe">低风险 - 赚钱效应延续</div>
   </div>
 </div>
 
 <div class="advice-box">
   <div class="advice-header">
-    <h2>亏钱效应[ 延续 ]周期</h2>
-    <span class="risk">风险等级:[ 极高 ]</span>
+    <h2>赚钱效应延续周期</h2>
+    <span class="risk">风险等级:低</span>
   </div>
   <div class="advice-body">
-    <div class="advice-signal">两日竞价绿差=-24([ 负反馈| 放大 ] 停止开仓||情绪诱空位试仓)      日内绿盘收敛=-3([ 负反馈| 放大 ]  [观望为主寻找||情绪诱空位试错])</div>
+    <div class="advice-signal">两日竞价红差=60(√升温)  日内红盘扩容=6(√延续) -> 赚钱效应确认</div>
     <div class="advice-grid">
-      <div class="advice-item"><div class="label">是否开仓</div><div class="value" style="color:#f85149">绝对不开仓</div></div>
-      <div class="advice-item"><div class="label">仓位上限</div><div class="value" style="color:#f85149">0/1成(空仓为主，等两天)</div></div>
-      <div class="advice-item"><div class="label">买什么</div><div class="value" style="font-size:13px">无合规标的</div></div>
-      <div class="advice-item"><div class="label">买哪里(挂单位置)</div><div class="value" style="font-size:13px">无买点</div></div>
-      <div class="advice-item full"><div class="label">止损位</div><div class="value" style="color:var(--red)">-</div></div>
+      <div class="advice-item"><div class="label">是否开仓</div><div class="value" style="color:#3fb950">重仓主做</div></div>
+      <div class="advice-item"><div class="label">仓位上限</div><div class="value" style="color:#3fb950">7成(最高70万)</div></div>
+      <div class="advice-item"><div class="label">买什么</div><div class="value" style="font-size:13px">主线龙/空间龙 + 核心总龙断板首日反核 + 主线龙回调首阳</div></div>
+      <div class="advice-item"><div class="label">买哪里(挂单位置)</div><div class="value" style="font-size:13px">分时均价线/0~+3%区间挂单,优先保证成交</div></div>
+      <div class="advice-item full"><div class="label">止损位</div><div class="value" style="color:var(--red)">买入价-8%无条件止损</div></div>
     </div>
     <table class="mode-table">
       <tr><th>模式</th><th>开关状态</th><th>挂单规则</th></tr>
-      <tr><td>龙头主升分歧低吸</td><td class="mode-off">关闭,绝对不做</td><td>无买点,只卖不买</td></tr>
-      <tr><td>断板反核</td><td class="mode-off">关闭,绝对不做</td><td>深水-7%~-9%或跌停价</td></tr>
-      <tr><td>龙头回调反包</td><td class="mode-off">关闭,绝对不做</td><td>-1%~-3%区间</td></tr>
+      <tr><td>龙头主升分歧低吸</td><td class="mode-on">重仓主做(主线龙/空间龙)</td><td>分时均价线/0~+3%挂单</td></tr>
+      <tr><td>断板反核</td><td class="mode-on">可做(核心总龙断板首日)</td><td>深水-7%~-9%或跌停价</td></tr>
+      <tr><td>龙头回调反包</td><td class="mode-on">可做(主线龙回调首阳)</td><td>-1%~-3%区间</td></tr>
     </table>
-    <div class="advice-detail"><strong>操作要点:</strong>亏钱效应延续,核心高标负反馈强化/批量A杀,接力资金出逃。铁律:绝对不开新仓,只卖不买,空仓等待冰点反转信号。</div>
+    <div class="advice-detail"><strong>操作要点:</strong>赚钱效应延续,接力资金活跃,高标正反馈。可重仓聚焦主线龙头和空间板,断板反核和回调反包辅助。优先保证成交,不追高超5%。</div>
   </div>
 </div>
 
@@ -174,13 +174,13 @@ canvas{max-height:260px;}
   <!-- 温度计仪表 -->
   <div class="thermo-header">
     <div class="thermo-gauge-wrap">
-      <div class="thermo-num" style="color:#58a6ff">43.9</div>
+      <div class="thermo-num" style="color:#e3b341">68.7</div>
       <div style="display:flex;align-items:baseline;gap:3px">
         <div class="thermo-unit">°</div>
         <div style="font-size:12px;color:var(--muted)">/ 100</div>
       </div>
-      <div class="thermo-zone" style="color:#58a6ff">温凉</div>
-      <div class="thermo-avg">近5日均温 57.3°</div>
+      <div class="thermo-zone" style="color:#e3b341">偏热</div>
+      <div class="thermo-avg">近5日均温 62.9°</div>
       <div class="thermo-zone-legend" style="justify-content:center;margin-top:14px;">
         <div class="zone-chip" style="background:#56d4dd22;color:#56d4dd;">极冷&lt;20</div>
         <div class="zone-chip" style="background:#3fb95022;color:#3fb950;">偏冷20~35</div>
@@ -209,38 +209,38 @@ canvas{max-height:260px;}
       <div class="factor-row">
         <div class="factor-label">竞价红绿</div>
         <div class="factor-bar-bg"><div class="factor-bar-fill" id="bar-j" style="width:0%;background:#58a6ff;"></div></div>
-        <div class="factor-val" style="color:#58a6ff" id="val-j">7.0</div>
+        <div class="factor-val" style="color:#58a6ff" id="val-j">37.9</div>
         <div class="factor-tag tag-main">主要×32</div>
       </div>
       <div class="factor-row">
         <div class="factor-label">收盘红绿</div>
         <div class="factor-bar-bg"><div class="factor-bar-fill" id="bar-s" style="width:0%;background:#58a6ff;"></div></div>
-        <div class="factor-val" style="color:#58a6ff" id="val-s">19.6</div>
+        <div class="factor-val" style="color:#58a6ff" id="val-s">25.6</div>
         <div class="factor-tag tag-main">主要×34</div>
       </div>
       <div style="border-top:1px solid var(--border);margin:10px 0;"></div>
       <div class="factor-row">
         <div class="factor-label">涨跌比</div>
         <div class="factor-bar-bg"><div class="factor-bar-fill" id="bar-ratio" style="width:0%;background:#d29922;"></div></div>
-        <div class="factor-val" style="color:#d29922" id="val-ratio">1.9</div>
+        <div class="factor-val" style="color:#d29922" id="val-ratio">0.2</div>
         <div class="factor-tag tag-sub">次要×4</div>
       </div>
       <div class="factor-row">
         <div class="factor-label">涨停数</div>
         <div class="factor-bar-bg"><div class="factor-bar-fill" id="bar-zt" style="width:0%;background:#f85149;"></div></div>
-        <div class="factor-val" style="color:#f85149" id="val-zt">12.0</div>
+        <div class="factor-val" style="color:#f85149" id="val-zt">1.8</div>
         <div class="factor-tag tag-sub">次要×10</div>
       </div>
       <div class="factor-row">
         <div class="factor-label">涨家数</div>
         <div class="factor-bar-bg"><div class="factor-bar-fill" id="bar-zj" style="width:0%;background:#3fb950;"></div></div>
-        <div class="factor-val" style="color:#3fb950" id="val-zj">5.4</div>
+        <div class="factor-val" style="color:#3fb950" id="val-zj">3.8</div>
         <div class="factor-tag tag-sub">次要×8</div>
       </div>
       <div class="factor-row">
         <div class="factor-label">连板高度</div>
         <div class="factor-bar-bg"><div class="factor-bar-fill" id="bar-bk" style="width:0%;background:#e3b341;"></div></div>
-        <div class="factor-val" style="color:#e3b341" id="val-bk">6.0</div>
+        <div class="factor-val" style="color:#e3b341" id="val-bk">7.5</div>
         <div class="factor-tag tag-sub">次要×12</div>
       </div>
       <div style="border-top:1px solid var(--border);margin:10px 0;"></div>
@@ -429,7 +429,7 @@ canvas{max-height:260px;}
 <!-- ══════ Tab: 信号明细表 ══════ -->
 <div id="sec-rawdata" class="section">
   <div class="card">
-    <div class="card-title">差值信号明细表 - 51个交易日(最新在底部)</div>
+    <div class="card-title">差值信号明细表 - 52个交易日(最新在底部)</div>
     <div class="card-sub"><span class="pos">绿色正数=利好信号</span> / <span class="neg">红色负数=利空信号</span> / 4项信号->周期判定->6阶段->温度</div>
     <div style="max-height:500px;overflow-y:auto;border-radius:8px;border:1px solid var(--border);">
       <table class="signal-table">
@@ -451,7 +451,7 @@ canvas{max-height:260px;}
   <h3>铁血纪律红线(触发任何一条立即停止交易)</h3>
   <ol>
     <li><strong>亏钱效应延续周期</strong>,绝对不开新仓,只卖不买</li>
-    <li>没有提前填完预案,绝对不做任何买入操作</li>
+    <li><strong>前期高标低开5个点||体核按||最高标大阴-13 ，至少等两天</strong></li>
     <li>单日账户回撤超5%,当日及次日无条件空仓</li>
     <li>连续2笔交易触发止损,立即空仓复盘,禁止急于翻本</li>
     <li>绝对不追高超过5%,绝不撤单改单追涨,严格按预案挂单</li>
@@ -459,23 +459,23 @@ canvas{max-height:260px;}
   </ol>
 </div>
 
-<div class="updated">生成时间:2026-05-10 11:30:24 / 数据源:C:\Users\黄晓斌\Desktop\每日复盘数据.xlsx / 心法:情绪为道 主线为法 抢筹为术</div>
+<div class="updated">生成时间:2026-05-11 10:14:34 / 数据源:{{}} / 心法:情绪为道 主线为法 抢筹为术 助攻为器</div>
 
 <script>
-const DATES=["02/24", "02/25", "02/26", "02/27", "03/02", "03/03", "03/04", "03/05", "03/06", "03/09", "03/10", "03/11", "03/12", "03/13", "03/16", "03/17", "03/18", "03/19", "03/20", "03/23", "03/24", "03/25", "03/26", "03/27", "03/30", "03/31", "04/01", "04/02", "04/03", "04/06", "04/07", "04/08", "04/09", "04/10", "04/13", "04/14", "04/15", "04/16", "04/17", "04/20", "04/21", "04/22", "04/23", "04/24", "04/27", "04/28", "04/29", "04/30", "05/06", "05/07", "05/08"];
-const DATES_FULL=["2026-02-24", "2026-02-25", "2026-02-26", "2026-02-27", "2026-03-02", "2026-03-03", "2026-03-04", "2026-03-05", "2026-03-06", "2026-03-09", "2026-03-10", "2026-03-11", "2026-03-12", "2026-03-13", "2026-03-16", "2026-03-17", "2026-03-18", "2026-03-19", "2026-03-20", "2026-03-23", "2026-03-24", "2026-03-25", "2026-03-26", "2026-03-27", "2026-03-30", "2026-03-31", "2026-04-01", "2026-04-02", "2026-04-03", "2026-04-06", "2026-04-07", "2026-04-08", "2026-04-09", "2026-04-10", "2026-04-13", "2026-04-14", "2026-04-15", "2026-04-16", "2026-04-17", "2026-04-20", "2026-04-21", "2026-04-22", "2026-04-23", "2026-04-24", "2026-04-27", "2026-04-28", "2026-04-29", "2026-04-30", "2026-05-06", "2026-05-07", "2026-05-08"];
-const ZT=[92, 75, 78, 91, 94, 85, 46, 79, 88, 42, 56, 53, 52, 68, 60, 52, 57, 28, 28, 28, 100, 84, 51, 93, 76, 53, 56, 32, 38, null, 101, 135, 61, 77, 86, 71, 57, 79, 76, 75, 65, 55, 50, 68, 84, 76, 119, 98, 125, 127, 125],DT=[15, 5, 5, 1, 21, 82, 21, 7, 5, 9, 7, 2, 6, 22, 10, 15, 14, 14, 23, 133, 8, 4, 13, 5, 16, 17, 14, 16, 41, null, 18, 12, 13, 12, 10, 10, 14, 9, 7, 17, 19, 15, 30, 37, 52, 54, 39, 52, 63, 54, 33],ZJ=[4000, 3748, 2485, 3185, 1112, 553, 1640, 3899, 4093, 1384, 4328, 1939, 1494, 1502, 2757, 867, 3456, 497, 625, 293, 5136, 4649, 916, 4184, 2817, 915, 4261, 1052, 716, null, 3977, 4915, 1140, 3977, 2378, 3723, 1712, 4092, 2396, 3211, 1949, 2671, 1312, 2001, 3191, 1680, 3761, 2687, 3662, 3260, 3391],ZTDT=[6.13, 15.0, 15.6, 91.0, 4.48, 1.04, 2.19, 11.29, 17.6, 4.67, 8.0, 26.5, 8.67, 3.09, 6.0, 3.47, 4.07, 2.0, 1.22, 0.21, 12.5, 21.0, 3.92, 18.6, 4.75, 3.12, 4.0, 2.0, 0.93, null, 5.61, 11.25, 4.69, 6.42, 8.6, 7.1, 4.07, 8.78, 10.86, 4.41, 3.42, 3.67, 1.67, 1.84, 1.62, 1.41, 3.05, 1.88, 1.98, 2.35, 3.79];
-const JG=[36, 35, 34, null, null, null, 37, 40, 45, 52, 70, 30, 21, 33, 33, 34, 28, 38, 74, 53, 29, 23, 28, 36, 42, 41, 23, 14, 22, null, 7, 25, 30, 20, 34, 15, 14, 28, 12, 21, 35, 35, 32, 41, 55, 27, 32, 18, 0, 14, 38],JH=[51, 43, 36, null, null, null, 54, 46, 25, 80, 38, 51, 36, 29, 32, 15, 41, 68, 26, 25, 33, 45, 39, 56, 46, 17, 32, 35, 27, null, 43, 49, 29, 50, 30, 41, 51, 32, 28, 39, 52, 52, 29, 18, 27, 14, 18, 41, 60, 49, 32],JD=[-15, -8, -2, null, null, null, -17, -6, 20, -28, 32, -21, -15, 4, 1, 19, -13, -30, 48, 28, -4, -22, -11, -20, -4, 24, -9, -21, -5, null, -36, -24, 1, -30, 4, -26, -37, -4, -16, -18, -17, -17, 3, 23, 28, 13, 14, -23, -60, -35, 6];
-const SG=[72, 49, 48, null, null, 65, 83, 50, 39, 41, 54, 29, 52, 100, 52, 58, 57, 74, 101, 80, 33, 23, 78, 76, 83, 80, 69, 51, 76, null, 6, 9, 50, 75, 25, 20, 49, 46, 47, 34, 62, 62, 29, 77, 78, 37, 33, 57, 2, 25, 41],SH=[105, 61, 76, null, null, 89, 55, 70, 93, 63, 66, 80, 77, 48, 77, 100, 77, 72, 35, 35, 96, 70, 80, 61, 42, 48, 60, 64, 14, null, 105, 63, 43, 62, 93, 73, 90, 54, 43, 98, 60, 60, 79, 58, 61, 88, 64, 79, 110, 99, 77],SD=[-33, -12, -28, null, null, -24, 28, -20, -54, -22, -12, -51, -25, 52, -25, -42, -20, 2, 66, 45, -63, -47, -2, 15, 41, 32, 9, -13, 62, null, -99, -54, 7, 13, -68, -53, -41, -8, 4, -64, 2, 2, -50, 19, 17, -51, -31, -22, -108, -74, -36];
-const GD=[null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 6.0, 7.0, null, 7.0, 7.0, 7.0, null, null, null, null, null, 5.0, null, 4.0, 5.0, 4.0],SGD=[null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 6.0, 6.0, 6.0, 7.0, 6.0, 4.0, 6.5, null, null, null, null, 5.5, null, null, 5.0, 4.0],BK=[null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 6.0, null, 6.0, 7.0, 6.0, 4.0, 4.0, 4.0, 5.0, null, null, 3.0, 4.0, 4.0, 5.0, 4.0],GB=[null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 34.0, 35.0, 35.0, 32.0];
-const DIFF1=[null, 1, 1, null, null, null, null, -3, -5, -7, -18, 40, 9, -12, 0, -1, 6, -10, -36, 21, 24, 6, -5, -8, -6, 1, 18, 9, -8, null, null, -18, -5, 10, -14, 19, 1, -14, 16, -9, -14, 0, 3, -9, -14, 28, -5, 14, 18, -14, -24],DIFF2=[null, -8, -7, null, null, null, null, -8, -21, 55, -42, 13, -15, -7, 3, -17, 26, 27, -42, -1, 8, 12, -6, 17, -10, -29, 15, 3, -8, null, null, 6, -20, 21, -20, 11, 10, -19, -4, 11, 13, 0, -23, -11, 9, -13, 4, 23, 19, -11, -17],DIFF3=[54, 18, 40, null, null, null, 1, 24, 68, -17, 28, 29, 41, 19, 45, 85, 36, 4, 9, 10, 63, 25, 41, 5, -4, 31, 28, 29, -13, null, 62, 14, 14, 12, 63, 32, 39, 22, 15, 59, 8, 8, 50, 40, 34, 74, 46, 38, 50, 50, 45],DIFF4=[-36, -14, -14, null, null, null, -46, -10, 6, 11, 16, 1, -31, -67, -19, -24, -29, -36, -27, -27, -4, 0, -50, -40, -41, -39, -46, -37, -54, null, 1, 16, -20, -55, 9, -5, -35, -18, -35, -13, -27, -27, 3, -36, -23, -10, -1, -39, -2, -11, -3];
-const CYCLE_CODES=[-1, 3, 3, -1, -1, -1, -1, 0, 3, 3, 3, 2, 3, 0, 0, 0, 2, 0, 0, 3, 2, 2, 0, 0, 0, 3, 2, 2, 0, -1, -1, 2, 0, 2, 3, 2, 2, 0, 3, 0, 0, 0, 2, 0, 0, 3, 0, 2, 2, 0, 0];
-const STAGE_CODES=[5, 4, 4, 5, 4, 1, 2, 4, 5, 3, 4, 4, 3, 1, 3, 0, 4, 0, 0, 0, 5, 5, 0, 5, 3, 1, 4, 2, 0, -1, 5, 5, 2, 5, 4, 5, 3, 5, 5, 4, 2, 2, 2, 1, 2, 0, 3, 3, 4, 3, 3];
-const CYCLES=["数据不足", "震荡分歧", "震荡分歧", "数据不足", "数据不足", "数据不足", "数据不足", "亏钱效应[ 延续 ]", "震荡分歧", "震荡分歧", "震荡分歧", "赚钱效应[ 升温 ]", "震荡分歧", "亏钱效应[ 扩散 ]", "亏钱效应[ 延续 ]", "亏钱效应[ 延续 ]", "赚钱效应[ 升温 ]", "亏钱效应[ 扩散 ]", "亏钱效应[ 延续 ]", "震荡分歧", "赚钱效应[ 升温 ]", "赚钱效应[ 延续 ]", "亏钱效应[ 扩散 ]", "亏钱效应[ 延续 ]", "亏钱效应[ 延续 ]", "震荡分歧", "赚钱效应[ 升温 ]", "赚钱效应[ 延续 ]", "亏钱效应[ 扩散 ]", "数据不足", "数据不足", "赚钱效应[ 升温 ]", "亏钱效应[ 扩散 ]", "赚钱效应[ 升温 ]", "震荡分歧", "赚钱效应[ 升温 ]", "赚钱效应[ 延续 ]", "亏钱效应[ 扩散 ]", "震荡分歧", "亏钱效应[ 扩散 ]", "亏钱效应[ 延续 ]", "亏钱效应[ 延续 ]", "偏赚钱", "亏钱效应[ 扩散 ]", "亏钱效应[ 延续 ]", "震荡分歧", "亏钱效应[ 扩散 ]", "赚钱效应[ 延续 ]", "赚钱效应[ 延续 ]", "亏钱效应[ 扩散 ]", "亏钱效应[ 延续 ]"];
-const STAGES=["高潮期", "发酵期", "发酵期", "高潮期", "发酵期", "退潮期", "分歧期", "发酵期", "高潮期", "启动期", "发酵期", "发酵期", "启动期", "退潮期", "启动期", "冰点期", "发酵期", "冰点期", "冰点期", "冰点期", "高潮期", "高潮期", "冰点期", "高潮期", "启动期", "退潮期", "发酵期", "分歧期", "冰点期", "未知", "高潮期", "高潮期", "分歧期", "高潮期", "发酵期", "高潮期", "启动期", "高潮期", "高潮期", "发酵期", "分歧期", "分歧期", "分歧期", "退潮期", "分歧期", "冰点期", "启动期", "启动期", "发酵期", "启动期", "启动期"];
-const TEMPS=[53.3, 49.9, 48.7, 53.7, 41.0, 41.7, 37.1, 55.8, 42.3, 50.1, 36.3, 64.0, 51.5, 28.9, 45.1, 33.9, 48.9, 48.0, 5.2, 7.0, 59.9, 70.3, 41.6, 54.7, 33.1, 17.1, 46.3, 40.5, 23.1, 38.0, 67.0, 71.2, 40.6, 57.5, 50.7, 67.6, 58.8, 56.9, 58.7, 59.4, 46.3, 48.2, 40.3, 23.8, 23.0, 40.7, 40.5, 49.3, 86.3, 66.5, 43.9];
-const TEMP_LABELS=["温热", "温凉", "温凉", "温热", "温凉", "温凉", "温凉", "温热", "温凉", "温热", "温凉", "温热", "温热", "偏冷", "温凉", "偏冷", "温凉", "温凉", "极冷❄️", "极冷❄️", "温热", "偏热", "温凉", "温热", "偏冷", "极冷❄️", "温凉", "温凉", "偏冷", "温凉", "偏热", "偏热", "温凉", "温热", "温热", "偏热", "温热", "温热", "温热", "温热", "温凉", "温凉", "温凉", "偏冷", "偏冷", "温凉", "温凉", "温凉", "极热🔥", "偏热", "温凉"];
-const TEMP_COLORS=["#d29922", "#58a6ff", "#58a6ff", "#d29922", "#58a6ff", "#58a6ff", "#58a6ff", "#d29922", "#58a6ff", "#d29922", "#58a6ff", "#d29922", "#d29922", "#3fb950", "#58a6ff", "#3fb950", "#58a6ff", "#58a6ff", "#56d4dd", "#56d4dd", "#d29922", "#e3b341", "#58a6ff", "#d29922", "#3fb950", "#56d4dd", "#58a6ff", "#58a6ff", "#3fb950", "#58a6ff", "#e3b341", "#e3b341", "#58a6ff", "#d29922", "#d29922", "#e3b341", "#d29922", "#d29922", "#d29922", "#d29922", "#58a6ff", "#58a6ff", "#58a6ff", "#3fb950", "#3fb950", "#58a6ff", "#58a6ff", "#58a6ff", "#f85149", "#e3b341", "#58a6ff"];
+const DATES=["02/24", "02/25", "02/26", "02/27", "03/02", "03/03", "03/04", "03/05", "03/06", "03/09", "03/10", "03/11", "03/12", "03/13", "03/16", "03/17", "03/18", "03/19", "03/20", "03/23", "03/24", "03/25", "03/26", "03/27", "03/30", "03/31", "04/01", "04/02", "04/03", "04/06", "04/07", "04/08", "04/09", "04/10", "04/13", "04/14", "04/15", "04/16", "04/17", "04/20", "04/21", "04/22", "04/23", "04/24", "04/27", "04/28", "04/29", "04/30", "05/06", "05/07", "05/08", "05/11"];
+const DATES_FULL=["2026-02-24", "2026-02-25", "2026-02-26", "2026-02-27", "2026-03-02", "2026-03-03", "2026-03-04", "2026-03-05", "2026-03-06", "2026-03-09", "2026-03-10", "2026-03-11", "2026-03-12", "2026-03-13", "2026-03-16", "2026-03-17", "2026-03-18", "2026-03-19", "2026-03-20", "2026-03-23", "2026-03-24", "2026-03-25", "2026-03-26", "2026-03-27", "2026-03-30", "2026-03-31", "2026-04-01", "2026-04-02", "2026-04-03", "2026-04-06", "2026-04-07", "2026-04-08", "2026-04-09", "2026-04-10", "2026-04-13", "2026-04-14", "2026-04-15", "2026-04-16", "2026-04-17", "2026-04-20", "2026-04-21", "2026-04-22", "2026-04-23", "2026-04-24", "2026-04-27", "2026-04-28", "2026-04-29", "2026-04-30", "2026-05-06", "2026-05-07", "2026-05-08", "2026-05-11"];
+const ZT=[92, 75, 78, 91, 94, 85, 46, 79, 88, 42, 56, 53, 52, 68, 60, 52, 57, 28, 28, 28, 100, 84, 51, 93, 76, 53, 56, 32, 38, null, 101, 135, 61, 77, 86, 71, 57, 79, 76, 75, 65, 55, 50, 68, 84, 76, 119, 98, 125, 127, 125, 9],DT=[15, 5, 5, 1, 21, 82, 21, 7, 5, 9, 7, 2, 6, 22, 10, 15, 14, 14, 23, 133, 8, 4, 13, 5, 16, 17, 14, 16, 41, null, 18, 12, 13, 12, 10, 10, 14, 9, 7, 17, 19, 15, 30, 37, 52, 54, 39, 52, 63, 54, 33, 25],ZJ=[4000, 3748, 2485, 3185, 1112, 553, 1640, 3899, 4093, 1384, 4328, 1939, 1494, 1502, 2757, 867, 3456, 497, 625, 293, 5136, 4649, 916, 4184, 2817, 915, 4261, 1052, 716, null, 3977, 4915, 1140, 3977, 2378, 3723, 1712, 4092, 2396, 3211, 1949, 2671, 1312, 2001, 3191, 1680, 3761, 2687, 3662, 3260, 3391, 2359],ZTDT=[6.13, 15.0, 15.6, 91.0, 4.48, 1.04, 2.19, 11.29, 17.6, 4.67, 8.0, 26.5, 8.67, 3.09, 6.0, 3.47, 4.07, 2.0, 1.22, 0.21, 12.5, 21.0, 3.92, 18.6, 4.75, 3.12, 4.0, 2.0, 0.93, null, 5.61, 11.25, 4.69, 6.42, 8.6, 7.1, 4.07, 8.78, 10.86, 4.41, 3.42, 3.67, 1.67, 1.84, 1.62, 1.41, 3.05, 1.88, 1.98, 2.35, 3.79, 0.36];
+const JG=[36, 35, 34, null, null, null, 37, 40, 45, 52, 70, 30, 21, 33, 33, 34, 28, 38, 74, 53, 29, 23, 28, 36, 42, 41, 23, 14, 22, null, 7, 25, 30, 20, 34, 15, 14, 28, 12, 21, 35, 35, 32, 41, 55, 27, 32, 18, 0, 14, 38, 9],JH=[51, 43, 36, null, null, null, 54, 46, 25, 80, 38, 51, 36, 29, 32, 15, 41, 68, 26, 25, 33, 45, 39, 56, 46, 17, 32, 35, 27, null, 43, 49, 29, 50, 30, 41, 51, 32, 28, 39, 52, 52, 29, 18, 27, 14, 18, 41, 60, 49, 32, 92],JD=[-15, -8, -2, null, null, null, -17, -6, 20, -28, 32, -21, -15, 4, 1, 19, -13, -30, 48, 28, -4, -22, -11, -20, -4, 24, -9, -21, -5, null, -36, -24, 1, -30, 4, -26, -37, -4, -16, -18, -17, -17, 3, 23, 28, 13, 14, -23, -60, -35, 6, -83];
+const SG=[72, 49, 48, null, null, 65, 83, 50, 39, 41, 54, 29, 52, 100, 52, 58, 57, 74, 101, 80, 33, 23, 78, 76, 83, 80, 69, 51, 76, null, 6, 9, 50, 75, 25, 20, 49, 46, 47, 34, 62, 62, 29, 77, 78, 37, 33, 57, 2, 25, 41, 17],SH=[105, 61, 76, null, null, 89, 55, 70, 93, 63, 66, 80, 77, 48, 77, 100, 77, 72, 35, 35, 96, 70, 80, 61, 42, 48, 60, 64, 14, null, 105, 63, 43, 62, 93, 73, 90, 54, 43, 98, 60, 60, 79, 58, 61, 88, 64, 79, 110, 99, 77, 98],SD=[-33, -12, -28, null, null, -24, 28, -20, -54, -22, -12, -51, -25, 52, -25, -42, -20, 2, 66, 45, -63, -47, -2, 15, 41, 32, 9, -13, 62, null, -99, -54, 7, 13, -68, -53, -41, -8, 4, -64, 2, 2, -50, 19, 17, -51, -31, -22, -108, -74, -36, -81];
+const GD=[null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 6.0, 7.0, null, 7.0, 7.0, 7.0, null, null, null, null, null, 5.0, null, 4.0, 5.0, 4.0, 5.0],SGD=[null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 6.0, 6.0, 6.0, 7.0, 6.0, 4.0, 6.5, null, null, null, null, 5.5, null, null, 5.0, 4.0, 5.0],BK=[null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 6.0, null, 6.0, 7.0, 6.0, 4.0, 4.0, 4.0, 5.0, null, null, 3.0, 4.0, 4.0, 5.0, 4.0, 5.0],GB=[null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 34.0, 35.0, 35.0, 32.0, 32.0];
+const DIFF1=[null, 1, 1, null, null, null, null, -3, -5, -7, -18, 40, 9, -12, 0, -1, 6, -10, -36, 21, 24, 6, -5, -8, -6, 1, 18, 9, -8, null, null, -18, -5, 10, -14, 19, 1, -14, 16, -9, -14, 0, 3, -9, -14, 28, -5, 14, 18, -14, -24, 29],DIFF2=[null, -8, -7, null, null, null, null, -8, -21, 55, -42, 13, -15, -7, 3, -17, 26, 27, -42, -1, 8, 12, -6, 17, -10, -29, 15, 3, -8, null, null, 6, -20, 21, -20, 11, 10, -19, -4, 11, 13, 0, -23, -11, 9, -13, 4, 23, 19, -11, -17, 60],DIFF3=[54, 18, 40, null, null, null, 1, 24, 68, -17, 28, 29, 41, 19, 45, 85, 36, 4, 9, 10, 63, 25, 41, 5, -4, 31, 28, 29, -13, null, 62, 14, 14, 12, 63, 32, 39, 22, 15, 59, 8, 8, 50, 40, 34, 74, 46, 38, 50, 50, 45, 6],DIFF4=[-36, -14, -14, null, null, null, -46, -10, 6, 11, 16, 1, -31, -67, -19, -24, -29, -36, -27, -27, -4, 0, -50, -40, -41, -39, -46, -37, -54, null, 1, 16, -20, -55, 9, -5, -35, -18, -35, -13, -27, -27, 3, -36, -23, -10, -1, -39, -2, -11, -3, -8];
+const CYCLE_CODES=[-1, 3, 3, -1, -1, -1, -1, 0, 3, 3, 3, 2, 3, 0, 0, 0, 2, 0, 0, 3, 2, 2, 0, 0, 0, 3, 2, 2, 0, -1, -1, 2, 0, 2, 3, 2, 2, 0, 3, 0, 0, 0, 2, 0, 0, 3, 0, 2, 2, 0, 0, 2];
+const STAGE_CODES=[5, 4, 4, 5, 4, 1, 2, 4, 5, 3, 4, 4, 3, 1, 3, 0, 4, 0, 0, 0, 5, 5, 0, 5, 3, 1, 4, 2, 0, -1, 5, 5, 2, 5, 4, 5, 3, 5, 5, 4, 2, 2, 2, 1, 2, 0, 3, 3, 4, 3, 3, 1];
+const CYCLES=["数据不足", "震荡分歧", "震荡分歧", "数据不足", "数据不足", "数据不足", "数据不足", "亏钱效应[ 延续 ]", "震荡分歧", "震荡分歧", "震荡分歧", "赚钱效应[ 升温 ]", "震荡分歧", "亏钱效应[ 扩散 ]", "亏钱效应[ 延续 ]", "亏钱效应[ 延续 ]", "赚钱效应[ 升温 ]", "亏钱效应[ 扩散 ]", "亏钱效应[ 延续 ]", "震荡分歧", "赚钱效应[ 升温 ]", "赚钱效应[ 延续 ]", "亏钱效应[ 扩散 ]", "亏钱效应[ 延续 ]", "亏钱效应[ 延续 ]", "震荡分歧", "赚钱效应[ 升温 ]", "赚钱效应[ 延续 ]", "亏钱效应[ 扩散 ]", "数据不足", "数据不足", "赚钱效应[ 升温 ]", "亏钱效应[ 扩散 ]", "赚钱效应[ 升温 ]", "震荡分歧", "赚钱效应[ 升温 ]", "赚钱效应[ 延续 ]", "亏钱效应[ 扩散 ]", "震荡分歧", "亏钱效应[ 扩散 ]", "亏钱效应[ 延续 ]", "亏钱效应[ 延续 ]", "偏赚钱", "亏钱效应[ 扩散 ]", "亏钱效应[ 延续 ]", "震荡分歧", "亏钱效应[ 扩散 ]", "赚钱效应[ 延续 ]", "赚钱效应[ 延续 ]", "亏钱效应[ 扩散 ]", "亏钱效应[ 延续 ]", "赚钱效应[ 升温 ]"];
+const STAGES=["高潮期", "发酵期", "发酵期", "高潮期", "发酵期", "退潮期", "分歧期", "发酵期", "高潮期", "启动期", "发酵期", "发酵期", "启动期", "退潮期", "启动期", "冰点期", "发酵期", "冰点期", "冰点期", "冰点期", "高潮期", "高潮期", "冰点期", "高潮期", "启动期", "退潮期", "发酵期", "分歧期", "冰点期", "未知", "高潮期", "高潮期", "分歧期", "高潮期", "发酵期", "高潮期", "启动期", "高潮期", "高潮期", "发酵期", "分歧期", "分歧期", "分歧期", "退潮期", "分歧期", "冰点期", "启动期", "启动期", "发酵期", "启动期", "启动期", "退潮期"];
+const TEMPS=[53.3, 49.9, 48.7, 53.7, 41.0, 41.7, 37.1, 55.8, 42.3, 50.1, 36.3, 64.0, 51.5, 28.9, 45.1, 33.9, 48.9, 48.0, 5.2, 7.0, 59.9, 70.3, 41.6, 54.7, 33.1, 17.1, 46.3, 40.5, 23.1, 38.0, 67.0, 71.2, 40.6, 57.5, 50.7, 67.6, 58.8, 56.9, 58.7, 59.4, 46.3, 48.2, 40.3, 23.8, 23.0, 40.7, 40.5, 49.3, 86.3, 66.5, 43.9, 68.7];
+const TEMP_LABELS=["温热", "温凉", "温凉", "温热", "温凉", "温凉", "温凉", "温热", "温凉", "温热", "温凉", "温热", "温热", "偏冷", "温凉", "偏冷", "温凉", "温凉", "极冷❄️", "极冷❄️", "温热", "偏热", "温凉", "温热", "偏冷", "极冷❄️", "温凉", "温凉", "偏冷", "温凉", "偏热", "偏热", "温凉", "温热", "温热", "偏热", "温热", "温热", "温热", "温热", "温凉", "温凉", "温凉", "偏冷", "偏冷", "温凉", "温凉", "温凉", "极热🔥", "偏热", "温凉", "偏热"];
+const TEMP_COLORS=["#d29922", "#58a6ff", "#58a6ff", "#d29922", "#58a6ff", "#58a6ff", "#58a6ff", "#d29922", "#58a6ff", "#d29922", "#58a6ff", "#d29922", "#d29922", "#3fb950", "#58a6ff", "#3fb950", "#58a6ff", "#58a6ff", "#56d4dd", "#56d4dd", "#d29922", "#e3b341", "#58a6ff", "#d29922", "#3fb950", "#56d4dd", "#58a6ff", "#58a6ff", "#3fb950", "#58a6ff", "#e3b341", "#e3b341", "#58a6ff", "#d29922", "#d29922", "#e3b341", "#d29922", "#d29922", "#d29922", "#d29922", "#58a6ff", "#58a6ff", "#58a6ff", "#3fb950", "#3fb950", "#58a6ff", "#58a6ff", "#58a6ff", "#f85149", "#e3b341", "#58a6ff", "#e3b341"];
 
 Chart.defaults.color='#8b949e';
 Chart.defaults.borderColor='#30363d';
@@ -489,7 +489,7 @@ function hline(y,color,label){return{type:'line',yMin:y,yMax:y,borderColor:color
 
 // ════════════ 温度计动画初始化 ════════════
 (function(){
-  var t=43.9;
+  var t=68.7;
   var pct=t/100;
   // 指针位置 (bottom % of bar)
   setTimeout(function(){
@@ -497,12 +497,12 @@ function hline(y,color,label){return{type:'line',yMin:y,yMax:y,borderColor:color
     if(pointer){pointer.style.bottom=(pct*100)+'%';}
     // 因子条动画
     var factors=[
-      {id:'bar-j',val:parseFloat('7.0')||0,max:30},
-      {id:'bar-s',val:parseFloat('19.6')||0,max:30},
-      {id:'bar-ratio',val:parseFloat('1.9')||0,max:10},
-      {id:'bar-zt',val:parseFloat('12.0')||0,max:10},
-      {id:'bar-zj',val:parseFloat('5.4')||0,max:10},
-      {id:'bar-bk',val:parseFloat('6.0')||0,max:10}
+      {id:'bar-j',val:parseFloat('37.9')||0,max:30},
+      {id:'bar-s',val:parseFloat('25.6')||0,max:30},
+      {id:'bar-ratio',val:parseFloat('0.2')||0,max:10},
+      {id:'bar-zt',val:parseFloat('1.8')||0,max:10},
+      {id:'bar-zj',val:parseFloat('3.8')||0,max:10},
+      {id:'bar-bk',val:parseFloat('7.5')||0,max:10}
     ];
     factors.forEach(function(f){
       var el=document.getElementById(f.id);
