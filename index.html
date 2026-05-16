@@ -4,898 +4,625 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>情绪周期可视化 - 2026-05-15</title>
+<title>A股超短情绪周期综合打分系统</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
 <style>
-:root{--bg:#0d1117;--card:#161b22;--card2:#1c2333;--border:#30363d;--text:#e6edf3;--muted:#8b949e;
-  --red:#f85149;--green:#3fb950;--blue:#58a6ff;--amber:#d29922;--purple:#bc8cff;--orange:#e3b341;--teal:#39d353;--cyan:#56d4dd;}
-*{box-sizing:border-box;margin:0;padding:0;}
-body{background:var(--bg);color:var(--text);font-family:'SF Pro Display',-apple-system,'PingFang SC',sans-serif;}
-.header{background:linear-gradient(135deg,#1a1f2e,#161b22);border-bottom:1px solid var(--border);
-  padding:20px 32px;display:flex;align-items:center;justify-content:space-between;}
-.header h1{font-size:20px;font-weight:700;}
-.header .sub{font-size:12px;color:var(--muted);margin-top:3px;}
-.badge{padding:4px 14px;border-radius:20px;font-size:12px;font-weight:600;}
-.badge-danger{background:#f8514922;border:1px solid #f8514955;color:var(--red);}
-.badge-warn{background:#d2992222;border:1px solid #d2992255;color:var(--amber);}
-.badge-safe{background:#3fb95022;border:1px solid #3fb95055;color:var(--green);}
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  body {
+    font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    background: #0f1117;
+    color: #e2e8f0;
+    min-height: 100vh;
+    padding: 20px;
+  }
+  h1 {
+    text-align: center;
+    font-size: 22px;
+    color: #f6e05e;
+    margin-bottom: 8px;
+    letter-spacing: 2px;
+  }
+  .subtitle {
+    text-align: center;
+    font-size: 12px;
+    color: #718096;
+    margin-bottom: 28px;
+  }
 
-.advice-box{margin:20px 32px;border-radius:16px;overflow:hidden;border:2px solid #f8514944;
-  box-shadow:0 0 30px #f8514915;}
-.advice-header{padding:18px 24px;background:linear-gradient(135deg,#f8514918,transparent);
-  display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #f8514933;}
-.advice-header h2{font-size:18px;font-weight:700;color:#f85149;}
-.advice-header .risk{font-size:12px;padding:3px 12px;border-radius:12px;background:#f8514922;color:#f85149;}
-.advice-body{padding:20px 24px;background:var(--card);}
-.advice-signal{font-size:13px;color:var(--muted);margin-bottom:14px;padding:8px 12px;
-  background:var(--card2);border-radius:8px;border-left:3px solid #f85149;}
-.advice-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px;}
-.advice-item{padding:12px 14px;background:var(--card2);border-radius:10px;border:1px solid var(--border);}
-.advice-item .label{font-size:11px;color:var(--muted);margin-bottom:4px;}
-.advice-item .value{font-size:15px;font-weight:700;}
-.advice-item.full{grid-column:1/-1;}
-.advice-detail{margin-top:14px;padding:12px 14px;background:#f8514908;border:1px solid #f8514922;
-  border-radius:8px;font-size:13px;color:var(--muted);line-height:1.7;}
-.advice-detail strong{color:var(--text);}
-.mode-table{width:100%;border-collapse:collapse;margin-top:14px;font-size:12px;}
-.mode-table th{background:var(--card2);color:var(--muted);padding:8px 10px;text-align:center;font-weight:500;border:1px solid var(--border);}
-.mode-table td{padding:8px 10px;text-align:center;border:1px solid var(--border);}
-.mode-on{color:var(--green);font-weight:600;}
-.mode-off{color:var(--red);font-weight:600;}
-.mode-warn{color:var(--amber);font-weight:600;}
+  /* ── 温度计区 ── */
+  .thermo-section {
+    display: flex;
+    gap: 24px;
+    margin-bottom: 28px;
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+  .thermo-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    min-width: 80px;
+  }
+  .thermo-label {
+    font-size: 12px;
+    color: #a0aec0;
+    text-align: center;
+    line-height: 1.4;
+  }
+  .thermo-svg-wrap {
+    position: relative;
+  }
+  .thermo-date {
+    font-size: 11px;
+    color: #718096;
+    text-align: center;
+  }
 
-.nav-tabs{display:flex;gap:0;padding:14px 32px 0;border-bottom:1px solid var(--border);overflow-x:auto;}
-.tab-btn{background:none;border:none;color:var(--muted);cursor:pointer;padding:8px 14px;
-  font-size:12px;font-weight:500;border-bottom:2px solid transparent;margin-bottom:-1px;
-  transition:all .2s;white-space:nowrap;}
-.tab-btn.active{color:var(--blue);border-bottom-color:var(--blue);}
-.tab-btn:hover{color:var(--text);}
-.main{padding:16px 32px;}
-.section{display:none;}
-.section.active{display:block;}
-.chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
-.chart-grid.single{grid-template-columns:1fr;}
-.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;}
-.card-title{font-size:13px;font-weight:600;margin-bottom:3px;display:flex;align-items:center;gap:7px;}
-.card-sub{font-size:11px;color:var(--muted);margin-bottom:12px;}
-.dot{width:9px;height:9px;border-radius:50%;display:inline-block;}
-canvas{max-height:260px;}
+  /* 温度计右侧信息 */
+  .thermo-info {
+    flex: 1;
+    min-width: 260px;
+    background: #1a202c;
+    border: 1px solid #2d3748;
+    border-radius: 10px;
+    padding: 18px 20px;
+  }
+  .thermo-info h2 {
+    font-size: 15px;
+    color: #f6e05e;
+    margin-bottom: 14px;
+  }
+  .score-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .score-box {
+    background: #0f1117;
+    border-radius: 8px;
+    padding: 10px 12px;
+    text-align: center;
+  }
+  .score-box .s-label {
+    font-size: 11px;
+    color: #718096;
+    margin-bottom: 4px;
+  }
+  .score-box .s-val {
+    font-size: 18px;
+    font-weight: bold;
+  }
+  .score-box .s-sub {
+    font-size: 11px;
+    color: #a0aec0;
+    margin-top: 2px;
+  }
+  .breakdown-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+  }
+  .bd-item {
+    font-size: 12px;
+    background: #2d3748;
+    padding: 3px 10px;
+    border-radius: 16px;
+    color: #e2e8f0;
+  }
+  .bd-item span {
+    color: #f6e05e;
+    font-weight: bold;
+  }
+  .event-tag {
+    background: #744210;
+    color: #fbd38d;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+  }
 
-/* 温度计专属样式 */
-.thermo-header{display:flex;align-items:stretch;gap:20px;margin-bottom:18px;}
-.thermo-gauge-wrap{flex:0 0 160px;display:flex;flex-direction:column;align-items:center;
-  background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px 16px;}
-.thermo-num{font-size:52px;font-weight:800;line-height:1;letter-spacing:-2px;}
-.thermo-unit{font-size:18px;font-weight:400;color:var(--muted);}
-.thermo-zone{font-size:16px;font-weight:700;margin-top:8px;}
-.thermo-avg{font-size:11px;color:var(--muted);margin-top:4px;}
-.thermo-bar-wrap{flex:0 0 32px;display:flex;flex-direction:column;align-items:center;justify-content:center;
-  background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 8px;position:relative;}
-.thermo-bar-bg{width:14px;height:200px;border-radius:7px;background:linear-gradient(to top,
-  #56d4dd 0%,#3fb950 20%,#58a6ff 35%,#d29922 50%,#e3b341 65%,#f85149 85%,#f85149 100%);position:relative;}
-.thermo-pointer{position:absolute;left:-8px;width:30px;height:3px;background:#fff;border-radius:2px;transition:bottom .8s cubic-bezier(.4,0,.2,1);}
-.thermo-scale{font-size:9px;color:var(--muted);text-align:right;display:flex;flex-direction:column;justify-content:space-between;height:200px;padding:0 4px;}
-.thermo-breakdown{flex:1;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;}
-.thermo-breakdown h3{font-size:13px;font-weight:600;margin-bottom:14px;color:var(--text);}
-.factor-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
-.factor-label{font-size:11px;color:var(--muted);width:90px;flex-shrink:0;}
-.factor-bar-bg{flex:1;height:8px;border-radius:4px;background:var(--card2);}
-.factor-bar-fill{height:8px;border-radius:4px;transition:width 1s ease;}
-.factor-val{font-size:11px;font-weight:600;width:38px;text-align:right;flex-shrink:0;}
-.factor-tag{font-size:10px;padding:1px 8px;border-radius:8px;flex-shrink:0;}
-.tag-main{background:#58a6ff22;color:#58a6ff;border:1px solid #58a6ff44;}
-.tag-sub{background:#8b949e18;color:#8b949e;border:1px solid #30363d;}
-.thermo-zone-legend{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;}
-.zone-chip{padding:3px 10px;border-radius:12px;font-size:10px;font-weight:600;opacity:.85;}
+  /* ── 图表 ── */
+  .chart-full {
+    background: #1a202c;
+    border: 1px solid #2d3748;
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 24px;
+  }
+  .chart-full h3 {
+    font-size: 14px;
+    color: #90cdf4;
+    margin-bottom: 12px;
+    text-align: center;
+  }
+  .chart-full-wrap {
+    position: relative;
+    height: 300px;
+  }
 
-.signal-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:12px;}
-.signal-table th{background:var(--card2);color:var(--muted);padding:6px 8px;text-align:center;font-weight:500;border:1px solid var(--border);position:sticky;top:0;}
-.signal-table td{padding:5px 8px;text-align:center;border:1px solid #21262d;}
-.signal-table tr:hover td{background:#1f2937;}
-.pos{color:var(--green);font-weight:600;}
-.neg{color:var(--red);font-weight:600;}
-.cycle-0{color:var(--red);font-weight:700;}
-.cycle-1{color:var(--amber);font-weight:700;}
-.cycle-2{color:var(--green);font-weight:700;}
-.cycle-3{color:var(--orange);font-weight:700;}
-.phase-0{color:#f85149;font-weight:700;}
-.phase-1{color:#d29922;font-weight:700;}
-.phase-2{color:#e3b341;font-weight:700;}
-.phase-3{color:#d29922;font-weight:700;}
-.phase-4{color:#3fb950;font-weight:700;}
-.phase-5{color:#bc8cff;font-weight:700;}
+  /* ── 明细表格 ── */
+  .table-card {
+    background: #1a202c;
+    border: 1px solid #2d3748;
+    border-radius: 10px;
+    padding: 16px;
+    overflow-x: auto;
+    margin-bottom: 24px;
+  }
+  .table-card h3 {
+    font-size: 14px;
+    color: #90cdf4;
+    margin-bottom: 12px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    min-width: 580px;
+  }
+  th {
+    background: #2d3748;
+    color: #f6e05e;
+    padding: 8px 6px;
+    text-align: center;
+    border-bottom: 2px solid #4a5568;
+    white-space: nowrap;
+  }
+  td {
+    padding: 7px 6px;
+    text-align: center;
+    border-bottom: 1px solid #2d3748;
+    white-space: nowrap;
+  }
+  tr:hover td {
+    background: #2d3748;
+  }
+  .score-bar {
+    display: inline-block;
+    height: 7px;
+    border-radius: 4px;
+    margin-left: 4px;
+    vertical-align: middle;
+  }
+  .strength-strong { color: #fc8181; font-weight: bold; }
+  .strength-weak   { color: #68d391; font-weight: bold; }
+  .strength-neutral { color: #a0aec0; }
+  .trend-up   { color: #fc8181; }
+  .trend-down { color: #68d391; }
+  .trend-flat { color: #a0aec0; }
+  .emotion-tag {
+    display: inline-block;
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: bold;
+  }
 
-.rules-box{margin:20px 32px;padding:16px 20px;background:var(--card);border:1px solid var(--red)33;border-radius:12px;}
-.rules-box h3{color:var(--red);font-size:14px;margin-bottom:10px;}
-.rules-box ol{padding-left:20px;font-size:12px;color:var(--muted);line-height:2;}
-.rules-box li strong{color:var(--text);}
-.updated{font-size:11px;color:var(--muted);padding:8px 32px;text-align:right;border-top:1px solid var(--border);margin-top:16px;}
-::-webkit-scrollbar{width:5px;height:5px;}
-::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+  /* ── 赚亏标签 ── */
+  .pl-tag {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    white-space: nowrap;
+  }
+  .pl-high    { background: #742a2a; color: #fc8181; }
+  .pl-strong  { background: #7b341e; color: #f6ad55; }
+  .pl-warm    { background: #744210; color: #fbd38d; }
+  .pl-cont    { background: #2d3748; color: #a0aec0; }
+  .pl-reverse { background: #234e52; color: #81e6d9; }
+  .pl-freeze  { background: #1a365d; color: #63b3ed; }
+
+  /* ── 力度标签 ── */
+  .force-strong { color: #fc8181; font-weight: bold; }
+  .force-mid    { color: #f6ad55; font-weight: bold; }
+  .force-weak   { color: #fbd38d; }
+  .force-flat   { color: #a0aec0; }
+  .force-down-w { color: #68d391; }
+  .force-down-m { color: #48bb78; font-weight: bold; }
+  .force-down-s { color: #2f855a; font-weight: bold; }
+
 </style>
 </head>
 <body>
 
-<div class="header">
-  <div>
+<h1>📊 A股超短情绪周期综合打分系统</h1>
+<div class="subtitle">
    
-    <div class="sub" style="color:red">
-        <h1>高标情绪周期 - 温度计 </h1>
-    更新时间 : 2026-05-15 16:24:39 wv:gssy512 名字：镜花水月
-    </div>
-  </div>
-  <div style="display:flex;align-items:center;gap:10px;">
-    <div style="text-align:right;margin-right:8px;">
-      <div style="font-size:24px;font-weight:800;color:#3fb950">27.7°</div>
-      <div style="font-size:11px;color:var(--muted)">情绪温度</div>
-    </div>
-    <div class="badge badge-warn">[ 极高 ]风险 - 亏钱效应[ </div>
+</div>
+
+<!-- 温度计 + 最新日信息 -->
+<div class="thermo-section" id="thermoSection"></div>
+
+<!-- 情绪综合总分走势 -->
+<div class="chart-full">
+  <h3>情绪综合总分走势（全量交易日）</h3>
+  <div class="chart-full-wrap">
+    <canvas id="scoreChart"></canvas>
   </div>
 </div>
 
-<div class="advice-box">
-  <div class="advice-header">
-    <h2>亏钱效应[ 延续 ]周期</h2>
-    <span class="risk">风险等级:[ 极高 ]</span>
-  </div>
-  <div class="advice-body">
-    <div class="advice-signal" style ="color:red">两日竞价绿差=-10([ 负反馈| 放大 ] 停止开仓||情绪诱空位试仓)      日内绿盘收敛=-17([ 负反馈| 放大 ]  [观望为主寻找||情绪诱空位试错])</div>
-    <div class="advice-grid">
-      <div class="advice-item"><div class="label">是否开仓</div><div class="value" style="color:#f85149">绝对不开仓</div></div>
-      <div class="advice-item"><div class="label">仓位上限</div><div class="value" style="color:#f85149">0/1成(空仓为主，等两天)</div></div>
-      <div class="advice-item"><div class="label">买什么</div><div class="value" style="font-size:13px">无合规标的</div></div>
-      <div class="advice-item"><div class="label">买哪里(挂单位置)</div><div class="value" style="font-size:13px">无买点</div></div>
-      <div class="advice-item full"><div class="label">止损位</div><div class="value" style="color:var(--red)">-</div></div>
-    </div>
-    <table class="mode-table">
-      <tr><th>模式</th><th>开关状态</th><th>挂单规则</th></tr>
-      <tr><td>龙头主升分歧低吸</td><td class="mode-off">关闭,绝对不做</td><td>无买点,只卖不买</td></tr>
-      <tr><td>断板反核</td><td class="mode-off">关闭,绝对不做</td><td>深水-7%~-9%或跌停价</td></tr>
-      <tr><td>龙头回调反包</td><td class="mode-off">关闭,绝对不做</td><td>-1%~-3%区间</td></tr>
-    </table>
-    <div class="advice-detail"><strong>操作要点:</strong>亏钱效应延续,核心高标负反馈强化/批量A杀,接力资金出逃。铁律:绝对不开新仓,只卖不买,空仓等待冰点反转信号。</div>
+<!-- 情绪温度历史折线图 -->
+<div class="chart-full">
+  <h3>情绪温度历史折线图（含分项拆解）</h3>
+  <div class="chart-full-wrap" style="height:320px">
+    <canvas id="tempLineChart"></canvas>
   </div>
 </div>
 
-<div class="nav-tabs">
-  <button class="tab-btn active" onclick="showTab('thermo',this)">🌡️ 情绪温度计</button>
-  <button class="tab-btn" onclick="showTab('stage-cycle',this)">六阶段·七周期</button>
-  <button class="tab-btn" onclick="showTab('signal',this)">差值信号</button>
-  <button class="tab-btn" onclick="showTab('jgsg',this)">竞价vs收盘</button>
-  <button class="tab-btn" onclick="showTab('diff',this)">4项差值趋势</button>
-  <button class="tab-btn" onclick="showTab('overview',this)">综合概览</button>
-  <button class="tab-btn" onclick="showTab('height',this)">板块高度</button>
-  <button class="tab-btn" onclick="showTab('rawdata',this)">信号明细表</button>
+<!-- 明细表格 -->
+<div class="table-card">
+  <h3>📋 每日情绪打分明细</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>日期</th>
+        <th>竞价收盘<br>对比(盘中)</th>
+        <th>两天回暖<br>力度</th>
+        <th>情绪周期<br>阶段</th>
+        <th>赚亏</th>
+        <th>总分</th>
+      </tr>
+    </thead>
+    <tbody id="tableBody"></tbody>
+  </table>
 </div>
-
-<div class="main">
-
-<!-- ══════ Tab: 情绪温度计 ══════ -->
-<div id="sec-thermo" class="section active">
-
-  <!-- 温度计仪表 -->
-  <div class="thermo-header">
-    <div class="thermo-gauge-wrap">
-      <div class="thermo-num" style="color:#3fb950">27.7</div>
-      <div style="display:flex;align-items:baseline;gap:3px">
-        <div class="thermo-unit">°</div>
-        <div style="font-size:12px;color:var(--muted)">/ 100</div>
-      </div>
-      <div class="thermo-zone" style="color:#3fb950">偏冷</div>
-      <div class="thermo-avg">近5日均温 49.5°</div>
-      <div class="thermo-zone-legend" style="justify-content:center;margin-top:14px;">
-        <div class="zone-chip" style="background:#56d4dd22;color:#56d4dd;">极冷&lt;20</div>
-        <div class="zone-chip" style="background:#3fb95022;color:#3fb950;">偏冷20~35</div>
-        <div class="zone-chip" style="background:#58a6ff22;color:#58a6ff;">温凉35~50</div>
-        <div class="zone-chip" style="background:#d2992222;color:#d29922;">温热50~65</div>
-        <div class="zone-chip" style="background:#e3b34122;color:#e3b341;">偏热65~80</div>
-        <div class="zone-chip" style="background:#f8514922;color:#f85149;">极热&gt;80</div>
-      </div>
-    </div>
-
-    <!-- 温度柱 -->
-    <div style="display:flex;align-items:center;gap:6px;padding:16px 0;">
-      <div class="thermo-scale">
-        <span>100</span><span>80</span><span>65</span><span>50</span><span>35</span><span>20</span><span>0</span>
-      </div>
-      <div class="thermo-bar-wrap" style="padding:12px 0;">
-        <div class="thermo-bar-bg" id="thermo-bar-bg">
-          <div class="thermo-pointer" id="thermo-pointer"></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 因子分解 -->
-    <div class="thermo-breakdown">
-      <h3>今日温度构成分解</h3>
-      <div class="factor-row">
-        <div class="factor-label">竞价红绿</div>
-        <div class="factor-bar-bg"><div class="factor-bar-fill" id="bar-j" style="width:0%;background:#58a6ff;"></div></div>
-        <div class="factor-val" style="color:#58a6ff" id="val-j">-4.8</div>
-        <div class="factor-tag tag-main">主要×32</div>
-      </div>
-      <div class="factor-row">
-        <div class="factor-label">收盘红绿</div>
-        <div class="factor-bar-bg"><div class="factor-bar-fill" id="bar-s" style="width:0%;background:#58a6ff;"></div></div>
-        <div class="factor-val" style="color:#58a6ff" id="val-s">17.6</div>
-        <div class="factor-tag tag-main">主要×34</div>
-      </div>
-      <div style="border-top:1px solid var(--border);margin:10px 0;"></div>
-      <div class="factor-row">
-        <div class="factor-label">涨跌比</div>
-        <div class="factor-bar-bg"><div class="factor-bar-fill" id="bar-ratio" style="width:0%;background:#d29922;"></div></div>
-        <div class="factor-val" style="color:#d29922" id="val-ratio">1.2</div>
-        <div class="factor-tag tag-sub">次要×4</div>
-      </div>
-      <div class="factor-row">
-        <div class="factor-label">涨停数</div>
-        <div class="factor-bar-bg"><div class="factor-bar-fill" id="bar-zt" style="width:0%;background:#f85149;"></div></div>
-        <div class="factor-val" style="color:#f85149" id="val-zt">10.0</div>
-        <div class="factor-tag tag-sub">次要×10</div>
-      </div>
-      <div class="factor-row">
-        <div class="factor-label">涨家数</div>
-        <div class="factor-bar-bg"><div class="factor-bar-fill" id="bar-zj" style="width:0%;background:#3fb950;"></div></div>
-        <div class="factor-val" style="color:#3fb950" id="val-zj">2.7</div>
-        <div class="factor-tag tag-sub">次要×8</div>
-      </div>
-      <div class="factor-row">
-        <div class="factor-label">连板高度</div>
-        <div class="factor-bar-bg"><div class="factor-bar-fill" id="bar-bk" style="width:0%;background:#e3b341;"></div></div>
-        <div class="factor-val" style="color:#e3b341" id="val-bk">9.0</div>
-        <div class="factor-tag tag-sub">次要×12</div>
-      </div>
-      <div style="border-top:1px solid var(--border);margin:10px 0;"></div>
-      <div style="font-size:11px;color:var(--muted);line-height:1.8">
-        <strong style="color:var(--text)">权重说明：</strong>竞价红绿(32%) + 收盘红绿(34%) = 主要因素(66%)
-        <br>涨跌比(4%) + 涨停数(10%) + 涨家数(8%) + 连板高度(12%) = 次要因素(34%)
-      </div>
-    </div>
-  </div>
-
-  <!-- 温度折线图 -->
-  <div class="chart-grid single" style="margin-bottom:16px;">
-    <div class="card">
-      <div class="card-title"><span class="dot" style="background:#e3b341"></span>情绪温度历史折线图</div>
-      <div class="card-sub">0~100分 · 极冷/偏冷/温凉/温热/偏热/极热 · 以竞价+收盘红绿为主要决定因素</div>
-      <canvas id="c-temp-line" style="max-height:300px"></canvas>
-    </div>
-  </div>
-  <div class="chart-grid" style="margin-bottom:16px;">
-    <div class="card">
-      <div class="card-title"><span class="dot" style="background:#58a6ff"></span>主要因素分解(竞价+收盘温度)</div>
-      <div class="card-sub">蓝=竞价温度(30分满) 紫=收盘温度(30分满)</div>
-      <canvas id="c-temp-main" style="max-height:240px"></canvas>
-    </div>
-    <div class="card">
-      <div class="card-title"><span class="dot" style="background:#d29922"></span>次要因素分解(涨停/涨跌比/涨家/连板)</div>
-      <div class="card-sub">各10分满，4项合计=次要40分</div>
-      <canvas id="c-temp-sub" style="max-height:240px"></canvas>
-    </div>
-  </div>
-  <div class="chart-grid single">
-    <div class="card">
-      <div class="card-title"><span class="dot" style="background:#bc8cff"></span>情绪温度 vs 七周期信号 联动图</div>
-      <div class="card-sub">温度折线 + 周期柱状，验证温度与周期信号的一致性</div>
-      <canvas id="c-temp-cycle" style="max-height:260px"></canvas>
-    </div>
-  </div>
-</div>
-
-<!-- ══════ Tab: 六阶段·七周期 ══════ -->
-<div id="sec-stage-cycle" class="section">
-  <div class="chart-grid single" style="margin-bottom:16px;">
-    <div class="card">
-      <div class="card-title"><span class="dot" style="background:var(--amber)"></span>六阶段 · 七周期 联动折线图</div>
-      <div class="card-sub">六阶段数值: 冰点(0) 启动(1) 分歧(2) 发酵(3) 高潮(4) / 七周期数值: 亏延续(-3) 亏减弱(-2) 转换(0) 赚升温(2) 赚延续(3)</div>
-      <canvas id="c-stage-cycle" style="max-height:280px"></canvas>
-    </div>
-  </div>
-  <div class="chart-grid">
-    <div class="card">
-      <div class="card-title"><span class="dot" style="background:var(--purple)"></span>六阶段时序图</div>
-      <div class="card-sub">0=冰点 1=启动 2=分歧 3=发酵 4=高潮</div>
-      <canvas id="c-phase6" style="max-height:240px"></canvas>
-    </div>
-    <div class="card">
-      <div class="card-title"><span class="dot" style="background:var(--amber)"></span>七周期信号图</div>
-      <div class="card-sub">红=亏延续 橙=亏转赚 绿=赚延续 黄=赚转亏</div>
-      <canvas id="c-cycle4" style="max-height:240px"></canvas>
-    </div>
-  </div>
-  <div class="chart-grid" style="margin-top:16px;">
-    <div class="card">
-      <div class="card-title"><span class="dot" style="background:var(--cyan)"></span>周期信号累积得分</div>
-      <div class="card-sub">4项差值正负转换,反映整体赚亏效应方向</div>
-      <canvas id="c-score" style="max-height:240px"></canvas>
-    </div>
-    <div class="card">
-      <div class="card-title"><span class="dot" style="background:var(--blue)"></span>六阶段与涨停联动</div>
-      <div class="card-sub">背景色=阶段,折线=涨停/跌停趋势</div>
-      <canvas id="c-stage-ztdt" style="max-height:240px"></canvas>
-    </div>
-  </div>
-</div>
-
-<!-- ══════ Tab: 差值信号 ══════ -->
-<div id="sec-signal" class="section">
-  <div class="chart-grid single" style="margin-bottom:16px;">
-    <div class="card">
-      <div class="card-title"><span class="dot" style="background:var(--green)"></span>4项核心差值信号(近15日)</div>
-      <div class="card-sub">1)隔日竞价绿差(正=亏收敛) 2)隔日竞价红差(正=赚升温) 3)日内红盘扩容(正=赚延续) 4)日内绿盘收敛(正=亏收敛)</div>
-      <canvas id="c-4diff" style="max-height:280px"></canvas>
-    </div>
-  </div>
-  <div class="chart-grid">
-    <div class="card">
-      <div class="card-title"><span class="dot" style="background:var(--red)"></span>亏钱效应:1)隔日竞价绿差+4)日内绿盘收敛</div>
-      <div class="card-sub">双正=亏钱收敛(利好) / 双负=亏钱放大(利空)</div>
-      <canvas id="c-lose"></canvas>
-    </div>
-    <div class="card">
-      <div class="card-title"><span class="dot" style="background:var(--green)"></span>赚钱效应:2)隔日竞价红差+3)日内红盘扩容</div>
-      <div class="card-sub">双正=赚钱延续(利好) / 双负=赚钱消退(利空)</div>
-      <canvas id="c-earn"></canvas>
-    </div>
-  </div>
-</div>
-
-<!-- ══════ Tab: 竞价vs收盘 ══════ -->
-<div id="sec-jgsg" class="section">
-  <div class="chart-grid single" style="margin-bottom:16px;">
-    <div class="card">
-      <div class="card-title"><span class="dot" style="background:var(--green)"></span>竞价绿 vs 收盘绿(日内亏钱效应变化)</div>
-      <div class="card-sub">收盘绿>竞价绿=亏钱放大(日内恶化) / 收盘绿&lt;竞价绿=亏钱收敛(日内修复)</div>
-      <canvas id="c-jg-sg" style="max-height:250px"></canvas>
-    </div>
-  </div>
-  <div class="chart-grid">
-    <div class="card">
-      <div class="card-title"><span class="dot" style="background:var(--red)"></span>竞价红 vs 收盘红(日内赚钱效应变化)</div>
-      <div class="card-sub">收盘红>竞价红=赚钱扩容(日内升温) / 收盘红&lt;竞价红=赚钱兑现(日内降温)</div>
-      <canvas id="c-jr-sr" style="max-height:250px"></canvas>
-    </div>
-    <div class="card">
-      <div class="card-title"><span class="dot" style="background:var(--blue)"></span>竞价差 vs 收盘差(预判与验证)</div>
-      <div class="card-sub">背离=竞价预判失败 / 一致=竞价预判有效</div>
-      <canvas id="c-jd-sd"></canvas>
-    </div>
-  </div>
-</div>
-
-<!-- ══════ Tab: 4项差值趋势 ══════ -->
-<div id="sec-diff" class="section">
-  <div class="chart-grid">
-    <div class="card">
-      <div class="card-title"><span class="dot" style="background:var(--green)"></span>1) 隔日竞价绿盘差值</div>
-      <div class="card-sub">正=亏钱收敛(前日绿>今日绿) / 负=亏钱放大</div>
-      <canvas id="c-d1"></canvas>
-    </div>
-    <div class="card">
-      <div class="card-title"><span class="dot" style="background:var(--red)"></span>2) 隔日竞价红盘差值</div>
-      <div class="card-sub">正=赚钱升温(今日红>前日红) / 负=赚钱降温</div>
-      <canvas id="c-d2"></canvas>
-    </div>
-    <div class="card">
-      <div class="card-title"><span class="dot" style="background:var(--amber)"></span>3) 日内红盘扩容差值</div>
-      <div class="card-sub">正=赚钱延续(收盘红>竞价红) / 负=赚钱兑现</div>
-      <canvas id="c-d3"></canvas>
-    </div>
-    <div class="card">
-      <div class="card-title"><span class="dot" style="background:var(--teal)"></span>4) 日内绿盘收敛差值</div>
-      <div class="card-sub">正=亏钱收敛(竞价绿>收盘绿) / 负=亏钱放大</div>
-      <canvas id="c-d4"></canvas>
-    </div>
-  </div>
-</div>
-
-<!-- ══════ Tab: 综合概览 ══════ -->
-<div id="sec-overview" class="section">
-  <div class="chart-grid single" style="margin-bottom:16px;">
-    <div class="card">
-      <div class="card-title"><span class="dot" style="background:var(--red)"></span>涨停/跌停 综合柱状图</div>
-      <div class="card-sub">红柱=涨停 绿柱=跌停 蓝线=涨家数(右轴)</div>
-      <canvas id="c-overview" style="max-height:280px"></canvas>
-    </div>
-  </div>
-  <div class="chart-grid">
-    <div class="card">
-      <div class="card-title"><span class="dot" style="background:var(--blue)"></span>涨家数全览</div>
-      <div class="card-sub">5000+=极强 / 3000~5000=强 / &lt;1000=弱</div>
-      <canvas id="c-zj"></canvas>
-    </div>
-    <div class="card">
-      <div class="card-title"><span class="dot" style="background:var(--amber)"></span>涨跌比(涨停/跌停)</div>
-      <div class="card-sub">&gt;4=做多区 / 2~4=中性 / &lt;2=谨慎</div>
-      <canvas id="c-ratio"></canvas>
-    </div>
-  </div>
-</div>
-
-<!-- ══════ Tab: 板块高度 ══════ -->
-<div id="sec-height" class="section">
-  <div class="chart-grid">
-    <div class="card">
-      <div class="card-title"><span class="dot" style="background:var(--orange)"></span>现在板高度</div>
-      <div class="card-sub">当日连板最高板数</div>
-      <canvas id="c-board"></canvas>
-    </div>
-    <div class="card">
-      <div class="card-title"><span class="dot" style="background:var(--purple)"></span>高度 vs 实高度</div>
-      <div class="card-sub">理论高度与实际高度偏差</div>
-      <canvas id="c-h-rh"></canvas>
-    </div>
-  </div>
-</div>
-
-<!-- ══════ Tab: 信号明细表 ══════ -->
-<div id="sec-rawdata" class="section">
-  <div class="card">
-    <div class="card-title">差值信号明细表 - 55个交易日(最新在底部)</div>
-    <div class="card-sub"><span class="pos">绿色正数=利好信号</span> / <span class="neg">红色负数=利空信号</span> / 4项信号->周期判定->6阶段->温度</div>
-    <div style="max-height:500px;overflow-y:auto;border-radius:8px;border:1px solid var(--border);">
-      <table class="signal-table">
-        <thead><tr>
-          <th>日期</th><th>涨停</th><th>跌停</th><th>涨家</th><th>涨跌比</th>
-          <th>竞绿</th><th>竞红</th><th>收绿</th><th>收红</th>
-          <th>1)隔日绿差</th><th>2)隔日红差</th><th>3)日内红扩</th><th>4)日内绿收</th>
-          <th>七周期</th><th>六阶段</th><th>温度°</th>
-        </tr></thead>
-        <tbody id="raw-tbody"></tbody>
-      </table>
-    </div>
-  </div>
-</div>
-
-</div>
-
-<div class="rules-box">
-  <h3>铁血纪律红线(触发任何一条立即停止交易)</h3>
-  <ol>
-    <li><strong>亏钱效应延续周期</strong>,绝对不开新仓,只卖不买</li>
-
-  </ol>
-</div>
-
-<div class="rules-box">
-  <h3>注意:本网页适用市场位置在市场超短周期</h3>
-  <ol>
-    <li><strong>亏钱效应延续周期</strong>,绝对不开新仓,只卖不买</li>
-
-  </ol>
-</div>
-
-<div class="updated">生成时间:2026-05-15 16:24:39 / 数据源:{{}} / 心法:情绪为道 主线为法 抢筹为术 助攻为器</div>
 
 <script>
-const DATES=["02/24", "02/25", "02/26", "02/27", "03/02", "03/03", "03/04", "03/05", "03/06", "03/09", "03/10", "03/11", "03/12", "03/13", "03/16", "03/17", "03/18", "03/19", "03/20", "03/23", "03/24", "03/25", "03/26", "03/27", "03/30", "03/31", "04/01", "04/02", "04/03", "04/07", "04/08", "04/09", "04/10", "04/13", "04/14", "04/15", "04/16", "04/17", "04/20", "04/21", "04/22", "04/23", "04/24", "04/27", "04/28", "04/29", "04/30", "05/06", "05/07", "05/08", "05/11", "05/12", "05/13", "05/14", "05/15"];
-const DATES_FULL=["2026-02-24", "2026-02-25", "2026-02-26", "2026-02-27", "2026-03-02", "2026-03-03", "2026-03-04", "2026-03-05", "2026-03-06", "2026-03-09", "2026-03-10", "2026-03-11", "2026-03-12", "2026-03-13", "2026-03-16", "2026-03-17", "2026-03-18", "2026-03-19", "2026-03-20", "2026-03-23", "2026-03-24", "2026-03-25", "2026-03-26", "2026-03-27", "2026-03-30", "2026-03-31", "2026-04-01", "2026-04-02", "2026-04-03", "2026-04-07", "2026-04-08", "2026-04-09", "2026-04-10", "2026-04-13", "2026-04-14", "2026-04-15", "2026-04-16", "2026-04-17", "2026-04-20", "2026-04-21", "2026-04-22", "2026-04-23", "2026-04-24", "2026-04-27", "2026-04-28", "2026-04-29", "2026-04-30", "2026-05-06", "2026-05-07", "2026-05-08", "2026-05-11", "2026-05-12", "2026-05-13", "2026-05-14", "2026-05-15"];
-const ZT=[92, 75, 78, 91, 94, 85, 46, 79, 88, 42, 56, 53, 52, 68, 60, 52, 57, 28, 28, 28, 100, 84, 51, 93, 76, 53, 56, 32, 38, 101, 135, 61, 77, 86, 71, 57, 79, 76, 75, 65, 55, 50, 68, 84, 76, 119, 98, 125, 127, 125, 135, 94, 147, 80, 72],DT=[15, 5, 5, 1, 21, 82, 21, 7, 5, 9, 7, 2, 6, 22, 10, 15, 14, 14, 23, 133, 8, 4, 13, 5, 16, 17, 14, 16, 41, 18, 12, 13, 12, 10, 10, 14, 9, 7, 17, 19, 15, 30, 37, 52, 54, 39, 52, 63, 54, 33, 27, 32, 17, 44, 44],ZJ=[4000, 3748, 2485, 3185, 1112, 553, 1640, 3899, 4093, 1384, 4328, 1939, 1494, 1502, 2757, 867, 3456, 497, 625, 293, 5136, 4649, 916, 4184, 2817, 915, 4261, 1052, 716, 3977, 4915, 1140, 3977, 2378, 3723, 1712, 4092, 2396, 3211, 1949, 2671, 1312, 2001, 3191, 1680, 3761, 2687, 3662, 3260, 3391, 3045, 1288, 3052, 1017, 1712],ZTDT=[6.13, 15.0, 15.6, 91.0, 4.48, 1.04, 2.19, 11.29, 17.6, 4.67, 8.0, 26.5, 8.67, 3.09, 6.0, 3.47, 4.07, 2.0, 1.22, 0.21, 12.5, 21.0, 3.92, 18.6, 4.75, 3.12, 4.0, 2.0, 0.93, 5.61, 11.25, 4.69, 6.42, 8.6, 7.1, 4.07, 8.78, 10.86, 4.41, 3.42, 3.67, 1.67, 1.84, 1.62, 1.41, 3.05, 1.88, 1.98, 2.35, 3.79, 5.0, 2.94, 8.65, 1.82, 1.64];
-const JG=[36, 35, 34, 37, 27, 42, 37, 40, 45, 52, 70, 30, 21, 33, 33, 34, 28, 38, 74, 53, 29, 23, 28, 36, 42, 41, 23, 14, 22, 7, 25, 30, 20, 34, 15, 14, 28, 12, 21, 35, 35, 32, 41, 55, 27, 32, 18, 0, 14, 38, 9, 20, 31, 40, 50],JH=[51, 43, 36, 54, 64, 58, 54, 46, 25, 80, 38, 51, 36, 29, 32, 15, 41, 68, 26, 25, 33, 45, 39, 56, 46, 17, 32, 35, 27, 43, 49, 29, 50, 30, 41, 51, 32, 28, 39, 52, 52, 29, 18, 27, 14, 18, 41, 60, 49, 32, 92, 65, 22, 54, 33],JD=[-15, -8, -2, -17, -37, -16, -17, -6, 20, -28, 32, -21, -15, 4, 1, 19, -13, -30, 48, 28, -4, -22, -11, -20, -4, 24, -9, -21, -5, -36, -24, 1, -30, 4, -26, -37, -4, -16, -18, -17, -17, 3, 23, 28, 13, 14, -23, -60, -35, 6, -83, -45, 9, -14, 17];
-const SG=[72, 49, 48, 35, 48, 65, 83, 50, 39, 41, 54, 29, 52, 100, 52, 58, 57, 74, 101, 80, 33, 23, 78, 76, 83, 80, 69, 51, 76, 6, 9, 50, 75, 25, 20, 49, 46, 47, 34, 62, 62, 29, 77, 78, 37, 33, 57, 2, 25, 41, 23, 44, 41, 98, 67],SH=[105, 61, 76, 80, 82, 89, 55, 70, 93, 63, 66, 80, 77, 48, 77, 100, 77, 72, 35, 35, 96, 70, 80, 61, 42, 48, 60, 64, 14, 105, 63, 43, 62, 93, 73, 90, 54, 43, 98, 60, 60, 79, 58, 61, 88, 64, 79, 110, 99, 77, 101, 100, 108, 32, 72],SD=[-33, -12, -28, -45, -34, -24, 28, -20, -54, -22, -12, -51, -25, 52, -25, -42, -20, 2, 66, 45, -63, -47, -2, 15, 41, 32, 9, -13, 62, -99, -54, 7, 13, -68, -53, -41, -8, 4, -64, 2, 2, -50, 19, 17, -51, -31, -22, -108, -74, -36, -78, -56, -67, 66, -5];
-const GD=[null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 6.0, 7.0, null, 7.0, 7.0, 7.0, null, null, null, null, null, 5.0, null, 4.0, 5.0, 4.0, 5.0, 5.0, 6.0, 7.0, 6.0],SGD=[null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 6.0, 6.0, 6.0, 7.0, 6.0, 4.0, 6.5, null, null, null, null, 5.5, null, null, 5.0, 4.0, 5.0, 5.5, 6.0, 5.0, 6.0],BK=[null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 6.0, null, 6.0, 7.0, 6.0, 4.0, 4.0, 4.0, 5.0, null, null, 3.0, 4.0, 4.0, 5.0, 4.0, 5.0, 5.0, 6.0, 5.0, 6.0],GB=[null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 34.0, 35.0, 35.0, 32.0, 32.0, 33.0, 33.0, 33.0, 33.0];
-const DIFF1=[null, 1, 1, -3, 10, -15, 5, -3, -5, -7, -18, 40, 9, -12, 0, -1, 6, -10, -36, 21, 24, 6, -5, -8, -6, 1, 18, 9, -8, 15, -18, -5, 10, -14, 19, 1, -14, 16, -9, -14, 0, 3, -9, -14, 28, -5, 14, 18, -14, -24, 29, -11, -11, -9, -10],DIFF2=[null, -8, -7, 18, 10, -6, -4, -8, -21, 55, -42, 13, -15, -7, 3, -17, 26, 27, -42, -1, 8, 12, -6, 17, -10, -29, 15, 3, -8, 16, 6, -20, 21, -20, 11, 10, -19, -4, 11, 13, 0, -23, -11, 9, -13, 4, 23, 19, -11, -17, 60, -27, -43, 32, -21],DIFF3=[54, 18, 40, 26, 18, 31, 1, 24, 68, -17, 28, 29, 41, 19, 45, 85, 36, 4, 9, 10, 63, 25, 41, 5, -4, 31, 28, 29, -13, 62, 14, 14, 12, 63, 32, 39, 22, 15, 59, 8, 8, 50, 40, 34, 74, 46, 38, 50, 50, 45, 9, 35, 86, -22, 39],DIFF4=[-36, -14, -14, 2, -21, -23, -46, -10, 6, 11, 16, 1, -31, -67, -19, -24, -29, -36, -27, -27, -4, 0, -50, -40, -41, -39, -46, -37, -54, 1, 16, -20, -55, 9, -5, -35, -18, -35, -13, -27, -27, 3, -36, -23, -10, -1, -39, -2, -11, -3, -14, -24, -10, -58, -17];
-const CYCLE_CODES=[-1, 3, 3, 2, 2, 0, 3, 0, 3, 3, 3, 2, 3, 0, 0, 0, 2, 0, 0, 3, 2, 2, 0, 0, 0, 3, 2, 2, 0, 2, 2, 0, 2, 3, 2, 2, 0, 3, 0, 0, 0, 2, 0, 0, 3, 0, 2, 2, 0, 0, 2, 0, 0, 0, 0];
-const STAGE_CODES=[5, 4, 4, 5, 4, 0, 1, 4, 5, 3, 4, 4, 3, 1, 3, 0, 4, 0, 0, 0, 5, 5, 0, 5, 3, 1, 4, 2, 0, 5, 5, 2, 5, 4, 5, 3, 5, 5, 4, 2, 2, 2, 1, 2, 0, 3, 3, 4, 3, 3, 5, 2, 5, 2, 1];
-const CYCLES=["数据不足", "震荡分歧", "震荡分歧", "赚钱效应[ 升温 ]", "赚钱效应[ 延续 ]", "亏钱效应[ 扩散 ]", "震荡分歧", "亏钱效应[ 扩散 ]", "震荡分歧", "震荡分歧", "震荡分歧", "赚钱效应[ 升温 ]", "震荡分歧", "亏钱效应[ 扩散 ]", "亏钱效应[ 延续 ]", "亏钱效应[ 延续 ]", "赚钱效应[ 升温 ]", "亏钱效应[ 扩散 ]", "亏钱效应[ 延续 ]", "震荡分歧", "赚钱效应[ 升温 ]", "赚钱效应[ 延续 ]", "亏钱效应[ 扩散 ]", "亏钱效应[ 延续 ]", "亏钱效应[ 延续 ]", "震荡分歧", "赚钱效应[ 升温 ]", "赚钱效应[ 延续 ]", "亏钱效应[ 扩散 ]", "赚钱效应[ 升温 ]", "赚钱效应[ 延续 ]", "亏钱效应[ 扩散 ]", "赚钱效应[ 升温 ]", "震荡分歧", "赚钱效应[ 升温 ]", "赚钱效应[ 延续 ]", "亏钱效应[ 扩散 ]", "震荡分歧", "亏钱效应[ 扩散 ]", "亏钱效应[ 延续 ]", "亏钱效应[ 延续 ]", "偏赚钱", "亏钱效应[ 扩散 ]", "亏钱效应[ 延续 ]", "震荡分歧", "亏钱效应[ 扩散 ]", "赚钱效应[ 延续 ]", "赚钱效应[ 延续 ]", "亏钱效应[ 扩散 ]", "亏钱效应[ 延续 ]", "赚钱效应[ 升温 ]", "亏钱效应[ 扩散 ]", "亏钱效应[ 延续 ]", "亏钱效应[ 延续 ]", "亏钱效应[ 延续 ]"];
-const STAGES=["高潮期", "发酵期", "发酵期", "高潮期", "发酵期", "冰点期", "退潮期", "发酵期", "高潮期", "启动期", "发酵期", "发酵期", "启动期", "退潮期", "启动期", "冰点期", "发酵期", "冰点期", "冰点期", "冰点期", "高潮期", "高潮期", "冰点期", "高潮期", "启动期", "退潮期", "发酵期", "分歧期", "冰点期", "高潮期", "高潮期", "分歧期", "高潮期", "发酵期", "高潮期", "启动期", "高潮期", "高潮期", "发酵期", "分歧期", "分歧期", "分歧期", "退潮期", "分歧期", "冰点期", "启动期", "启动期", "发酵期", "启动期", "启动期", "高潮期", "分歧期", "高潮期", "分歧期", "退潮期"];
-const TEMPS=[49.7, 48.8, 48.1, 59.0, 57.2, 37.8, 32.2, 52.9, 42.9, 44.6, 36.5, 61.4, 50.3, 26.2, 44.1, 33.7, 46.7, 41.7, 4.0, 5.4, 59.7, 67.3, 39.4, 50.8, 28.5, 15.9, 43.8, 37.9, 19.4, 65.0, 68.7, 38.7, 52.6, 51.0, 66.1, 53.8, 55.9, 56.4, 57.6, 41.6, 43.7, 39.1, 22.2, 21.2, 39.8, 39.7, 46.0, 78.7, 61.6, 42.7, 74.2, 63.1, 51.2, 31.2, 27.7];
-const TEMP_LABELS=["温凉", "温凉", "温凉", "温热", "温热", "温凉", "偏冷", "温热", "温凉", "温凉", "温凉", "温热", "温热", "偏冷", "温凉", "偏冷", "温凉", "温凉", "极冷❄️", "极冷❄️", "温热", "偏热", "温凉", "温热", "偏冷", "极冷❄️", "温凉", "温凉", "极冷❄️", "偏热", "偏热", "温凉", "温热", "温热", "偏热", "温热", "温热", "温热", "温热", "温凉", "温凉", "温凉", "偏冷", "偏冷", "温凉", "温凉", "温凉", "偏热", "温热", "温凉", "偏热", "温热", "温热", "偏冷", "偏冷"];
-const TEMP_COLORS=["#58a6ff", "#58a6ff", "#58a6ff", "#d29922", "#d29922", "#58a6ff", "#3fb950", "#d29922", "#58a6ff", "#58a6ff", "#58a6ff", "#d29922", "#d29922", "#3fb950", "#58a6ff", "#3fb950", "#58a6ff", "#58a6ff", "#56d4dd", "#56d4dd", "#d29922", "#e3b341", "#58a6ff", "#d29922", "#3fb950", "#56d4dd", "#58a6ff", "#58a6ff", "#56d4dd", "#e3b341", "#e3b341", "#58a6ff", "#d29922", "#d29922", "#e3b341", "#d29922", "#d29922", "#d29922", "#d29922", "#58a6ff", "#58a6ff", "#58a6ff", "#3fb950", "#3fb950", "#58a6ff", "#58a6ff", "#58a6ff", "#e3b341", "#d29922", "#58a6ff", "#e3b341", "#d29922", "#d29922", "#3fb950", "#3fb950"];
+const DATA = [{"日期": "02-24", "日期全": "2026-02-24", "竞价原始": "36/51", "收盘原始": "72/105", "竞绿": 36, "竞红": 51, "收绿": 72, "收红": 105, "竞红占比": 0.586, "收红占比": 0.593, "竞价强弱": "强", "竞价趋势": "—", "收盘强弱": "强", "收盘趋势": "—", "涨家数": 4000, "涨停数": 92, "跌停数": 15, "高度": "", "实高度": "", "现在板": "", "复盘": "影视跌，风格切换", "事件": "", "分_收盘": 21, "分_竞价": 14, "分_连板": 8, "分_涨跌": 15, "分_事件": 4, "分_额外": 0, "总分": 62, "情绪": "发酵/回暖", "情绪色": "#dd6b20", "盘中趋势": "持平", "两天力度": "—", "力度样式": "force-flat", "赚亏": "—", "赚亏样式": "pl-cont"}, {"日期": "02-25", "日期全": "2026-02-25", "竞价原始": "35/43", "收盘原始": "49/61", "竞绿": 35, "竞红": 43, "收绿": 49, "收红": 61, "竞红占比": 0.551, "收红占比": 0.555, "竞价强弱": "强", "竞价趋势": "持平", "收盘强弱": "强", "收盘趋势": "持平", "涨家数": 3748, "涨停数": 75, "跌停数": 5, "高度": "", "实高度": "", "现在板": "", "复盘": "普涨分化加速", "事件": "", "分_收盘": 19, "分_竞价": 12, "分_连板": 8, "分_涨跌": 13, "分_事件": 6, "分_额外": 0, "总分": 58, "情绪": "中性", "情绪色": "#718096", "盘中趋势": "持平", "两天力度": "弱转弱", "力度样式": "force-down-w", "赚亏": "延续", "赚亏样式": "pl-cont"}, {"日期": "02-26", "日期全": "2026-02-26", "竞价原始": "34/36", "收盘原始": "48/76", "竞绿": 34, "竞红": 36, "收绿": 48, "收红": 76, "竞红占比": 0.514, "收红占比": 0.613, "竞价强弱": "中性", "竞价趋势": "持平", "收盘强弱": "强", "收盘趋势": "情绪回暖↑", "涨家数": 2485, "涨停数": 78, "跌停数": 5, "高度": "", "实高度": "", "现在板": "", "复盘": "豫能打开高度", "事件": "", "分_收盘": 23, "分_竞价": 10, "分_连板": 8, "分_涨跌": 11, "分_事件": 5, "分_额外": 0, "总分": 57, "情绪": "中性", "情绪色": "#718096", "盘中趋势": "回暖↑", "两天力度": "弱回暖", "力度样式": "force-weak", "赚亏": "延续", "赚亏样式": "pl-cont"}, {"日期": "02-27", "日期全": "2026-02-27", "竞价原始": "37/54", "收盘原始": "35/80", "竞绿": 37, "竞红": 54, "收绿": 35, "收红": 80, "竞红占比": 0.593, "收红占比": 0.696, "竞价强弱": "强", "竞价趋势": "情绪回暖↑", "收盘强弱": "强", "收盘趋势": "情绪回暖↑", "涨家数": 3185, "涨停数": 91, "跌停数": 1, "高度": "", "实高度": "", "现在板": "", "复盘": "", "事件": "", "分_收盘": 29, "分_竞价": 14, "分_连板": 8, "分_涨跌": 13, "分_事件": 5, "分_额外": 0, "总分": 69, "情绪": "发酵/回暖", "情绪色": "#dd6b20", "盘中趋势": "回暖↑", "两天力度": "中回暖", "力度样式": "force-mid", "赚亏": "强化", "赚亏样式": "pl-strong"}, {"日期": "03-02", "日期全": "2026-03-02", "竞价原始": "27/64", "收盘原始": "48/82", "竞绿": 27, "竞红": 64, "收绿": 48, "收红": 82, "竞红占比": 0.703, "收红占比": 0.631, "竞价强弱": "强", "竞价趋势": "情绪回暖↑", "收盘强弱": "强", "收盘趋势": "持平", "涨家数": 1112, "涨停数": 94, "跌停数": 21, "高度": "", "实高度": "", "现在板": "", "复盘": "", "事件": "", "分_收盘": 24, "分_竞价": 20, "分_连板": 8, "分_涨跌": 5, "分_事件": 5, "分_额外": 0, "总分": 62, "情绪": "发酵/回暖", "情绪色": "#dd6b20", "盘中趋势": "转弱↓", "两天力度": "中转弱", "力度样式": "force-down-m", "赚亏": "延续", "赚亏样式": "pl-cont"}, {"日期": "03-03", "日期全": "2026-03-03", "竞价原始": "42/58", "收盘原始": "65/89", "竞绿": 42, "竞红": 58, "收绿": 65, "收红": 89, "竞红占比": 0.58, "收红占比": 0.578, "竞价强弱": "强", "竞价趋势": "持平", "收盘强弱": "强", "收盘趋势": "持平", "涨家数": 553, "涨停数": 85, "跌停数": 82, "高度": "", "实高度": "", "现在板": "", "复盘": "", "事件": "", "分_收盘": 20, "分_竞价": 14, "分_连板": 8, "分_涨跌": 3, "分_事件": 5, "分_额外": 0, "总分": 50, "情绪": "中性", "情绪色": "#718096", "盘中趋势": "持平", "两天力度": "中转弱", "力度样式": "force-down-m", "赚亏": "反转", "赚亏样式": "pl-reverse"}, {"日期": "03-04", "日期全": "2026-03-04", "竞价原始": "37/54", "收盘原始": "83/55", "竞绿": 37, "竞红": 54, "收绿": 83, "收红": 55, "竞红占比": 0.593, "收红占比": 0.399, "竞价强弱": "强", "竞价趋势": "情绪回暖↑", "收盘强弱": "弱", "收盘趋势": "情绪转弱↓", "涨家数": 1640, "涨停数": 46, "跌停数": 21, "高度": "", "实高度": "", "现在板": "", "复盘": "", "事件": "", "分_收盘": 7, "分_竞价": 14, "分_连板": 8, "分_涨跌": 7, "分_事件": 5, "分_额外": 0, "总分": 41, "情绪": "分歧/降温", "情绪色": "#38a169", "盘中趋势": "转弱↓", "两天力度": "中转弱", "力度样式": "force-down-m", "赚亏": "延续", "赚亏样式": "pl-cont"}, {"日期": "03-05", "日期全": "2026-03-05", "竞价原始": "40/46", "收盘原始": "50/70", "竞绿": 40, "竞红": 46, "收绿": 50, "收红": 70, "竞红占比": 0.535, "收红占比": 0.583, "竞价强弱": "中性", "竞价趋势": "持平", "收盘强弱": "强", "收盘趋势": "情绪回暖↑", "涨家数": 3899, "涨停数": 79, "跌停数": 7, "高度": "", "实高度": "", "现在板": "", "复盘": "", "事件": "", "分_收盘": 21, "分_竞价": 11, "分_连板": 8, "分_涨跌": 13, "分_事件": 5, "分_额外": 0, "总分": 58, "情绪": "中性", "情绪色": "#718096", "盘中趋势": "持平", "两天力度": "强回暖", "力度样式": "force-strong", "赚亏": "强化", "赚亏样式": "pl-strong"}, {"日期": "03-06", "日期全": "2026-03-06", "竞价原始": "45/25", "收盘原始": "39/93", "竞绿": 45, "竞红": 25, "收绿": 39, "收红": 93, "竞红占比": 0.357, "收红占比": 0.705, "竞价强弱": "弱", "竞价趋势": "情绪转弱↓", "收盘强弱": "强", "收盘趋势": "情绪回暖↑", "涨家数": 4093, "涨停数": 88, "跌停数": 5, "高度": "", "实高度": "", "现在板": "", "复盘": "周五", "事件": "", "分_收盘": 30, "分_竞价": 2, "分_连板": 8, "分_涨跌": 15, "分_事件": 5, "分_额外": 0, "总分": 60, "情绪": "发酵/回暖", "情绪色": "#dd6b20", "盘中趋势": "回暖↑", "两天力度": "中回暖", "力度样式": "force-mid", "赚亏": "延续", "赚亏样式": "pl-cont"}, {"日期": "03-09", "日期全": "2026-03-09", "竞价原始": "52/80", "收盘原始": "41/63", "竞绿": 52, "竞红": 80, "收绿": 41, "收红": 63, "竞红占比": 0.606, "收红占比": 0.606, "竞价强弱": "强", "竞价趋势": "情绪回暖↑", "收盘强弱": "强", "收盘趋势": "持平", "涨家数": 1384, "涨停数": 42, "跌停数": 9, "高度": "", "实高度": "", "现在板": "", "复盘": "星期一", "事件": "", "分_收盘": 22, "分_竞价": 15, "分_连板": 8, "分_涨跌": 5, "分_事件": 5, "分_额外": 0, "总分": 55, "情绪": "中性", "情绪色": "#718096", "盘中趋势": "持平", "两天力度": "中转弱", "力度样式": "force-down-m", "赚亏": "延续", "赚亏样式": "pl-cont"}, {"日期": "03-10", "日期全": "2026-03-10", "竞价原始": "70/38", "收盘原始": "54/66", "竞绿": 70, "竞红": 38, "收绿": 54, "收红": 66, "竞红占比": 0.352, "收红占比": 0.55, "竞价强弱": "弱", "竞价趋势": "情绪转弱↓", "收盘强弱": "强", "收盘趋势": "持平", "涨家数": 4328, "涨停数": 56, "跌停数": 7, "高度": "", "实高度": "", "现在板": "", "复盘": "星期二", "事件": "", "分_收盘": 18, "分_竞价": 2, "分_连板": 8, "分_涨跌": 15, "分_事件": 5, "分_额外": 0, "总分": 48, "情绪": "分歧/降温", "情绪色": "#38a169", "盘中趋势": "回暖↑", "两天力度": "中转弱", "力度样式": "force-down-m", "赚亏": "延续", "赚亏样式": "pl-cont"}, {"日期": "03-11", "日期全": "2026-03-11", "竞价原始": "30/51", "收盘原始": "29/80", "竞绿": 30, "竞红": 51, "收绿": 29, "收红": 80, "竞红占比": 0.63, "收红占比": 0.734, "竞价强弱": "强", "竞价趋势": "情绪回暖↑", "收盘强弱": "强", "收盘趋势": "情绪回暖↑", "涨家数": 1939, "涨停数": 53, "跌停数": 2, "高度": "", "实高度": "", "现在板": "", "复盘": "星期三", "事件": "", "分_收盘": 30, "分_竞价": 16, "分_连板": 8, "分_涨跌": 9, "分_事件": 5, "分_额外": 0, "总分": 68, "情绪": "发酵/回暖", "情绪色": "#dd6b20", "盘中趋势": "回暖↑", "两天力度": "强回暖", "力度样式": "force-strong", "赚亏": "强化", "赚亏样式": "pl-strong"}, {"日期": "03-12", "日期全": "2026-03-12", "竞价原始": "21/36", "收盘原始": "52/77", "竞绿": 21, "竞红": 36, "收绿": 52, "收红": 77, "竞红占比": 0.632, "收红占比": 0.597, "竞价强弱": "强", "竞价趋势": "持平", "收盘强弱": "强", "收盘趋势": "持平", "涨家数": 1494, "涨停数": 52, "跌停数": 6, "高度": "", "实高度": "", "现在板": "", "复盘": "周四", "事件": "", "分_收盘": 22, "分_竞价": 16, "分_连板": 8, "分_涨跌": 6, "分_事件": 5, "分_额外": 0, "总分": 57, "情绪": "中性", "情绪色": "#718096", "盘中趋势": "持平", "两天力度": "强转弱", "力度样式": "force-down-s", "赚亏": "反转", "赚亏样式": "pl-reverse"}, {"日期": "03-13", "日期全": "2026-03-13", "竞价原始": "33/29", "收盘原始": "100/48", "竞绿": 33, "竞红": 29, "收绿": 100, "收红": 48, "竞红占比": 0.468, "收红占比": 0.324, "竞价强弱": "中性", "竞价趋势": "情绪转弱↓", "收盘强弱": "弱", "收盘趋势": "情绪转弱↓", "涨家数": 1502, "涨停数": 68, "跌停数": 22, "高度": "", "实高度": "", "现在板": "", "复盘": "周五", "事件": "", "分_收盘": 1, "分_竞价": 8, "分_连板": 8, "分_涨跌": 8, "分_事件": 5, "分_额外": 0, "总分": 30, "情绪": "冰点/退潮", "情绪色": "#2b6cb0", "盘中趋势": "转弱↓", "两天力度": "强转弱", "力度样式": "force-down-s", "赚亏": "冰点", "赚亏样式": "pl-freeze"}, {"日期": "03-16", "日期全": "2026-03-16", "竞价原始": "33/32", "收盘原始": "52/77", "竞绿": 33, "竞红": 32, "收绿": 52, "收红": 77, "竞红占比": 0.492, "收红占比": 0.597, "竞价强弱": "中性", "竞价趋势": "持平", "收盘强弱": "强", "收盘趋势": "情绪回暖↑", "涨家数": 2757, "涨停数": 60, "跌停数": 10, "高度": "", "实高度": "", "现在板": "", "复盘": "周一", "事件": "", "分_收盘": 22, "分_竞价": 9, "分_连板": 8, "分_涨跌": 11, "分_事件": 5, "分_额外": 0, "总分": 55, "情绪": "中性", "情绪色": "#718096", "盘中趋势": "回暖↑", "两天力度": "强回暖", "力度样式": "force-strong", "赚亏": "强化", "赚亏样式": "pl-strong"}, {"日期": "03-17", "日期全": "2026-03-17", "竞价原始": "34/15", "收盘原始": "58/100", "竞绿": 34, "竞红": 15, "收绿": 58, "收红": 100, "竞红占比": 0.306, "收红占比": 0.633, "竞价强弱": "弱", "竞价趋势": "情绪转弱↓", "收盘强弱": "强", "收盘趋势": "情绪回暖↑", "涨家数": 867, "涨停数": 52, "跌停数": 15, "高度": "", "实高度": "", "现在板": "", "复盘": "周二", "事件": "", "分_收盘": 24, "分_竞价": 0, "分_连板": 8, "分_涨跌": 6, "分_事件": 5, "分_额外": 0, "总分": 43, "情绪": "分歧/降温", "情绪色": "#38a169", "盘中趋势": "回暖↑", "两天力度": "弱回暖", "力度样式": "force-weak", "赚亏": "反转", "赚亏样式": "pl-reverse"}, {"日期": "03-18", "日期全": "2026-03-18", "竞价原始": "28/41", "收盘原始": "57/77", "竞绿": 28, "竞红": 41, "收绿": 57, "收红": 77, "竞红占比": 0.594, "收红占比": 0.575, "竞价强弱": "强", "竞价趋势": "情绪回暖↑", "收盘强弱": "强", "收盘趋势": "持平", "涨家数": 3456, "涨停数": 57, "跌停数": 14, "高度": "", "实高度": "", "现在板": "", "复盘": "周三", "事件": "", "分_收盘": 20, "分_竞价": 14, "分_连板": 8, "分_涨跌": 13, "分_事件": 5, "分_额外": 0, "总分": 60, "情绪": "发酵/回暖", "情绪色": "#dd6b20", "盘中趋势": "持平", "两天力度": "弱转弱", "力度样式": "force-down-w", "赚亏": "强化", "赚亏样式": "pl-strong"}, {"日期": "03-19", "日期全": "2026-03-19", "竞价原始": "38/68", "收盘原始": "74/72", "竞绿": 38, "竞红": 68, "收绿": 74, "收红": 72, "竞红占比": 0.642, "收红占比": 0.493, "竞价强弱": "强", "竞价趋势": "情绪回暖↑", "收盘强弱": "中性", "收盘趋势": "情绪转弱↓", "涨家数": 497, "涨停数": 28, "跌停数": 14, "高度": "", "实高度": "", "现在板": "", "复盘": "周四", "事件": "", "分_收盘": 14, "分_竞价": 17, "分_连板": 8, "分_涨跌": 5, "分_事件": 5, "分_额外": 0, "总分": 49, "情绪": "分歧/降温", "情绪色": "#38a169", "盘中趋势": "转弱↓", "两天力度": "中转弱", "力度样式": "force-down-m", "赚亏": "反转", "赚亏样式": "pl-reverse"}, {"日期": "03-20", "日期全": "2026-03-20", "竞价原始": "74/26", "收盘原始": "101/35", "竞绿": 74, "竞红": 26, "收绿": 101, "收红": 35, "竞红占比": 0.26, "收红占比": 0.257, "竞价强弱": "弱", "竞价趋势": "情绪转弱↓", "收盘强弱": "弱", "收盘趋势": "情绪转弱↓", "涨家数": 625, "涨停数": 28, "跌停数": 23, "高度": "", "实高度": "", "现在板": "", "复盘": "周五", "事件": "", "分_收盘": 0, "分_竞价": 0, "分_连板": 8, "分_涨跌": 4, "分_事件": 5, "分_额外": 0, "总分": 17, "情绪": "冰点/退潮", "情绪色": "#2b6cb0", "盘中趋势": "持平", "两天力度": "强转弱", "力度样式": "force-down-s", "赚亏": "冰点", "赚亏样式": "pl-freeze"}, {"日期": "03-23", "日期全": "2026-03-23", "竞价原始": "53/25", "收盘原始": "80/35", "竞绿": 53, "竞红": 25, "收绿": 80, "收红": 35, "竞红占比": 0.321, "收红占比": 0.304, "竞价强弱": "弱", "竞价趋势": "持平", "收盘强弱": "弱", "收盘趋势": "持平", "涨家数": 293, "涨停数": 28, "跌停数": 133, "高度": "", "实高度": "", "现在板": "", "复盘": "周一", "事件": "", "分_收盘": 0, "分_竞价": 1, "分_连板": 8, "分_涨跌": 2, "分_事件": 5, "分_额外": 0, "总分": 16, "情绪": "冰点/退潮", "情绪色": "#2b6cb0", "盘中趋势": "持平", "两天力度": "弱回暖", "力度样式": "force-weak", "赚亏": "冰点", "赚亏样式": "pl-freeze"}, {"日期": "03-24", "日期全": "2026-03-24", "竞价原始": "29/33", "收盘原始": "33/96", "竞绿": 29, "竞红": 33, "收绿": 33, "收红": 96, "竞红占比": 0.532, "收红占比": 0.744, "竞价强弱": "中性", "竞价趋势": "情绪回暖↑", "收盘强弱": "强", "收盘趋势": "情绪回暖↑", "涨家数": 5136, "涨停数": 100, "跌停数": 8, "高度": "", "实高度": "", "现在板": "", "复盘": "周二", "事件": "", "分_收盘": 30, "分_竞价": 11, "分_连板": 8, "分_涨跌": 15, "分_事件": 5, "分_额外": 0, "总分": 69, "情绪": "发酵/回暖", "情绪色": "#dd6b20", "盘中趋势": "回暖↑", "两天力度": "强回暖", "力度样式": "force-strong", "赚亏": "强化", "赚亏样式": "pl-strong"}, {"日期": "03-25", "日期全": "2026-03-25", "竞价原始": "23/45", "收盘原始": "23/70", "竞绿": 23, "竞红": 45, "收绿": 23, "收红": 70, "竞红占比": 0.662, "收红占比": 0.753, "竞价强弱": "强", "竞价趋势": "情绪回暖↑", "收盘强弱": "强", "收盘趋势": "持平", "涨家数": 4649, "涨停数": 84, "跌停数": 4, "高度": "", "实高度": "", "现在板": "", "复盘": "三", "事件": "", "分_收盘": 30, "分_竞价": 18, "分_连板": 8, "分_涨跌": 15, "分_事件": 5, "分_额外": 0, "总分": 76, "情绪": "高潮/强势", "情绪色": "#e53e3e", "盘中趋势": "回暖↑", "两天力度": "弱回暖", "力度样式": "force-weak", "赚亏": "高潮", "赚亏样式": "pl-high"}, {"日期": "03-26", "日期全": "2026-03-26", "竞价原始": "28/39", "收盘原始": "78/80", "竞绿": 28, "竞红": 39, "收绿": 78, "收红": 80, "竞红占比": 0.582, "收红占比": 0.506, "竞价强弱": "强", "竞价趋势": "持平", "收盘强弱": "中性", "收盘趋势": "持平", "涨家数": 916, "涨停数": 51, "跌停数": 13, "高度": "", "实高度": "", "现在板": "", "复盘": "四", "事件": "", "分_收盘": 15, "分_竞价": 14, "分_连板": 8, "分_涨跌": 6, "分_事件": 5, "分_额外": 0, "总分": 48, "情绪": "分歧/降温", "情绪色": "#38a169", "盘中趋势": "转弱↓", "两天力度": "强转弱", "力度样式": "force-down-s", "赚亏": "反转", "赚亏样式": "pl-reverse"}, {"日期": "03-27", "日期全": "2026-03-27", "竞价原始": "36/56？", "收盘原始": "76/61？", "竞绿": 36, "竞红": 56, "收绿": 76, "收红": 61, "竞红占比": 0.609, "收红占比": 0.445, "竞价强弱": "强", "竞价趋势": "情绪回暖↑", "收盘强弱": "中性", "收盘趋势": "情绪转弱↓", "涨家数": 4184, "涨停数": 93, "跌停数": 5, "高度": "", "实高度": "", "现在板": "", "复盘": "五", "事件": "", "分_收盘": 10, "分_竞价": 15, "分_连板": 8, "分_涨跌": 15, "分_事件": 5, "分_额外": 0, "总分": 53, "情绪": "中性", "情绪色": "#718096", "盘中趋势": "转弱↓", "两天力度": "弱转弱", "力度样式": "force-down-w", "赚亏": "回暖", "赚亏样式": "pl-warm"}, {"日期": "03-30", "日期全": "2026-03-30", "竞价原始": "42/46", "收盘原始": "83/42", "竞绿": 42, "竞红": 46, "收绿": 83, "收红": 42, "竞红占比": 0.523, "收红占比": 0.336, "竞价强弱": "中性", "竞价趋势": "持平", "收盘强弱": "弱", "收盘趋势": "情绪转弱↓", "涨家数": 2817, "涨停数": 76, "跌停数": 16, "高度": "", "实高度": "", "现在板": "", "复盘": "一", "事件": "", "分_收盘": 2, "分_竞价": 11, "分_连板": 8, "分_涨跌": 11, "分_事件": 5, "分_额外": 0, "总分": 37, "情绪": "分歧/降温", "情绪色": "#38a169", "盘中趋势": "转弱↓", "两天力度": "强转弱", "力度样式": "force-down-s", "赚亏": "反转", "赚亏样式": "pl-reverse"}, {"日期": "03-31", "日期全": "2026-03-31", "竞价原始": "41/17", "收盘原始": "80/48", "竞绿": 41, "竞红": 17, "收绿": 80, "收红": 48, "竞红占比": 0.293, "收红占比": 0.375, "竞价强弱": "弱", "竞价趋势": "情绪转弱↓", "收盘强弱": "弱", "收盘趋势": "持平", "涨家数": 915, "涨停数": 53, "跌停数": 17, "高度": "", "实高度": "", "现在板": "", "复盘": "二", "事件": "", "分_收盘": 5, "分_竞价": 0, "分_连板": 8, "分_涨跌": 6, "分_事件": 5, "分_额外": 0, "总分": 24, "情绪": "冰点/退潮", "情绪色": "#2b6cb0", "盘中趋势": "回暖↑", "两天力度": "弱回暖", "力度样式": "force-weak", "赚亏": "冰点", "赚亏样式": "pl-freeze"}, {"日期": "04-01", "日期全": "2026-04-01", "竞价原始": "23/32", "收盘原始": "69/60", "竞绿": 23, "竞红": 32, "收绿": 69, "收红": 60, "竞红占比": 0.582, "收红占比": 0.465, "竞价强弱": "强", "竞价趋势": "情绪回暖↑", "收盘强弱": "中性", "收盘趋势": "持平", "涨家数": 4261, "涨停数": 56, "跌停数": 14, "高度": "", "实高度": "", "现在板": "", "复盘": "三", "事件": "", "分_收盘": 12, "分_竞价": 14, "分_连板": 8, "分_涨跌": 15, "分_事件": 5, "分_额外": 0, "总分": 54, "情绪": "中性", "情绪色": "#718096", "盘中趋势": "转弱↓", "两天力度": "中回暖", "力度样式": "force-mid", "赚亏": "强化", "赚亏样式": "pl-strong"}, {"日期": "04-02", "日期全": "2026-04-02", "竞价原始": "14/35", "收盘原始": "51/64", "竞绿": 14, "竞红": 35, "收绿": 51, "收红": 64, "竞红占比": 0.714, "收红占比": 0.557, "竞价强弱": "强", "竞价趋势": "情绪回暖↑", "收盘强弱": "强", "收盘趋势": "情绪回暖↑", "涨家数": 1052, "涨停数": 32, "跌停数": 16, "高度": "", "实高度": "", "现在板": "", "复盘": "四", "事件": "", "分_收盘": 19, "分_竞价": 20, "分_连板": 8, "分_涨跌": 5, "分_事件": 5, "分_额外": 0, "总分": 57, "情绪": "中性", "情绪色": "#718096", "盘中趋势": "转弱↓", "两天力度": "中回暖", "力度样式": "force-mid", "赚亏": "回暖", "赚亏样式": "pl-warm"}, {"日期": "04-03", "日期全": "2026-04-03", "竞价原始": "22/27", "收盘原始": "76/14", "竞绿": 22, "竞红": 27, "收绿": 76, "收红": 14, "竞红占比": 0.551, "收红占比": 0.156, "竞价强弱": "强", "竞价趋势": "持平", "收盘强弱": "弱", "收盘趋势": "情绪转弱↓", "涨家数": 716, "涨停数": 38, "跌停数": 41, "高度": "", "实高度": "", "现在板": "", "复盘": "五", "事件": "", "分_收盘": 0, "分_竞价": 12, "分_连板": 8, "分_涨跌": 4, "分_事件": 5, "分_额外": 0, "总分": 29, "情绪": "冰点/退潮", "情绪色": "#2b6cb0", "盘中趋势": "转弱↓", "两天力度": "强转弱", "力度样式": "force-down-s", "赚亏": "冰点", "赚亏样式": "pl-freeze"}, {"日期": "04-07", "日期全": "2026-04-07", "竞价原始": "7/43", "收盘原始": "6/105", "竞绿": 7, "竞红": 43, "收绿": 6, "收红": 105, "竞红占比": 0.86, "收红占比": 0.946, "竞价强弱": "强", "竞价趋势": "情绪回暖↑", "收盘强弱": "强", "收盘趋势": "情绪回暖↑", "涨家数": 3977, "涨停数": 101, "跌停数": 18, "高度": "", "实高度": "", "现在板": "", "复盘": "二（特朗普暂停）", "事件": "", "分_收盘": 30, "分_竞价": 20, "分_连板": 8, "分_涨跌": 14, "分_事件": 6, "分_额外": 0, "总分": 78, "情绪": "高潮/强势", "情绪色": "#e53e3e", "盘中趋势": "回暖↑", "两天力度": "强回暖", "力度样式": "force-strong", "赚亏": "高潮", "赚亏样式": "pl-high"}, {"日期": "04-08", "日期全": "2026-04-08", "竞价原始": "25/49", "收盘原始": "9/63", "竞绿": 25, "竞红": 49, "收绿": 9, "收红": 63, "竞红占比": 0.662, "收红占比": 0.875, "竞价强弱": "强", "竞价趋势": "持平", "收盘强弱": "强", "收盘趋势": "持平", "涨家数": 4915, "涨停数": 135, "跌停数": 12, "高度": "", "实高度": "", "现在板": "", "复盘": "", "事件": "", "分_收盘": 30, "分_竞价": 18, "分_连板": 8, "分_涨跌": 15, "分_事件": 5, "分_额外": 0, "总分": 76, "情绪": "高潮/强势", "情绪色": "#e53e3e", "盘中趋势": "回暖↑", "两天力度": "中转弱", "力度样式": "force-down-m", "赚亏": "高潮", "赚亏样式": "pl-high"}, {"日期": "04-09", "日期全": "2026-04-09", "竞价原始": "30/29", "收盘原始": "50/43", "竞绿": 30, "竞红": 29, "收绿": 50, "收红": 43, "竞红占比": 0.492, "收红占比": 0.462, "竞价强弱": "中性", "竞价趋势": "情绪转弱↓", "收盘强弱": "中性", "收盘趋势": "情绪转弱↓", "涨家数": 1140, "涨停数": 61, "跌停数": 13, "高度": "", "实高度": "", "现在板": "", "复盘": "", "事件": "", "分_收盘": 12, "分_竞价": 9, "分_连板": 8, "分_涨跌": 6, "分_事件": 5, "分_额外": 0, "总分": 40, "情绪": "分歧/降温", "情绪色": "#38a169", "盘中趋势": "持平", "两天力度": "强转弱", "力度样式": "force-down-s", "赚亏": "反转", "赚亏样式": "pl-reverse"}, {"日期": "04-10", "日期全": "2026-04-10", "竞价原始": "20/50", "收盘原始": "75/62", "竞绿": 20, "竞红": 50, "收绿": 75, "收红": 62, "竞红占比": 0.714, "收红占比": 0.453, "竞价强弱": "强", "竞价趋势": "情绪回暖↑", "收盘强弱": "中性", "收盘趋势": "情绪转弱↓", "涨家数": 3977, "涨停数": 77, "跌停数": 12, "高度": "", "实高度": "", "现在板": "", "复盘": "周五", "事件": "", "分_收盘": 11, "分_竞价": 20, "分_连板": 8, "分_涨跌": 13, "分_事件": 5, "分_额外": 0, "总分": 57, "情绪": "中性", "情绪色": "#718096", "盘中趋势": "转弱↓", "两天力度": "弱转弱", "力度样式": "force-down-w", "赚亏": "强化", "赚亏样式": "pl-strong"}, {"日期": "04-13", "日期全": "2026-04-13", "竞价原始": "34/30", "收盘原始": "25/93", "竞绿": 34, "竞红": 30, "收绿": 25, "收红": 93, "竞红占比": 0.469, "收红占比": 0.788, "竞价强弱": "中性", "竞价趋势": "情绪转弱↓", "收盘强弱": "强", "收盘趋势": "情绪回暖↑", "涨家数": 2378, "涨停数": 86, "跌停数": 10, "高度": "", "实高度": "", "现在板": "", "复盘": "周一，高标修复，看俩天", "事件": "", "分_收盘": 30, "分_竞价": 8, "分_连板": 8, "分_涨跌": 11, "分_事件": 5, "分_额外": 0, "总分": 62, "情绪": "发酵/回暖", "情绪色": "#dd6b20", "盘中趋势": "回暖↑", "两天力度": "中回暖", "力度样式": "force-mid", "赚亏": "延续", "赚亏样式": "pl-cont"}, {"日期": "04-14", "日期全": "2026-04-14", "竞价原始": "15/41", "收盘原始": "20/73", "竞绿": 15, "竞红": 41, "收绿": 20, "收红": 73, "竞红占比": 0.732, "收红占比": 0.785, "竞价强弱": "强", "竞价趋势": "情绪回暖↑", "收盘强弱": "强", "收盘趋势": "持平", "涨家数": 3723, "涨停数": 71, "跌停数": 10, "高度": 6.0, "实高度": 6.0, "现在板": "6", "复盘": "华远最高标一字。", "事件": "", "分_收盘": 30, "分_竞价": 20, "分_连板": 23, "分_涨跌": 13, "分_事件": 6, "分_额外": 0, "总分": 92, "情绪": "高潮/强势", "情绪色": "#e53e3e", "盘中趋势": "回暖↑", "两天力度": "弱转弱", "力度样式": "force-down-w", "赚亏": "高潮", "赚亏样式": "pl-high"}, {"日期": "04-15", "日期全": "2026-04-15", "竞价原始": "14/51", "收盘原始": "49/90", "竞绿": 14, "竞红": 51, "收绿": 49, "收红": 90, "竞红占比": 0.785, "收红占比": 0.647, "竞价强弱": "强", "竞价趋势": "情绪回暖↑", "收盘强弱": "强", "收盘趋势": "持平", "涨家数": 1712, "涨停数": 57, "跌停数": 14, "高度": 7.0, "实高度": 6.0, "现在板": "5（4.5）", "复盘": "华远七板一字天地板（轮动药和电）", "事件": "业绩披露密集阶段", "分_收盘": 26, "分_竞价": 20, "分_连板": 25, "分_涨跌": 9, "分_事件": 5, "分_额外": 0, "总分": 85, "情绪": "高潮/强势", "情绪色": "#e53e3e", "盘中趋势": "转弱↓", "两天力度": "中转弱", "力度样式": "force-down-m", "赚亏": "高潮", "赚亏样式": "pl-high"}, {"日期": "04-16", "日期全": "2026-04-16", "竞价原始": "28/32", "收盘原始": "46/54", "竞绿": 28, "竞红": 32, "收绿": 46, "收红": 54, "竞红占比": 0.533, "收红占比": 0.54, "竞价强弱": "中性", "竞价趋势": "持平", "收盘强弱": "中性", "收盘趋势": "持平", "涨家数": 4092, "涨停数": 79, "跌停数": 9, "高度": "", "实高度": 6.0, "现在板": "6", "复盘": "宁德新高，华远负反馈无影响", "事件": "", "分_收盘": 18, "分_竞价": 11, "分_连板": 11, "分_涨跌": 15, "分_事件": 4, "分_额外": 0, "总分": 59, "情绪": "中性", "情绪色": "#718096", "盘中趋势": "持平", "两天力度": "强转弱", "力度样式": "force-down-s", "赚亏": "反转", "赚亏样式": "pl-reverse"}, {"日期": "04-17", "日期全": "2026-04-17", "竞价原始": "12/28", "收盘原始": "47/43", "竞绿": 12, "竞红": 28, "收绿": 47, "收红": 43, "竞红占比": 0.7, "收红占比": 0.478, "竞价强弱": "强", "竞价趋势": "情绪回暖↑", "收盘强弱": "中性", "收盘趋势": "情绪转弱↓", "涨家数": 2396, "涨停数": 76, "跌停数": 7, "高度": 7.0, "实高度": 7.0, "现在板": "7", "复盘": "", "事件": "", "分_收盘": 13, "分_竞价": 20, "分_连板": 25, "分_涨跌": 11, "分_事件": 5, "分_额外": 0, "总分": 74, "情绪": "发酵/回暖", "情绪色": "#dd6b20", "盘中趋势": "转弱↓", "两天力度": "弱转弱", "力度样式": "force-down-w", "赚亏": "强化", "赚亏样式": "pl-strong"}, {"日期": "04-20", "日期全": "2026-04-20", "竞价原始": "21/39", "收盘原始": "34/98", "竞绿": 21, "竞红": 39, "收绿": 34, "收红": 98, "竞红占比": 0.65, "收红占比": 0.742, "竞价强弱": "强", "竞价趋势": "情绪回暖↑", "收盘强弱": "强", "收盘趋势": "情绪回暖↑", "涨家数": 3211, "涨停数": 75, "跌停数": 17, "高度": 7.0, "实高度": 6.0, "现在板": "6", "复盘": "高标赚钱效应爆棚，圣阳抢跑", "事件": "", "分_收盘": 30, "分_竞价": 17, "分_连板": 25, "分_涨跌": 13, "分_事件": 5, "分_额外": 0, "总分": 90, "情绪": "高潮/强势", "情绪色": "#e53e3e", "盘中趋势": "回暖↑", "两天力度": "强回暖", "力度样式": "force-strong", "赚亏": "高潮", "赚亏样式": "pl-high"}, {"日期": "04-21", "日期全": "2026-04-21", "竞价原始": "35/52", "收盘原始": "62/60", "竞绿": 35, "竞红": 52, "收绿": 62, "收红": 60, "竞红占比": 0.598, "收红占比": 0.492, "竞价强弱": "强", "竞价趋势": "持平", "收盘强弱": "中性", "收盘趋势": "情绪转弱↓", "涨家数": 1949, "涨停数": 65, "跌停数": 19, "高度": 7.0, "实高度": 4.0, "现在板": "4", "复盘": "圣阳地板，博云大面", "事件": "", "分_收盘": 14, "分_竞价": 14, "分_连板": 25, "分_涨跌": 9, "分_事件": 5, "分_额外": 0, "总分": 67, "情绪": "发酵/回暖", "情绪色": "#dd6b20", "盘中趋势": "转弱↓", "两天力度": "强转弱", "力度样式": "force-down-s", "赚亏": "反转", "赚亏样式": "pl-reverse"}, {"日期": "04-22", "日期全": "2026-04-22", "竞价原始": "35/52", "收盘原始": "62/60", "竞绿": 35, "竞红": 52, "收绿": 62, "收红": 60, "竞红占比": 0.598, "收红占比": 0.492, "竞价强弱": "强", "竞价趋势": "持平", "收盘强弱": "中性", "收盘趋势": "持平", "涨家数": 2671, "涨停数": 55, "跌停数": 15, "高度": "", "实高度": 6.5, "现在板": "4", "复盘": "", "事件": "", "分_收盘": 14, "分_竞价": 14, "分_连板": 8, "分_涨跌": 11, "分_事件": 5, "分_额外": 0, "总分": 52, "情绪": "中性", "情绪色": "#718096", "盘中趋势": "转弱↓", "两天力度": "弱转弱", "力度样式": "force-down-w", "赚亏": "反转", "赚亏样式": "pl-reverse"}, {"日期": "04-23", "日期全": "2026-04-23", "竞价原始": "32/29", "收盘原始": "29/79", "竞绿": 32, "竞红": 29, "收绿": 29, "收红": 79, "竞红占比": 0.475, "收红占比": 0.731, "竞价强弱": "中性", "竞价趋势": "情绪转弱↓", "收盘强弱": "强", "收盘趋势": "情绪回暖↑", "涨家数": 1312, "涨停数": 50, "跌停数": 30, "高度": "", "实高度": "", "现在板": "4", "复盘": "", "事件": "", "分_收盘": 30, "分_竞价": 8, "分_连板": 8, "分_涨跌": 5, "分_事件": 5, "分_额外": 0, "总分": 56, "情绪": "中性", "情绪色": "#718096", "盘中趋势": "回暖↑", "两天力度": "中回暖", "力度样式": "force-mid", "赚亏": "回暖", "赚亏样式": "pl-warm"}, {"日期": "04-24", "日期全": "2026-04-24", "竞价原始": "41/18", "收盘原始": "77/58", "竞绿": 41, "竞红": 18, "收绿": 77, "收红": 58, "竞红占比": 0.305, "收红占比": 0.43, "竞价强弱": "弱", "竞价趋势": "情绪转弱↓", "收盘强弱": "弱", "收盘趋势": "情绪转弱↓", "涨家数": 2001, "涨停数": 68, "跌停数": 37, "高度": "", "实高度": "", "现在板": "5", "复盘": "金螳螂中衡武汉一字，带博云反包", "事件": "", "分_收盘": 9, "分_竞价": 0, "分_连板": 8, "分_涨跌": 10, "分_事件": 6, "分_额外": 0, "总分": 33, "情绪": "冰点/退潮", "情绪色": "#2b6cb0", "盘中趋势": "回暖↑", "两天力度": "强转弱", "力度样式": "force-down-s", "赚亏": "冰点", "赚亏样式": "pl-freeze"}, {"日期": "04-27", "日期全": "2026-04-27", "竞价原始": "55/27", "收盘原始": "78/61", "竞绿": 55, "竞红": 27, "收绿": 78, "收红": 61, "竞红占比": 0.329, "收红占比": 0.439, "竞价强弱": "弱", "竞价趋势": "情绪转弱↓", "收盘强弱": "弱", "收盘趋势": "持平", "涨家数": 3191, "涨停数": 84, "跌停数": 52, "高度": "", "实高度": "", "现在板": "", "复盘": "", "事件": "", "分_收盘": 10, "分_竞价": 1, "分_连板": 8, "分_涨跌": 10, "分_事件": 5, "分_额外": 0, "总分": 34, "情绪": "冰点/退潮", "情绪色": "#2b6cb0", "盘中趋势": "回暖↑", "两天力度": "弱回暖", "力度样式": "force-weak", "赚亏": "冰点", "赚亏样式": "pl-freeze"}, {"日期": "04-28", "日期全": "2026-04-28", "竞价原始": "27/14", "收盘原始": "37/88", "竞绿": 27, "竞红": 14, "收绿": 37, "收红": 88, "竞红占比": 0.341, "收红占比": 0.704, "竞价强弱": "弱", "竞价趋势": "持平", "收盘强弱": "强", "收盘趋势": "情绪回暖↑", "涨家数": 1680, "涨停数": 76, "跌停数": 54, "高度": "", "实高度": "", "现在板": "", "复盘": "", "事件": "", "分_收盘": 30, "分_竞价": 2, "分_连板": 8, "分_涨跌": 6, "分_事件": 5, "分_额外": 0, "总分": 51, "情绪": "中性", "情绪色": "#718096", "盘中趋势": "回暖↑", "两天力度": "强回暖", "力度样式": "force-strong", "赚亏": "强化", "赚亏样式": "pl-strong"}, {"日期": "04-29", "日期全": "2026-04-29", "竞价原始": "32/18", "收盘原始": "33/64", "竞绿": 32, "竞红": 18, "收绿": 33, "收红": 64, "竞红占比": 0.36, "收红占比": 0.66, "竞价强弱": "弱", "竞价趋势": "情绪转弱↓", "收盘强弱": "强", "收盘趋势": "持平", "涨家数": 3761, "涨停数": 119, "跌停数": 39, "高度": 5.0, "实高度": 5.5, "现在板": "3", "复盘": "四个一字，水发温和断板", "事件": "", "分_收盘": 26, "分_竞价": 3, "分_连板": 15, "分_涨跌": 13, "分_事件": 5, "分_额外": 0, "总分": 62, "情绪": "发酵/回暖", "情绪色": "#dd6b20", "盘中趋势": "回暖↑", "两天力度": "弱转弱", "力度样式": "force-down-w", "赚亏": "强化", "赚亏样式": "pl-strong"}, {"日期": "04-30", "日期全": "2026-04-30", "竞价原始": "18/41", "收盘原始": "57/79", "竞绿": 18, "竞红": 41, "收绿": 57, "收红": 79, "竞红占比": 0.695, "收红占比": 0.581, "竞价强弱": "强", "竞价趋势": "情绪回暖↑", "收盘强弱": "强", "收盘趋势": "持平", "涨家数": 2687, "涨停数": 98, "跌停数": 52, "高度": "", "实高度": "", "现在板": "4", "复盘": "谷歌涨10%，越剑一字，买后排", "事件": "MATA财报+会议", "分_收盘": 21, "分_竞价": 19, "分_连板": 8, "分_涨跌": 8, "分_事件": 10, "分_额外": 0, "总分": 66, "情绪": "发酵/回暖", "情绪色": "#dd6b20", "盘中趋势": "转弱↓", "两天力度": "弱转弱", "力度样式": "force-down-w", "赚亏": "延续", "赚亏样式": "pl-cont"}, {"日期": "05-06", "日期全": "2026-05-06", "竞价原始": "0/60", "收盘原始": "2/110", "竞绿": 0, "竞红": 60, "收绿": 2, "收红": 110, "竞红占比": 1.0, "收红占比": 0.982, "竞价强弱": "强", "竞价趋势": "情绪回暖↑", "收盘强弱": "强", "收盘趋势": "情绪回暖↑", "涨家数": 3662, "涨停数": 125, "跌停数": 63, "高度": 4.0, "实高度": "", "现在板": "4", "复盘": "6个一字，一个4板一字", "事件": "苹果财报+会议", "分_收盘": 30, "分_竞价": 20, "分_连板": 15, "分_涨跌": 11, "分_事件": 10, "分_额外": 0, "总分": 86, "情绪": "高潮/强势", "情绪色": "#e53e3e", "盘中趋势": "持平", "两天力度": "强回暖", "力度样式": "force-strong", "赚亏": "高潮", "赚亏样式": "pl-high"}, {"日期": "05-07", "日期全": "2026-05-07", "竞价原始": "14/49", "收盘原始": "25/99", "竞绿": 14, "竞红": 49, "收绿": 25, "收红": 99, "竞红占比": 0.778, "收红占比": 0.798, "竞价强弱": "强", "竞价趋势": "持平", "收盘强弱": "强", "收盘趋势": "持平", "涨家数": 3260, "涨停数": 127, "跌停数": 54, "高度": 5.0, "实高度": 5.0, "现在板": "5", "复盘": "2个首版一字", "事件": "美联储", "分_收盘": 30, "分_竞价": 20, "分_连板": 20, "分_涨跌": 11, "分_事件": 6, "分_额外": 0, "总分": 87, "情绪": "高潮/强势", "情绪色": "#e53e3e", "盘中趋势": "持平", "两天力度": "弱转弱", "力度样式": "force-down-w", "赚亏": "高潮", "赚亏样式": "pl-high"}, {"日期": "05-08", "日期全": "2026-05-08", "竞价原始": "38/32", "收盘原始": "41/77", "竞绿": 38, "竞红": 32, "收绿": 41, "收红": 77, "竞红占比": 0.457, "收红占比": 0.653, "竞价强弱": "中性", "竞价趋势": "情绪转弱↓", "收盘强弱": "强", "收盘趋势": "持平", "涨家数": 3391, "涨停数": 125, "跌停数": 33, "高度": 4.0, "实高度": 4.0, "现在板": "4", "复盘": "三个一字，福大一字四板", "事件": "英伟达业绩+峰会", "分_收盘": 26, "分_竞价": 7, "分_连板": 15, "分_涨跌": 13, "分_事件": 8, "分_额外": 0, "总分": 69, "情绪": "发酵/回暖", "情绪色": "#dd6b20", "盘中趋势": "回暖↑", "两天力度": "强转弱", "力度样式": "force-down-s", "赚亏": "反转", "赚亏样式": "pl-reverse"}, {"日期": "05-11", "日期全": "2026-05-11", "竞价原始": "9/92", "收盘原始": "23/101", "竞绿": 9, "竞红": 92, "收绿": 23, "收红": 101, "竞红占比": 0.911, "收红占比": 0.815, "竞价强弱": "强", "竞价趋势": "情绪回暖↑", "收盘强弱": "强", "收盘趋势": "情绪回暖↑", "涨家数": 3045, "涨停数": 135, "跌停数": 27, "高度": 5.0, "实高度": 5.0, "现在板": "5", "复盘": "四个一字，芯片+房地产基建", "事件": "制造大会", "分_收盘": 30, "分_竞价": 20, "分_连板": 20, "分_涨跌": 13, "分_事件": 8, "分_额外": 0, "总分": 91, "情绪": "高潮/强势", "情绪色": "#e53e3e", "盘中趋势": "转弱↓", "两天力度": "强回暖", "力度样式": "force-strong", "赚亏": "高潮", "赚亏样式": "pl-high"}, {"日期": "05-12", "日期全": "2026-05-12", "竞价原始": "20/65", "收盘原始": "44/100", "竞绿": 20, "竞红": 65, "收绿": 44, "收红": 100, "竞红占比": 0.765, "收红占比": 0.694, "竞价强弱": "强", "竞价趋势": "持平", "收盘强弱": "强", "收盘趋势": "持平", "涨家数": 1288, "涨停数": 94, "跌停数": 32, "高度": 5.0, "实高度": 5.5, "现在板": "5", "复盘": "8个一字", "事件": "美cpi", "分_收盘": 29, "分_竞价": 20, "分_连板": 20, "分_涨跌": 5, "分_事件": 8, "分_额外": 0, "总分": 82, "情绪": "高潮/强势", "情绪色": "#e53e3e", "盘中趋势": "转弱↓", "两天力度": "中转弱", "力度样式": "force-down-m", "赚亏": "高潮", "赚亏样式": "pl-high"}, {"日期": "05-13", "日期全": "2026-05-13", "竞价原始": "31/22", "收盘原始": "41/108", "竞绿": 31, "竞红": 22, "收绿": 41, "收红": 108, "竞红占比": 0.415, "收红占比": 0.725, "竞价强弱": "弱", "竞价趋势": "情绪转弱↓", "收盘强弱": "强", "收盘趋势": "情绪回暖↑", "涨家数": 3052, "涨停数": 147, "跌停数": 17, "高度": 6.0, "实高度": 6.0, "现在板": "6", "复盘": "10个一字，三维共振", "事件": "", "分_收盘": 30, "分_竞价": 5, "分_连板": 23, "分_涨跌": 14, "分_事件": 6, "分_额外": 14, "总分": 92, "情绪": "高潮/强势", "情绪色": "#e53e3e", "盘中趋势": "回暖↑", "两天力度": "弱回暖", "力度样式": "force-weak", "赚亏": "高潮", "赚亏样式": "pl-high"}, {"日期": "05-14", "日期全": "2026-05-14", "竞价原始": "40/54", "收盘原始": "98/32", "竞绿": 40, "竞红": 54, "收绿": 98, "收红": 32, "竞红占比": 0.574, "收红占比": 0.246, "竞价强弱": "强", "竞价趋势": "情绪回暖↑", "收盘强弱": "弱", "收盘趋势": "情绪转弱↓", "涨家数": 1017, "涨停数": 80, "跌停数": 44, "高度": 7.0, "实高度": 5.0, "现在板": "5", "复盘": "电力板块三维共振集体退潮，一堆陪葬", "事件": "", "分_收盘": 0, "分_竞价": 13, "分_连板": 25, "分_涨跌": 5, "分_事件": 2, "分_额外": -6, "总分": 39, "情绪": "分歧/降温", "情绪色": "#38a169", "盘中趋势": "转弱↓", "两天力度": "强转弱", "力度样式": "force-down-s", "赚亏": "反转", "赚亏样式": "pl-reverse"}, {"日期": "05-15", "日期全": "2026-05-15", "竞价原始": "48/33", "收盘原始": "71/84", "竞绿": 48, "竞红": 33, "收绿": 71, "收红": 84, "竞红占比": 0.407, "收红占比": 0.542, "竞价强弱": "弱", "竞价趋势": "情绪转弱↓", "收盘强弱": "中性", "收盘趋势": "情绪回暖↑", "涨家数": 1712, "涨停数": 72, "跌停数": 44, "高度": 6.0, "实高度": 6.0, "现在板": "6", "复盘": "大唐反包", "事件": "中LPR/朱雀三号", "分_收盘": 18, "分_竞价": 5, "分_连板": 23, "分_涨跌": 8, "分_事件": 6, "分_额外": 0, "总分": 60, "情绪": "发酵/回暖", "情绪色": "#dd6b20", "盘中趋势": "回暖↑", "两天力度": "强回暖", "力度样式": "force-strong", "赚亏": "强化", "赚亏样式": "pl-strong"}];
 
-Chart.defaults.color='#8b949e';
-Chart.defaults.borderColor='#30363d';
-Chart.defaults.font.family="'PingFang SC',sans-serif";
-Chart.defaults.font.size=11;
-const TT={backgroundColor:'#1f2937',borderColor:'#30363d',borderWidth:1,titleColor:'#e6edf3',bodyColor:'#8b949e',padding:9};
-const GRID={color:'#21262d'};
-const XTICK={maxTicksLimit:16,maxRotation:45};
-function baseOpts(extra){return Object.assign({responsive:true,maintainAspectRatio:true,interaction:{mode:'index',intersect:false},plugins:{legend:{labels:{boxWidth:9,padding:10}},tooltip:TT},scales:{x:{grid:GRID,ticks:XTICK},y:{grid:GRID}}},extra||{});}
-function hline(y,color,label){return{type:'line',yMin:y,yMax:y,borderColor:color+'88',borderWidth:1,borderDash:[5,4],label:{display:true,content:label,color:color,backgroundColor:'transparent',font:{size:10}}};}
+// ────────────────────────────────
+// 工具函数
+// ────────────────────────────────
+function emotionBg(e) {
+  if (e.includes('高潮')) return '#742a2a';
+  if (e.includes('发酵')) return '#744210';
+  if (e.includes('中性')) return '#2d3748';
+  if (e.includes('分歧')) return '#1c4532';
+  return '#1a365d';
+}
 
-// ════════════ 温度计动画初始化 ════════════
-(function(){
-  var t=27.7;
-  var pct=t/100;
-  // 指针位置 (bottom % of bar)
-  setTimeout(function(){
-    var pointer=document.getElementById('thermo-pointer');
-    if(pointer){pointer.style.bottom=(pct*100)+'%';}
-    // 因子条动画
-    var factors=[
-      {id:'bar-j',val:parseFloat('-4.8')||0,max:30},
-      {id:'bar-s',val:parseFloat('17.6')||0,max:30},
-      {id:'bar-ratio',val:parseFloat('1.2')||0,max:10},
-      {id:'bar-zt',val:parseFloat('10.0')||0,max:10},
-      {id:'bar-zj',val:parseFloat('2.7')||0,max:10},
-      {id:'bar-bk',val:parseFloat('9.0')||0,max:10}
-    ];
-    factors.forEach(function(f){
-      var el=document.getElementById(f.id);
-      if(el){el.style.width=(f.val/f.max*100)+'%';}
-    });
-  },200);
-})();
+// 温度计 SVG 生成函数
+// score: 当前分（可超100），min/max 为刻度范围
+function buildThermometer(score, label, dateStr) {
+  const W = 64, H = 220;
+  const tubeX = W / 2, tubeTop = 14, tubeBot = 170;
+  const tubeH = tubeBot - tubeTop;
+  const bulbR = 14, bulbCY = tubeBot + bulbR + 2;
+  const tubeInner = 7;
 
-// ════════════ 温度折线图 ════════════
-(function(){
-  // 渐变色背景
-  var ctx=document.getElementById('c-temp-line').getContext('2d');
-  var grad=ctx.createLinearGradient(0,0,0,300);
-  grad.addColorStop(0,'rgba(248,81,73,0.25)');
-  grad.addColorStop(0.4,'rgba(210,153,34,0.18)');
-  grad.addColorStop(0.6,'rgba(88,166,255,0.12)');
-  grad.addColorStop(1,'rgba(63,185,80,0.08)');
+  // 颜色
+  const pct = Math.max(0, Math.min(1, score / 100));
+  function scoreColor(s) {
+    if (s >= 75) return '#fc8181';
+    if (s >= 60) return '#f6ad55';
+    if (s >= 50) return '#f6e05e';
+    if (s >= 35) return '#68d391';
+    return '#63b3ed';
+  }
+  const col = scoreColor(score);
 
-  new Chart(ctx,{
-    type:'line',
-    data:{
-      labels:DATES,
-      datasets:[{
-        label:'情绪温度',
-        data:TEMPS,
-        borderColor:'#e3b341',
-        backgroundColor:grad,
-        borderWidth:2.5,
-        tension:0.35,
-        fill:true,
-        pointRadius:TEMPS.map(function(v,i){return i===TEMPS.length-1?7:3;}),
-        pointHoverRadius:8,
-        pointBackgroundColor:TEMP_COLORS,
-        pointBorderColor:TEMP_COLORS,
-        spanGaps:true
-      }]
-    },
-    options:{
-      responsive:true,maintainAspectRatio:true,
-      interaction:{mode:'index',intersect:false},
-      plugins:{
-        legend:{display:false},
-        tooltip:{
-          backgroundColor:'rgba(22,27,34,0.97)',borderColor:'#30363d',borderWidth:1,
-          titleColor:'#e6edf3',bodyColor:'#8b949e',padding:12,
-          callbacks:{
-            title:function(items){return DATES_FULL[items[0].dataIndex];},
-            label:function(ctx){return '情绪温度: '+ctx.raw+'° ('+TEMP_LABELS[ctx.dataIndex]+')';},
-            afterBody:function(items){
-              var i=items[0].dataIndex;
-              return['','周期: '+(CYCLES[i]||'-'),'阶段: '+(STAGES[i]||'-')];
-            }
-          }
-        },
-        annotation:{annotations:{
-          h80:hline(80,'#f85149','极热'),
-          h65:hline(65,'#e3b341','偏热'),
-          h50:hline(50,'#d29922','温热'),
-          h35:hline(35,'#58a6ff','温凉'),
-          h20:hline(20,'#3fb950','偏冷')
-        }}
+  // 液柱高度（最低在球底，最高到管顶）
+  const fillH = Math.max(4, Math.min(tubeH, pct * tubeH));
+  const fillY  = tubeBot - fillH;
+
+  // 刻度线 0,25,50,75,100
+  const ticks = [0, 25, 50, 75, 100].map(v => {
+    const ty = tubeBot - (v / 100) * tubeH;
+    return `<line x1="${tubeX - 10}" y1="${ty}" x2="${tubeX + 10}" y2="${ty}" stroke="#4a5568" stroke-width="1"/>
+            <text x="${tubeX + 13}" y="${ty + 4}" font-size="8" fill="#718096" font-family="sans-serif">${v}</text>`;
+  }).join('');
+
+  // 分数标注
+  const scoreY = Math.max(tubeTop + 10, fillY - 4);
+
+  return `<svg width="${W + 30}" height="${bulbCY + bulbR + 10}" viewBox="0 0 ${W + 30} ${bulbCY + bulbR + 10}">
+    <!-- 管外框 -->
+    <rect x="${tubeX - tubeInner - 2}" y="${tubeTop - 2}" width="${(tubeInner + 2) * 2}"
+          height="${tubeH + 4}" rx="8" ry="8" fill="#1a202c" stroke="#4a5568" stroke-width="1.5"/>
+    <!-- 液柱 -->
+    <rect x="${tubeX - tubeInner}" y="${fillY}" width="${tubeInner * 2}"
+          height="${fillH}" rx="6" ry="6" fill="${col}" opacity="0.9"/>
+    <!-- 球 -->
+    <circle cx="${tubeX}" cy="${bulbCY}" r="${bulbR}" fill="${col}" opacity="0.95"/>
+    <circle cx="${tubeX}" cy="${bulbCY}" r="${bulbR - 4}" fill="${col}" opacity="0.5"/>
+    <!-- 刻度 -->
+    ${ticks}
+    <!-- 分数 -->
+    <text x="${tubeX}" y="${scoreY}" text-anchor="middle" font-size="9" font-weight="bold"
+          fill="${col}" font-family="sans-serif">${score}</text>
+    <!-- 球内分数 -->
+    <text x="${tubeX}" y="${bulbCY + 4}" text-anchor="middle" font-size="10" font-weight="bold"
+          fill="white" font-family="sans-serif">${score}</text>
+  </svg>`;
+}
+
+// ────────────────────────────────
+// 渲染温度计区（最新日）
+// ────────────────────────────────
+const last = DATA[DATA.length - 1];
+const sec = document.getElementById('thermoSection');
+
+// 各分项温度计
+const items = [
+  { label: '总分', val: last['总分'], note: '满分≈90分' },
+
+  { label: '今日竞价红绿', val: last['分_竞价'], note: `${last['竞价原始']}` },
+
+];
+
+let thermoHTML = '';
+items.forEach(item => {
+  thermoHTML += `
+    <div class="thermo-wrap">
+      <div class="thermo-label">${item.label.replace('\n','<br>')}</div>
+      <div class="thermo-svg-wrap">
+        ${buildThermometer(item.val, item.label, last['日期全'])}
+      </div>
+      <div class="thermo-date">${item.note}</div>
+    </div>
+  `;
+});
+
+// 右侧信息面板
+thermoHTML += `
+  <div class="thermo-info">
+    <h2>📅 ${last['日期全']} &nbsp;
+      <span class="emotion-tag" style="background:${emotionBg(last['情绪'])};color:${last['情绪色']}">
+        ${last['情绪']} · ${last['总分']}分
+      </span>
+    </h2>
+    <div class="score-grid">
+      <div class="score-box">
+        <div class="s-label">竞价 (绿/红)</div>
+        <div class="s-val" style="color:${last['竞红占比']>=0.55?'#fc8181':'#68d391'}">${last['竞价原始']}</div>
+        <div class="s-sub">${last['竞价强弱']} · ${last['竞价趋势']}</div>
+      </div>
+      <div class="score-box">
+        <div class="s-label">收盘 (绿/红)</div>
+        <div class="s-val" style="color:${last['收红占比']>=0.55?'#fc8181':'#68d391'}">${last['收盘原始']}</div>
+        <div class="s-sub">${last['收盘强弱']} · ${last['收盘趋势']}</div>
+      </div>
+      <div class="score-box">
+        <div class="s-label">涨停/跌停</div>
+        <div class="s-val" style="color:#fc8181">${last['涨停数']}</div>
+        <div class="s-sub" style="color:#68d391">跌停 ${last['跌停数']}</div>
+      </div>
+      <div class="score-box">
+        <div class="s-label">最高板/当前</div>
+        <div class="s-val">${last['高度']||'—'}</div>
+        <div class="s-sub">当前 ${last['现在板']||'—'}</div>
+      </div>
+    </div>
+    <div class="breakdown-row">
+      <span class="bd-item">收盘 <span>${last['分_收盘']}/30</span></span>
+      <span class="bd-item">竞价 <span>${last['分_竞价']}/20</span></span>
+      <span class="bd-item">连板 <span>${last['分_连板']}/25</span></span>
+      <span class="bd-item">涨跌 <span>${last['分_涨跌']}/15</span></span>
+      <span class="bd-item">事件 <span style="color:${last['分_事件']>10?'#f6ad55':last['分_事件']<0?'#68d391':'#f6e05e'}">${last['分_事件']}（无限制）</span></span>
+      ${last['分_额外']>0 ? `<span class="bd-item" style="background:#553c9a;color:#d6bcfa">额外 <span>+${last['分_额外']}</span></span>` : ''}
+      ${last['事件'] ? `<span class="event-tag">📌 ${last['事件']}</span>` : ''}
+    </div>
+  </div>
+`;
+sec.innerHTML = thermoHTML;
+
+// ────────────────────────────────
+// 表格（简化版）
+// ────────────────────────────────
+const tbody = document.getElementById('tableBody');
+DATA.forEach(r => {
+  // 盘中趋势颜色
+  const intraClass = r['盘中趋势'].includes('回暖') ? 'trend-up' : (r['盘中趋势'].includes('转弱') ? 'trend-down' : 'trend-flat');
+  // 总分颜色
+  const totalColor = r['总分'] >= 75 ? '#fc8181' : r['总分'] >= 60 ? '#f6ad55' : r['总分'] >= 50 ? '#e2e8f0' : r['总分'] >= 35 ? '#68d391' : '#63b3ed';
+  // 分数条
+  const barW = Math.max(4, Math.min(80, Math.round(r['总分'] * 0.55)));
+
+  tbody.innerHTML += `
+    <tr>
+      <td style="color:#90cdf4;font-weight:bold;font-size:13px">${r['日期']}</td>
+      <td class="${intraClass}" style="font-size:13px">${r['盘中趋势']}</td>
+      <td class="${r['力度样式']}" style="font-size:13px">${r['两天力度']}</td>
+      <td>
+        <span class="emotion-tag" style="background:${emotionBg(r['情绪'])};color:${r['情绪色']}">
+          ${r['情绪']}
+        </span>
+      </td>
+      <td>
+        <span class="pl-tag ${r['赚亏样式']}">${r['赚亏']}</span>
+      </td>
+      <td style="color:${totalColor};font-weight:bold;font-size:14px">
+        ${r['总分']}
+        <span class="score-bar" style="width:${barW}px;background:${totalColor}"></span>
+      </td>
+    </tr>
+  `;
+});
+
+// ────────────────────────────────
+// Chart.js
+// ────────────────────────────────
+Chart.defaults.color = '#718096';
+Chart.defaults.borderColor = '#2d3748';
+const labels = DATA.map(r => r['日期']);
+
+// 1. 总分走势
+const scoreCtx = document.getElementById('scoreChart').getContext('2d');
+new Chart(scoreCtx, {
+  type: 'line',
+  data: {
+    labels,
+    datasets: [{
+      label: '综合总分',
+      data: DATA.map(r => r['总分']),
+      borderColor: '#f6e05e',
+      backgroundColor: ctx => {
+        const g = ctx.chart.ctx.createLinearGradient(0, 0, 0, 300);
+        g.addColorStop(0, 'rgba(246,224,94,0.25)');
+        g.addColorStop(1, 'rgba(246,224,94,0)');
+        return g;
       },
-      scales:{
-        x:{grid:GRID,ticks:XTICK},
-        y:{grid:GRID,min:0,max:100,
-          ticks:{stepSize:20,callback:function(v){
-            return v+'°';
-          }}
+      fill: true,
+      tension: 0.35,
+      pointRadius: 3.5,
+      pointHoverRadius: 6,
+      pointBackgroundColor: DATA.map(r =>
+        r['总分']>=75 ? '#fc8181' :
+        r['总分']>=60 ? '#f6ad55' :
+        r['总分']>=50 ? '#f6e05e' :
+        r['总分']>=35 ? '#68d391' : '#63b3ed'
+      ),
+      borderWidth: 2,
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          title: ctx => DATA[ctx[0].dataIndex]['日期全'],
+          afterLabel: ctx => {
+            const r = DATA[ctx.dataIndex];
+            const lines = [
+              `情绪：${r['情绪']}`,
+              `竞价：${r['竞价原始']} ${r['竞价强弱']} ${r['竞价趋势']}`,
+              `收盘：${r['收盘原始']} ${r['收盘强弱']} ${r['收盘趋势']}`,
+              `事件分：${r['分_事件']}${r['事件']?' | '+r['事件']:''}`,
+            ];
+            if (r['分_额外'] > 0) {
+              lines.push(`额外分：+${r['分_额外']} ${r['复盘']||''}`);
+            }
+            return lines;
+          }
         }
       }
-    }
-  });
-})();
-
-// ════════════ 主要因素分解图 ════════════
-(function(){
-  // 需要从原始JG/JH/SG/SH重算
-  var jTemps=[],sTemps=[];
-  for(var i=0;i<DATES.length;i++){
-    var jScore=null,sScore=null;
-    if(JH[i]!==null&&JG[i]!==null){
-      var tj=JH[i]+JG[i];
-      jScore=tj>0?Math.round(JH[i]/tj*300)/10:15;
-    }
-    if(SH[i]!==null&&SG[i]!==null){
-      var ts=SH[i]+SG[i];
-      sScore=ts>0?Math.round(SH[i]/ts*300)/10:15;
-    }
-    jTemps.push(jScore);sTemps.push(sScore);
-  }
-  new Chart('c-temp-main',{
-    type:'line',
-    data:{labels:DATES,datasets:[
-      {label:'竞价温度(满30)',data:jTemps,borderColor:'#58a6ff',backgroundColor:'rgba(88,166,255,0.1)',
-        borderWidth:2,pointRadius:2,tension:.3,fill:true,spanGaps:true},
-      {label:'收盘温度(满30)',data:sTemps,borderColor:'#bc8cff',backgroundColor:'rgba(188,140,255,0.08)',
-        borderWidth:2,pointRadius:2,tension:.3,fill:false,borderDash:[4,3],spanGaps:true}
-    ]},
-    options:{responsive:true,maintainAspectRatio:true,interaction:{mode:'index',intersect:false},
-      plugins:{legend:{labels:{boxWidth:9,padding:10}},tooltip:TT,
-        annotation:{annotations:{h15:hline(15,'#ffffff','中值15'),h30:hline(30,'#3fb950','满分30')}}},
-      scales:{x:{grid:GRID,ticks:XTICK},y:{grid:GRID,min:0,max:32}}}
-  });
-})();
-
-// ════════════ 次要因素分解图 ════════════
-(function(){
-  // 从原始数据重算4个次要因素
-  var ratioT=[],ztT=[],zjT=[],bkT=[];
-  for(var i=0;i<DATES.length;i++){
-    ratioT.push(ZTDT[i]!==null?Math.round(Math.min(ZTDT[i]/8,1)*100)/10:null);
-    ztT.push(ZT[i]!==null?Math.round(Math.min(ZT[i]/120,1)*100)/10:null);
-    zjT.push(ZJ[i]!==null?Math.round(Math.min(ZJ[i]/5000,1)*100)/10:null);
-    bkT.push(BK[i]!==null?Math.round(Math.min(BK[i]/8,1)*100)/10:null);
-  }
-  new Chart('c-temp-sub',{
-    type:'line',
-    data:{labels:DATES,datasets:[
-      {label:'涨跌比(满10)',data:ratioT,borderColor:'#d29922',borderWidth:1.8,pointRadius:2,tension:.3,spanGaps:true},
-      {label:'涨停数(满10)',data:ztT,borderColor:'#f85149',borderWidth:1.8,pointRadius:2,tension:.3,spanGaps:true},
-      {label:'涨家数(满10)',data:zjT,borderColor:'#3fb950',borderWidth:1.8,pointRadius:2,tension:.3,spanGaps:true},
-      {label:'连板高度(满10)',data:bkT,borderColor:'#e3b341',borderWidth:1.8,pointRadius:2,tension:.3,spanGaps:true}
-    ]},
-    options:{responsive:true,maintainAspectRatio:true,interaction:{mode:'index',intersect:false},
-      plugins:{legend:{labels:{boxWidth:8,padding:8,font:{size:10}}},tooltip:TT,
-        annotation:{annotations:{h10:hline(10,'#3fb950','满分10'),h5:hline(5,'#ffffff','中值5')}}},
-      scales:{x:{grid:GRID,ticks:XTICK},y:{grid:GRID,min:0,max:11}}}
-  });
-})();
-
-// ════════════ 温度+周期联动图 ════════════
-(function(){
-  new Chart('c-temp-cycle',{
-    type:'bar',
-    data:{labels:DATES,datasets:[
-      {label:'周期信号(柱)',data:CYCLE_CODES,
-        backgroundColor:CYCLE_CODES.map(function(v){return v===0?'rgba(248,81,73,.25)':v===1?'rgba(210,153,34,.25)':v===2?'rgba(63,185,80,.25)':v===3?'rgba(227,179,65,.25)':'rgba(139,148,158,.15)';}),
-        borderWidth:0,yAxisID:'y2',order:2},
-      {label:'情绪温度(线)',data:TEMPS,type:'line',borderColor:'#e3b341',backgroundColor:'transparent',
-        borderWidth:2.5,pointRadius:3,tension:.35,fill:false,yAxisID:'y',order:1,
-        pointBackgroundColor:TEMP_COLORS,spanGaps:true}
-    ]},
-    options:{responsive:true,maintainAspectRatio:true,interaction:{mode:'index',intersect:false},
-      plugins:{
-        legend:{labels:{boxWidth:9,padding:10}},
-        tooltip:{
-          backgroundColor:'rgba(22,27,34,0.97)',borderColor:'#30363d',borderWidth:1,
-          titleColor:'#e6edf3',bodyColor:'#8b949e',padding:12,
-          callbacks:{
-            title:function(items){return DATES_FULL[items[0].dataIndex];},
-            afterBody:function(items){
-              var i=items[0].dataIndex;
-              var cycleNames=['亏延续','亏转赚','赚延续','赚转亏','不确定'];
-              return['温度: '+(TEMPS[i]??'-')+'° ('+TEMP_LABELS[i]+')',
-                '周期: '+(cycleNames[CYCLE_CODES[i]]||'-'),'阶段: '+(STAGES[i]||'-')];
-            }
-          }
-        },
-        annotation:{annotations:{h80:hline(80,'#f85149',''),h50:hline(50,'#d29922',''),h20:hline(20,'#3fb950','')}}
+    },
+    scales: {
+      y: {
+        min: 0,
+        grid: { color: '#2d3748' },
+        ticks: { color: '#718096' },
       },
-      scales:{
-        x:{grid:GRID,ticks:XTICK},
-        y:{grid:GRID,min:0,max:100,position:'left',title:{display:true,text:'温度°',color:'#e3b341'},
-          ticks:{color:'#e3b341',callback:function(v){return v+'°';}}},
-        y2:{grid:{display:false},min:-0.5,max:3.5,position:'right',
-          ticks:{callback:function(v){return['亏延','亏转','赚延','赚转'][v]||'';},stepSize:1}}
-      }
+      x: { grid: { display: false }, ticks: { maxRotation: 45, color: '#718096', font: { size: 10 } } }
     }
-  });
-})();
-
-// ── 六阶段·七周期 联动折线图 ──
-(function(){
-  var stageValMap={'冰点期':0,'启动期':1,'分歧期':2,'发酵期':3,'高潮期':4,'退潮期':5,'未知':-1};
-  var cycleValMap={'亏钱效应延续':-3,'亏钱效应扩散':-3,'亏钱效应减弱':-2,'亏钱->赚钱反转':-1,'偏亏钱':-1,
-    '震荡分歧':0,'偏赚钱':1,'赚钱效应升温':2,'赚钱效应延续':3,'赚钱->亏钱反转':-1,'数据不足':0,'未知':0};
-  var stageData=STAGES.map(function(s){return stageValMap[s]||0;});
-  var cycleData=CYCLES.map(function(c){return cycleValMap[c]||0;});
-
-  var stageBgPlugin={id:'stageBgCycle',beforeDraw:function(chart){
-    var sData=chart.data._stageData;if(!sData)return;
-    var ctx=chart.ctx,meta=chart.getDatasetMeta(0);
-    if(!meta||!meta.data)return;
-    var xAxis=chart.scales.x,yAxis=chart.scales.y;
-    if(!xAxis||!yAxis)return;
-    var stageBgMap={'冰点期':'rgba(248,81,73,0.10)','启动期':'rgba(210,153,34,0.08)','分歧期':'rgba(210,153,34,0.05)',
-      '发酵期':'rgba(88,166,255,0.10)','高潮期':'rgba(63,185,80,0.10)','退潮期':'rgba(188,140,255,0.08)','未知':'rgba(139,148,158,0.03)'};
-    ctx.save();ctx.beginPath();
-    ctx.rect(xAxis.left,yAxis.top,xAxis.right-xAxis.left,yAxis.bottom-yAxis.top);
-    ctx.clip();
-    for(var i=0;i<sData.length;i++){
-      if(!meta.data[i])continue;
-      var px=meta.data[i].x,pw;
-      if(i<sData.length-1&&meta.data[i+1])pw=meta.data[i+1].x-px;
-      else if(i>0&&meta.data[i-1])pw=px-meta.data[i-1].x;
-      else pw=20;
-      ctx.fillStyle=stageBgMap[sData[i]]||'rgba(139,148,158,0.03)';
-      ctx.fillRect(px-pw/2,yAxis.top,pw,yAxis.bottom-yAxis.top);
-    }
-    ctx.restore();
-  }};
-  Chart.register(stageBgPlugin);
-
-  new Chart(document.getElementById('c-stage-cycle'),{
-    type:'line',
-    data:{labels:DATES,_stageData:STAGES,datasets:[
-      {label:'六阶段',data:stageData,borderColor:'#d29922',backgroundColor:'rgba(210,153,34,0.12)',borderWidth:2.5,tension:0.3,fill:true,pointRadius:4,pointHoverRadius:7,yAxisID:'y',order:1},
-      {label:'七周期',data:cycleData,borderColor:'#58a6ff',backgroundColor:'rgba(88,166,255,0.08)',borderWidth:2,tension:0.3,fill:false,pointRadius:3,pointHoverRadius:6,yAxisID:'y',order:2}
-    ]},
-    options:{responsive:true,maintainAspectRatio:true,interaction:{mode:'index',intersect:false},
-      plugins:{legend:{labels:{boxWidth:12,padding:14}},tooltip:{
-        backgroundColor:'rgba(22,27,34,0.97)',borderColor:'#30363d',borderWidth:1,
-        titleColor:'#e6edf3',bodyColor:'#8b949e',padding:12,
-        callbacks:{title:function(items){return DATES_FULL[items[0].dataIndex];},
-          afterBody:function(items){var i=items[0].dataIndex;
-            return['','六阶段: '+(STAGES[i]||'-')+' ('+stageData[i]+')',
-              '七周期: '+(CYCLES[i]||'-')+' ('+cycleData[i]+')','',
-              '涨停: '+(ZT[i]??'-')+'  跌停: '+(DT[i]??'-'),
-              '1)竞绿差: '+(DIFF1[i]!=null?DIFF1[i]:'-'),
-              '2)竞红差: '+(DIFF2[i]!=null?DIFF2[i]:'-'),
-              '3)红扩容: '+(DIFF3[i]!=null?DIFF3[i]:'-'),
-              '4)绿收敛: '+(DIFF4[i]!=null?DIFF4[i]:'-')];}}
-      }},
-      scales:{x:{grid:GRID,ticks:XTICK},y:{grid:GRID,title:{display:true,text:'数值',color:'#8b949e',font:{size:11}}}}}
-  });
-})();
-
-// ── 六阶段时序图 ──
-new Chart('c-phase6',{type:'line',data:{labels:DATES,datasets:[
-  {label:'情绪阶段',data:STAGE_CODES,borderColor:'#bc8cff',backgroundColor:'rgba(188,140,255,.1)',
-    borderWidth:2,pointRadius:3,pointBackgroundColor:STAGE_CODES.map(function(v){return v===0?'#f85149':v===1?'#d29922':v===2?'#e3b341':v===3?'#d29922':v===4?'#3fb950':'#bc8cff';}),
-    tension:.3,fill:true,spanGaps:true}
-]},options:{responsive:true,maintainAspectRatio:true,interaction:{mode:'index',intersect:false},
-  plugins:{legend:{display:false},tooltip:TT,annotation:{annotations:{h0:hline(0,'#f85149','冰点'),h1:hline(1,'#d29922','启动'),h2:hline(2,'#e3b341','分歧'),h3:hline(3,'#d29922','发酵'),h4:hline(4,'#3fb950','高潮'),h5:hline(5,'#bc8cff','退潮')}}},
-  scales:{x:{grid:GRID,ticks:XTICK},y:{grid:GRID,min:-0.5,max:5,ticks:{stepSize:1,callback:function(v){return['冰点','启动','分歧','发酵','高潮','退潮'][v]||v;}}}}}});
-
-// ── 七周期信号图 ──
-new Chart('c-cycle4',{type:'bar',data:{labels:DATES,datasets:[
-  {label:'周期判定',data:CYCLE_CODES,backgroundColor:CYCLE_CODES.map(function(v){return v===0?'rgba(248,81,73,.7)':v===1?'rgba(210,153,34,.7)':v===2?'rgba(63,185,80,.7)':v===3?'rgba(227,179,65,.7)':'rgba(139,148,158,.4)';}),borderWidth:0}
-]},options:{responsive:true,maintainAspectRatio:true,
-  plugins:{legend:{display:false},tooltip:Object.assign({},TT,{callbacks:{label:function(ctx){return['亏延续','亏转赚','赚延续','赚转亏','不确定'][ctx.raw]||ctx.raw;}}}),annotation:{annotations:{h0:hline(0,'#ffffff','零线')}}},
-  scales:{x:{grid:GRID,ticks:XTICK},y:{grid:GRID,min:-0.5,max:3.5,ticks:{stepSize:1,callback:function(v){return['亏延续','亏转赚','赚延续','赚转亏'][v]||'';}}}}}});
-
-// ── 周期信号累积得分 ──
-(function(){
-  var SCORES=[];
-  for(var i=0;i<DATES.length;i++){var s=0;if(DIFF1[i]!==null)s+=DIFF1[i]>0?1:-1;if(DIFF2[i]!==null)s+=DIFF2[i]>0?1:-1;if(DIFF3[i]!==null)s+=DIFF3[i]>0?1:-1;if(DIFF4[i]!==null)s+=DIFF4[i]>0?1:-1;SCORES.push(s);}
-  new Chart('c-score',{type:'line',data:{labels:DATES,datasets:[
-    {label:'周期信号得分',data:SCORES,borderColor:'#56d4dd',backgroundColor:SCORES.map(function(v){return v>=0?'rgba(63,185,80,.1)':'rgba(248,81,73,.1)';}),borderWidth:2,pointRadius:2,tension:.3,fill:true}
-  ]},options:{responsive:true,maintainAspectRatio:true,interaction:{mode:'index',intersect:false},
-    plugins:{legend:{display:false},tooltip:TT,annotation:{annotations:{h0:hline(0,'#ffffff','零线'),h2:hline(2,'#3fb950','强做多'),hm2:hline(-2,'#f85149','强做空')}}},
-    scales:{x:{grid:GRID,ticks:XTICK},y:{grid:GRID}}}});
-})();
-
-// ── 六阶段与涨停联动 ──
-(function(){
-  var stageBorderMap={'冰点期':'#f85149','启动期':'#d29922','分歧期':'#e3b341','发酵期':'#58a6ff','高潮期':'#3fb950','退潮期':'#bc8cff','未知':'#8b949e'};
-  function sc(s){return stageBorderMap[s]||'#8b949e';}
-  new Chart(document.getElementById('c-stage-ztdt'),{
-    type:'line',
-    data:{labels:DATES,_stageData:STAGES,datasets:[
-      {label:'涨停数',data:ZT,type:'line',borderColor:'rgba(248,81,73,0.9)',backgroundColor:'transparent',borderWidth:2.5,tension:0.3,fill:false,yAxisID:'y',
-        pointBackgroundColor:CYCLES.map(function(c){if(!c||c==='数据不足')return'#8b949e';if(c.includes('赚钱'))return'#3fb950';if(c.includes('亏钱'))return'#f85149';return'#d29922';}),
-        pointBorderColor:STAGES.map(sc),pointBorderWidth:2.5,pointRadius:5,pointHoverRadius:8,order:1},
-      {label:'跌停数',data:DT,type:'line',borderColor:'rgba(63,185,80,0.85)',backgroundColor:'transparent',borderWidth:2,tension:0.3,fill:false,yAxisID:'y',pointRadius:3,pointHoverRadius:6,order:2}
-    ]},
-    options:{responsive:true,maintainAspectRatio:true,interaction:{mode:'index',intersect:false},
-      plugins:{legend:{labels:{boxWidth:12,padding:14}},
-        tooltip:{backgroundColor:'rgba(22,27,34,0.97)',borderColor:'#30363d',borderWidth:1,titleColor:'#e6edf3',bodyColor:'#8b949e',padding:12,
-          callbacks:{title:function(items){return DATES_FULL[items[0].dataIndex];},
-            afterBody:function(items){var i=items[0].dataIndex;return['','六阶段: '+(STAGES[i]||'-'),'七周期: '+(CYCLES[i]||'-')];}}}},
-      scales:{x:{grid:GRID,ticks:XTICK},y:{grid:GRID,title:{display:true,text:'数量',color:'#8b949e'}}}}
-  });
-})();
-
-// ── 差值信号(近15日) ──
-var recentStart=Math.max(0,DATES.length-15);
-var recentDates=DATES.slice(recentStart);
-function sliceRecent(arr){return arr.slice(recentStart);}
-new Chart('c-4diff',{type:'bar',data:{labels:recentDates,datasets:[
-  {label:'1)隔日竞价绿差',data:sliceRecent(DIFF1),backgroundColor:sliceRecent(DIFF1).map(function(v){return v===null?'transparent':v>=0?'rgba(63,185,80,.7)':'rgba(248,81,73,.6)';}),borderColor:sliceRecent(DIFF1).map(function(v){return v===null?'transparent':v>=0?'#3fb950':'#f85149';}),borderWidth:1},
-  {label:'2)隔日竞价红差',data:sliceRecent(DIFF2),backgroundColor:sliceRecent(DIFF2).map(function(v){return v===null?'transparent':v>=0?'rgba(63,185,80,.7)':'rgba(248,81,73,.6)';}),borderColor:sliceRecent(DIFF2).map(function(v){return v===null?'transparent':v>=0?'#3fb950':'#f85149';}),borderWidth:1},
-  {label:'3)日内红盘扩容',data:sliceRecent(DIFF3),backgroundColor:sliceRecent(DIFF3).map(function(v){return v===null?'transparent':v>=0?'rgba(63,185,80,.7)':'rgba(248,81,73,.6)';}),borderColor:sliceRecent(DIFF3).map(function(v){return v===null?'transparent':v>=0?'#3fb950':'#f85149';}),borderWidth:1},
-  {label:'4)日内绿盘收敛',data:sliceRecent(DIFF4),backgroundColor:sliceRecent(DIFF4).map(function(v){return v===null?'transparent':v>=0?'rgba(63,185,80,.7)':'rgba(248,81,73,.6)';}),borderColor:sliceRecent(DIFF4).map(function(v){return v===null?'transparent':v>=0?'#3fb950':'#f85149';}),borderWidth:1}
-]},options:{responsive:true,maintainAspectRatio:true,interaction:{mode:'index',intersect:false},
-  plugins:{legend:{labels:{boxWidth:8,padding:8,font:{size:10}}},tooltip:TT,annotation:{annotations:{h0:hline(0,'#ffffff','零线')}}},
-  scales:{x:{grid:GRID,ticks:{maxTicksLimit:15,maxRotation:45}},y:{grid:GRID}}}});
-new Chart('c-lose',{type:'bar',data:{labels:DATES,datasets:[
-  {label:'1)隔日竞价绿差',data:DIFF1,backgroundColor:DIFF1.map(function(v){return v===null?'transparent':v>=0?'rgba(63,185,80,.7)':'rgba(248,81,73,.6)';}),borderWidth:0},
-  {label:'4)日内绿盘收敛',data:DIFF4,backgroundColor:DIFF4.map(function(v){return v===null?'transparent':v>=0?'rgba(63,185,80,.4)':'rgba(248,81,73,.35)';}),borderWidth:0}
-]},options:{responsive:true,maintainAspectRatio:true,interaction:{mode:'index',intersect:false},
-  plugins:{legend:{labels:{boxWidth:8,padding:8,font:{size:10}}},tooltip:TT,annotation:{annotations:{h0:hline(0,'#ffffff','零线')}}},
-  scales:{x:{grid:GRID,ticks:XTICK},y:{grid:GRID}}}});
-new Chart('c-earn',{type:'bar',data:{labels:DATES,datasets:[
-  {label:'2)隔日竞价红差',data:DIFF2,backgroundColor:DIFF2.map(function(v){return v===null?'transparent':v>=0?'rgba(63,185,80,.7)':'rgba(248,81,73,.6)';}),borderWidth:0},
-  {label:'3)日内红盘扩容',data:DIFF3,backgroundColor:DIFF3.map(function(v){return v===null?'transparent':v>=0?'rgba(63,185,80,.4)':'rgba(248,81,73,.35)';}),borderWidth:0}
-]},options:{responsive:true,maintainAspectRatio:true,interaction:{mode:'index',intersect:false},
-  plugins:{legend:{labels:{boxWidth:8,padding:8,font:{size:10}}},tooltip:TT,annotation:{annotations:{h0:hline(0,'#ffffff','零线')}}},
-  scales:{x:{grid:GRID,ticks:XTICK},y:{grid:GRID}}}});
-
-// ── 竞价vs收盘 ──
-new Chart('c-jg-sg',{type:'bar',data:{labels:DATES,datasets:[
-  {label:'竞价绿',data:JG,backgroundColor:'rgba(63,185,80,.6)',borderColor:'#3fb950',borderWidth:1},
-  {label:'收盘绿',data:SG,backgroundColor:'rgba(88,166,255,.6)',borderColor:'#58a6ff',borderWidth:1}
-]},options:baseOpts()});
-new Chart('c-jr-sr',{type:'bar',data:{labels:DATES,datasets:[
-  {label:'竞价红',data:JH,backgroundColor:'rgba(248,81,73,.6)',borderColor:'#f85149',borderWidth:1},
-  {label:'收盘红',data:SH,backgroundColor:'rgba(188,140,255,.6)',borderColor:'#bc8cff',borderWidth:1}
-]},options:baseOpts()});
-new Chart('c-jd-sd',{type:'line',data:{labels:DATES,datasets:[
-  {label:'竞价差',data:JD,borderColor:'#3fb950',borderWidth:1.5,pointRadius:1.5,tension:.3},
-  {label:'收盘差',data:SD,borderColor:'#d29922',borderWidth:1.5,pointRadius:1.5,tension:.3,borderDash:[4,3]}
-]},options:baseOpts({plugins:{...baseOpts().plugins,annotation:{annotations:{h0:hline(0,'#ffffff','零线')}}}})});
-
-// ── 4项差值趋势 ──
-function diffBar(id,data,label){
-  new Chart(id,{type:'bar',data:{labels:DATES,datasets:[{label:label,data:data,
-    backgroundColor:data.map(function(v){return v===null?'transparent':v>=0?'rgba(63,185,80,.7)':'rgba(248,81,73,.65)';}),
-    borderColor:data.map(function(v){return v===null?'transparent':v>=0?'#3fb950':'#f85149';}),borderWidth:1}]},
-    options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{display:false},tooltip:TT,annotation:{annotations:{h0:hline(0,'#ffffff','零线')}}},
-    scales:{x:{grid:GRID,ticks:XTICK},y:{grid:GRID}}}});
-}
-diffBar('c-d1',DIFF1,'1)隔日竞价绿差');
-diffBar('c-d2',DIFF2,'2)隔日竞价红差');
-diffBar('c-d3',DIFF3,'3)日内红盘扩容');
-diffBar('c-d4',DIFF4,'4)日内绿盘收敛');
-
-// ── 综合概览 ──
-new Chart('c-overview',{type:'bar',data:{labels:DATES,datasets:[
-  {label:'涨停数',data:ZT,backgroundColor:'rgba(248,81,73,.75)',borderColor:'#f85149',borderWidth:1,yAxisID:'y',order:2},
-  {label:'跌停数',data:DT,backgroundColor:'rgba(63,185,80,.65)',borderColor:'#3fb950',borderWidth:1,yAxisID:'y',order:3},
-  {label:'涨家数',data:ZJ,type:'line',borderColor:'#58a6ff',backgroundColor:'transparent',borderWidth:1.5,pointRadius:0,tension:.3,yAxisID:'y2',order:1}
-]},options:{responsive:true,maintainAspectRatio:true,interaction:{mode:'index',intersect:false},
-  plugins:{legend:{labels:{boxWidth:9,padding:10}},tooltip:TT},
-  scales:{x:{grid:GRID,ticks:XTICK},y:{grid:GRID,title:{display:true,text:'涨/跌停数',color:'#8b949e'}},
-    y2:{position:'right',grid:{display:false},title:{display:true,text:'涨家数',color:'#58a6ff'},ticks:{color:'#58a6ff'}}}}});
-new Chart('c-zj',{type:'line',data:{labels:DATES,datasets:[
-  {label:'涨家数',data:ZJ,borderColor:'#58a6ff',backgroundColor:'rgba(88,166,255,.08)',borderWidth:2,pointRadius:1.5,tension:.3,fill:true}
-]},options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{display:false},tooltip:TT,
-  annotation:{annotations:{h5k:hline(5000,'#58a6ff','极强'),h3k:hline(3000,'#d29922','强'),h1k:hline(1000,'#f85149','弱')}}},
-  scales:{x:{grid:GRID,ticks:XTICK},y:{grid:GRID}}}});
-new Chart('c-ratio',{type:'line',data:{labels:DATES,datasets:[
-  {label:'涨跌比',data:ZTDT,borderColor:'#d29922',backgroundColor:'rgba(210,153,34,.08)',borderWidth:2,pointRadius:2,
-    pointBackgroundColor:ZTDT.map(function(v){return v===null?'transparent':v>=4?'#3fb950':v>=2?'#d29922':'#f85149';}),tension:.3,fill:true}
-]},options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{display:false},tooltip:TT,
-  annotation:{annotations:{h4:hline(4,'#3fb950','做多'),h2:hline(2,'#d29922','中性'),h1:hline(1,'#f85149','警戒')}}},
-  scales:{x:{grid:GRID,ticks:XTICK},y:{grid:GRID,min:0}}}});
-
-// ── 板块高度 ──
-new Chart('c-board',{type:'line',data:{labels:DATES,datasets:[
-  {label:'现在板',data:BK,borderColor:'#e3b341',backgroundColor:'rgba(227,179,65,.1)',borderWidth:2,pointRadius:3,tension:.2,fill:true,spanGaps:false}
-]},options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{display:false},tooltip:TT},
-  scales:{x:{grid:GRID,ticks:XTICK},y:{grid:GRID,min:2,max:10,ticks:{stepSize:1}}}}});
-new Chart('c-h-rh',{type:'line',data:{labels:DATES,datasets:[
-  {label:'高度',data:GD,borderColor:'#e3b341',borderWidth:2,pointRadius:3,tension:.2,spanGaps:false},
-  {label:'实高度',data:SGD,borderColor:'#39d353',borderWidth:2,pointRadius:3,tension:.2,borderDash:[4,3],spanGaps:false}
-]},options:{responsive:true,maintainAspectRatio:true,interaction:{mode:'index',intersect:false},
-  plugins:{legend:{labels:{boxWidth:9,padding:10}},tooltip:TT},
-  scales:{x:{grid:GRID,ticks:XTICK},y:{grid:GRID,min:2,max:10,ticks:{stepSize:1}}}}});
-
-// ── 信号明细表(含温度列) ──
-(function(){
-  var tbody=document.getElementById('raw-tbody');
-  for(var i=0;i<DATES.length;i++){
-    var d1=DIFF1[i],d2=DIFF2[i],d3=DIFF3[i],d4=DIFF4[i];
-    var fmtDiff=function(v){return v===null?'-':(v>0?'<span class="pos">+'+v+'</span>':(v<0?'<span class="neg">'+v+'</span>':'0'));};
-    var cycleCls=['cycle-0','cycle-1','cycle-2','cycle-3'][CYCLE_CODES[i]]||'';
-    var phaseCls=['phase-0','phase-1','phase-2','phase-3','phase-4','phase-5'][STAGE_CODES[i]]||'';
-    var tempVal=TEMPS[i];
-    var tempColor=TEMP_COLORS[i]||'#8b949e';
-    tbody.insertAdjacentHTML('beforeend',
-      '<tr><td>'+DATES_FULL[i]+'</td><td>'+(ZT[i]??'-')+'</td><td>'+(DT[i]??'-')+'</td><td>'+(ZJ[i]??'-')+'</td><td>'+(ZTDT[i]??'-')+'</td>'+
-      '<td>'+(JG[i]??'-')+'</td><td>'+(JH[i]??'-')+'</td><td>'+(SG[i]??'-')+'</td><td>'+(SH[i]??'-')+'</td>'+
-      '<td>'+fmtDiff(d1)+'</td><td>'+fmtDiff(d2)+'</td><td>'+fmtDiff(d3)+'</td><td>'+fmtDiff(d4)+'</td>'+
-      '<td class="'+cycleCls+'">'+(CYCLES[i]||'-')+'</td>'+
-      '<td class="'+phaseCls+'">'+(STAGES[i]||'-')+'</td>'+
-      '<td style="color:'+tempColor+';font-weight:700">'+(tempVal??'-')+'°</td></tr>');
   }
-})();
+});
 
-function showTab(name,btn){
-  document.querySelectorAll('.section').forEach(function(s){s.classList.remove('active');});
-  document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.remove('active');});
-  document.getElementById('sec-'+name).classList.add('active');
-  btn.classList.add('active');
-}
+// 2. 情绪温度历史折线（总分 + 各分项）
+const tempCtx = document.getElementById('tempLineChart').getContext('2d');
+new Chart(tempCtx, {
+  type: 'line',
+  data: {
+    labels,
+    datasets: [
+      {
+        label: '总分',
+        data: DATA.map(r => r['总分']),
+        borderColor: '#f6e05e',
+        borderWidth: 2.5,
+        tension: 0.3,
+        pointRadius: 2,
+        fill: false,
+        yAxisID: 'y',
+      },
+      {
+        label: '收盘(×2→满60等价)',
+        data: DATA.map(r => r['分_收盘']),
+        borderColor: '#fc8181',
+        borderWidth: 1.5,
+        tension: 0.3,
+        pointRadius: 0,
+        fill: false,
+        borderDash: [4,2],
+        yAxisID: 'y',
+      },
+      {
+        label: '竞价',
+        data: DATA.map(r => r['分_竞价']),
+        borderColor: '#f6ad55',
+        borderWidth: 1.5,
+        tension: 0.3,
+        pointRadius: 0,
+        fill: false,
+        borderDash: [4,2],
+        yAxisID: 'y',
+      },
+      {
+        label: '连板',
+        data: DATA.map(r => r['分_连板']),
+        borderColor: '#68d391',
+        borderWidth: 1.5,
+        tension: 0.3,
+        pointRadius: 0,
+        fill: false,
+        borderDash: [4,2],
+        yAxisID: 'y',
+      },
+      {
+        label: '事件（无上限）',
+        data: DATA.map(r => r['分_事件']),
+        borderColor: '#63b3ed',
+        borderWidth: 1.5,
+        tension: 0.3,
+        pointRadius: 2,
+        fill: false,
+        yAxisID: 'y2',
+      },
+      {
+        label: '额外分（直接加成）',
+        data: DATA.map(r => r['分_额外']),
+        borderColor: '#d6bcfa',
+        backgroundColor: 'rgba(214,188,250,0.15)',
+        borderWidth: 2,
+        tension: 0,
+        pointRadius: 3,
+        pointStyle: 'triangle',
+        fill: true,
+        yAxisID: 'y2',
+      },
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    interaction: { mode: 'index', intersect: false },
+    plugins: {
+      legend: { position: 'top', labels: { font: { size: 11 }, boxWidth: 12 } },
+      tooltip: {
+        callbacks: {
+          title: ctx => DATA[ctx[0].dataIndex]['日期全'],
+        }
+      }
+    },
+    scales: {
+      y: {
+        position: 'left',
+        min: 0,
+        title: { display: true, text: '总分 / 分项', color: '#718096', font: { size: 10 } },
+        grid: { color: '#2d3748' },
+        ticks: { color: '#718096' },
+      },
+      y2: {
+        position: 'right',
+        title: { display: true, text: '事件分 / 额外分', color: '#63b3ed', font: { size: 10 } },
+        grid: { drawOnChartArea: false },
+        ticks: { color: '#63b3ed' },
+      },
+      x: { grid: { display: false }, ticks: { maxRotation: 45, font: { size: 10 } } }
+    }
+  }
+});
 </script>
 </body>
 </html>
