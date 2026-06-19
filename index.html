@@ -1,436 +1,838 @@
 
-<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>A股超短情绪周期分析报告 </title><style>
-*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
-body { font-family:'Microsoft YaHei','PingFang SC',sans-serif; background:#080c14; color:#d8e0f0; line-height:1.6; }
-.container { max-width:1440px; margin:0 auto; padding:16px 20px; }
-header { text-align:center; padding:24px; background:linear-gradient(135deg,#0d1b2a,#1a2744); border-radius:16px; margin-bottom:20px; border:1px solid #1e3a5f; }
-header h1 { color:#00d4ff; font-size:28px; letter-spacing:2px; }
-.subtitle { color:#7090b0; margin-top:8px; font-size:13px; }
-.tab-nav { display:flex; gap:6px; margin-bottom:20px; flex-wrap:wrap; background:#0d1b2a; padding:8px; border-radius:12px; }
-.tab-btn { padding:9px 18px; background:transparent; border:1px solid transparent; color:#8090a0; border-radius:8px; cursor:pointer; font-size:13px; transition:all .2s; }
-.tab-btn:hover { background:#1a2744; color:#cde; }
-.tab-btn.active { background:rgba(0,212,255,0.12); color:#00d4ff; border-color:rgba(0,212,255,0.4); }
-.tab-pane { display:none; }
-.tab-pane.active { display:block; }
-.card { background:#0f1826; border-radius:14px; padding:18px; margin-bottom:16px; border:1px solid #1e2d45; }
-.card-title { font-size:15px; color:#00d4ff; margin-bottom:14px; padding-bottom:8px; border-bottom:1px solid #1e2d45; display:flex; align-items:center; gap:8px; }
-.card-title .badge { font-size:11px; padding:2px 8px; border-radius:10px; background:rgba(0,212,255,0.15); }
-.grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
-.grid-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; }
-.grid-4 { display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:12px; }
-.metric-box { background:#080c14; border-radius:10px; padding:14px 12px; text-align:center; border:1px solid #1a2a40; }
-.metric-value { font-size:26px; font-weight:700; margin:4px 0; }
-.metric-label { font-size:11px; color:#7090b0; }
-.metric-sub { font-size:12px; color:#9090a0; margin-top:3px; }
-.red { color:#ff4d4d; }
-.green { color:#00ff88; }
-.blue { color:#00bfff; }
-.orange { color:#ffa500; }
-.grey { color:#888; }
-.score-high { color:#ff4d4d; }
-.score-mid { color:#ffa500; }
-.score-low { color:#00ff88; }
-.phase-badge { display:inline-block; padding:3px 10px; border-radius:14px; font-size:13px; font-weight:500; }
-.phase-0 { background:rgba(0,191,255,0.15); color:#00bfff; }
-.phase-1 { background:rgba(0,255,136,0.12); color:#00ff88; }
-.phase-2 { background:rgba(170,255,0,0.12); color:#aaff00; }
-.phase-3 { background:rgba(255,165,0,0.15); color:#ffa500; }
-.phase-4 { background:rgba(255,77,77,0.15); color:#ff4d4d; }
-.phase-5 { background:rgba(100,100,100,0.2); color:#888; }
-.signal-box { background:#080c14; border-left:4px solid #00d4ff; padding:10px 14px; margin:8px 0; border-radius:0 10px 10px 0; }
-.signal-strong { border-left-color:#ff4d4d; background:rgba(255,77,77,0.05); }
-.signal-weak { border-left-color:#00bfff; background:rgba(0,191,255,0.05); }
-.prob-bar { height:10px; background:#1a2a40; border-radius:5px; margin:8px 0; overflow:hidden; }
-.prob-fill { height:100%; border-radius:5px; transition:width .5s ease; }
-.prob-high { background:linear-gradient(90deg,#ff8c00,#ff4d4d); }
-.prob-mid { background:linear-gradient(90deg,#ffd700,#ffa500); }
-.prob-low { background:linear-gradient(90deg,#00bfff,#00ff88); }
-table { width:100%; border-collapse:collapse; font-size:12px; }
-th { background:#0d1b2a; color:#00d4ff; padding:8px 6px; text-align:center; position:sticky; top:0; z-index:2; font-weight:500; }
-td { padding:7px 5px; text-align:center; border-bottom:1px solid #141e2e; }
-tr:hover td { background:#0d1b2a; }
-.chart-box { position:relative; height:300px; margin:10px 0; }
-.chart-box-tall { position:relative; height:380px; margin:10px 0; }
-.flow-step { display:flex; align-items:flex-start; margin:12px 0; }
-.flow-num { width:34px; height:34px; border-radius:50%; background:#00d4ff; color:#000; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:13px; margin-right:12px; flex-shrink:0; margin-top:2px; }
-.flow-content { flex:1; background:#080c14; padding:12px; border-radius:10px; border:1px solid #1e2d45; }
-.flow-title { font-weight:600; color:#00d4ff; font-size:14px; }
-.flow-desc { color:#9090a0; font-size:12px; margin-top:4px; }
-.flow-note { color:#ffa500; font-size:11px; margin-top:4px; font-style:italic; }
-.check-item { display:flex; align-items:center; gap:12px; padding:10px; margin:6px 0; border-radius:8px; }
-.check-ok { background:rgba(0,255,136,0.06); border:1px solid rgba(0,255,136,0.2); }
-.check-warn { background:rgba(255,165,0,0.06); border:1px solid rgba(255,165,0,0.2); }
-.check-icon { width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:bold; flex-shrink:0; }
-.icon-ok { background:#1a3a1a; color:#00ff88; }
-.icon-warn { background:#3a2a0a; color:#ffa500; }
-.manual-section { margin:14px 0; }
-.manual-section h3 { color:#ffa500; margin-bottom:8px; font-size:14px; font-weight:600; }
-.manual-section p, .manual-section li { color:#c0c8d8; line-height:1.9; font-size:13px; }
-.manual-section ul { padding-left:18px; }
-.data-snapshot { display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; margin:12px 0; }
-.snap-item { background:#080c14; border-radius:8px; padding:10px; text-align:center; border:1px solid #1a2a40; }
-.snap-val { font-size:20px; font-weight:700; }
-.snap-lbl { font-size:11px; color:#7090b0; margin-top:2px; }
-.diff-table { width:100%; font-size:12px; }
-.diff-table td { padding:6px 8px; border-bottom:1px solid #141e2e; }
-.diff-table td:first-child { color:#7090b0; width:110px; }
-.section-sep { height:1px; background:#1e2d45; margin:16px 0; }
-@media(max-width:960px) { .grid-2,.grid-3,.grid-4 { grid-template-columns:1fr; } .data-snapshot { grid-template-columns:1fr 1fr; } }
-</style><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script></head><body><div class="container"><header><h1>📊 A股超短情绪周期分析报告 </h1><p class="subtitle style ="color:red"">生成时间：2026-06-16 19:27 | 数据截止：2026-06-16 </p></header><nav class="tab-nav"><button class="tab-btn active" onclick="switchTab(0)">📅 今日概览</button><button class="tab-btn" onclick="switchTab(1)">📈 可视化图表</button><button class="tab-btn" onclick="switchTab(2)">⚡ 每日操作流程</button><button class="tab-btn" onclick="switchTab(3)">📋 明细数据表</button><button class="tab-btn" onclick="switchTab(4)">📖 体系手册</button></nav><div class="tab-content"><div class="tab-pane active" id="tab-0">
-<div class="card">
-  <div class="card-title">📅 2026-06-16（周二）今日情绪概览
-    <span class="badge">情绪偏强</span>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A股超短情绪周期分析 v9.0</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#080d18;color:#e0e6f0;font-family:'Microsoft YaHei',sans-serif;min-height:100vh}
+.header{background:linear-gradient(135deg,#0a1428,#162040);padding:16px 24px;border-bottom:1px solid #1e3a5f;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.header-title{font-size:17px;color:#00d4ff;letter-spacing:2px;font-weight:700}
+.header-sub{font-size:10px;color:#445566;margin-top:3px;line-height:1.7}
+.tabs{display:flex;background:#0a1020;border-bottom:1px solid #1e3a5f;overflow-x:auto;scrollbar-width:thin}
+.tab{padding:10px 18px;cursor:pointer;font-size:12px;color:#556677;border-bottom:2px solid transparent;white-space:nowrap;transition:.2s}
+.tab.active{color:#00d4ff;border-bottom-color:#00d4ff;background:#080d18}
+.tab:hover:not(.active){color:#aabbcc;background:#0d1628}
+.tab-content{display:none;padding:18px;min-height:60vh}
+.tab-content.active{display:block}
+/* 概览卡片 */
+.overview-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:18px}
+.card{background:#0d1b2e;border:1px solid #1e3a5f;border-radius:10px;padding:16px;position:relative;overflow:hidden}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--accent,#00d4ff)}
+.card-label{font-size:10px;color:#445566;letter-spacing:1px;margin-bottom:5px;text-transform:uppercase}
+.card-value{font-size:24px;font-weight:700;color:var(--val-color,#e0e6f0)}
+.card-sub{font-size:11px;color:#667788;margin-top:4px;line-height:1.5}
+.score-bar-bg{background:#1e3a5f;border-radius:4px;height:5px;margin-top:8px}
+.score-bar-fill{height:5px;border-radius:4px}
+.tag{display:inline-block;padding:2px 7px;border-radius:10px;font-size:10px;margin:2px}
+.tag-iron{background:#ff440033;border:1px solid #ff4400;color:#ff6600}
+.tag-buy{background:#ff000033;border:1px solid #ff4d4d;color:#ff6666}
+.tag-sell{background:#00ff0033;border:1px solid #00ff88;color:#00dd66}
+.tag-warm{background:#ffaa0033;border:1px solid #ffaa00;color:#ffcc00}
+.tag-cool{background:#0088ff33;border:1px solid #0088ff;color:#44aaff}
+.signal-box{background:#0d1b2e;border:1px solid #1e3a5f;border-radius:8px;padding:12px;margin-bottom:10px}
+.signal-box.warn{border-color:#ff6600;background:#160900}
+.signal-box.ok{border-color:#00ff88;background:#001208}
+.signal-box.danger{border-color:#ff4d4d;background:#160000}
+.signal-box.info{border-color:#00aaff;background:#001428}
+/* 图表布局 */
+.charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:880px){.charts-grid{grid-template-columns:1fr}}
+.chart-card{background:#0d1b2e;border:1px solid #1e3a5f;border-radius:10px;padding:14px}
+.chart-title{font-size:12px;color:#00d4ff;margin-bottom:6px;font-weight:bold}
+.chart-desc{font-size:10px;color:#445566;margin-bottom:8px;line-height:1.5}
+/* 赚亏效应 */
+.profit-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+@media(max-width:700px){.profit-grid{grid-template-columns:1fr}}
+.profit-panel{background:#0d1b2e;border:1px solid #1e3a5f;border-radius:8px;padding:14px}
+.profit-title{font-size:12px;font-weight:bold;margin-bottom:8px}
+/* 操作流程 */
+.flow-block{background:#0d1b2e;border-radius:8px;padding:14px;margin-bottom:10px}
+.flow-title{font-size:13px;font-weight:bold;margin-bottom:8px}
+.flow-steps{list-style:none;padding-left:4px}
+.flow-steps li{font-size:11px;color:#99aabb;padding:3px 0;border-bottom:1px solid #141f30}
+.flow-steps li:last-child{border-bottom:none}
+/* 明细表 */
+.data-table{width:100%;border-collapse:collapse;font-size:11px}
+.data-table th{background:#0a1422;color:#00d4ff;padding:7px 5px;text-align:center;border-bottom:2px solid #1e3a5f;position:sticky;top:0}
+.data-table td{padding:5px 4px;text-align:center;border-bottom:1px solid #0f1a2a;color:#99aabc}
+.data-table tr:hover{background:#0a1628}
+/* 体系手册 */
+.manual-section{background:#0d1b2e;border:1px solid #1e3a5f;border-radius:8px;padding:14px;margin-bottom:12px}
+.manual-title{color:#00d4ff;font-size:13px;font-weight:bold;margin-bottom:10px;border-bottom:1px solid #1e3a5f;padding-bottom:5px}
+.manual-table{width:100%;border-collapse:collapse;font-size:11px}
+.manual-table th{background:#080f1e;color:#667788;padding:5px 7px;text-align:left}
+.manual-table td{padding:5px 7px;border-bottom:1px solid #0f1a2a;color:#99aabc}
+.rule-item{padding:5px 0;border-bottom:1px solid #141f30;font-size:11px;color:#99aabc;line-height:1.6}
+.rule-item:last-child{border-bottom:none}
+.rule-item b{color:#ffcc00}
+.stat-card{background:#0d1b2e;border:1px solid #1e3a5f;border-radius:8px;padding:12px;margin-bottom:12px}
+.section-divider{border:none;border-top:1px solid #1a2a3a;margin:12px 0}
+.section-title{color:#00d4ff;font-size:13px;font-weight:bold;margin:10px 0 8px 0}
+/* 概率条 */
+.prob-bar-wrap{display:flex;align-items:center;gap:8px;margin:4px 0}
+.prob-bar-bg{flex:1;background:#1e3a5f;border-radius:4px;height:8px;overflow:hidden}
+.prob-bar-fill{height:8px;border-radius:4px;transition:width 0.5s}
+.prob-label{font-size:10px;color:#778899;min-width:40px;text-align:right}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="header-title">📊 A股超短情绪周期分析系统 v9.0</div>
+    <div class="header-sub">心法：情绪为道 主线为法 抢筹为术 助攻为器 | 按周期定仓位 按节点做盈亏比 | 最后更新：2026-06-18 (周四) </div>
   </div>
-  <div class="grid-2">
-    <div class="metric-box">
-      <div class="metric-label">情绪综合温度计</div>
-      <div class="metric-value score-mid" style="font-size:48px">68</div>
-      <div class="metric-sub" style="color:#ffa500">→ 横盘</div>
-      <div class="metric-sub">均值47 ± σ17.8</div>
+  <div style="text-align:right;font-size:11px">
+    <div style="font-size:26px;color:#ffaa00;font-weight:700">52<span style="font-size:13px">分</span></div>
+    <div style="color:#667788;margin-top:2px">情绪中性 | 主升期 | 成长期</div>
+    <div style="color:#445566;font-size:10px;margin-top:2px">Z-Score: 0.83 | 百分位: 90.0%</div>
+  </div>
+</div>
+
+<div class="tabs">
+  <div class="tab active"  onclick="switchTab(0)">📅 今日概览</div>
+  <div class="tab"         onclick="switchTab(1)">📈 可视化图表</div>
+  <div class="tab"         onclick="switchTab(2)">💹 赚亏效应周期</div>
+  <div class="tab"         onclick="switchTab(3)">⚡ 每日操作流程</div>
+  <div class="tab"         onclick="switchTab(4)">📋 明细数据表</div>
+  <div class="tab"         onclick="switchTab(5)">📖 体系手册</div>
+</div>
+
+<!-- ==================== TAB 0: 今日概览 ==================== -->
+<div class="tab-content active" id="tab0">
+  <div class="overview-grid">
+    <div class="card" style="--accent:#ffaa00">
+      <div class="card-label">情绪综合温度</div>
+      <div class="card-value" style="color:#ffaa00">52</div>
+      <div class="card-sub">情绪中性</div>
+      <div class="score-bar-bg"><div class="score-bar-fill" style="width:52%;background:#ffaa00"></div></div>
     </div>
-    <div class="metric-box">
-      <div class="metric-label">六阶段 → 七周期</div>
-      <div style="margin:12px 0">
-        <span class="phase-badge phase-3">主升期</span>
-        <span style="color:#555;margin:0 6px">→</span>
-        <span class="phase-badge phase-1">成长期</span>
+    <div class="card" style="--accent:#ff9900">
+      <div class="card-label">市场阶段 | 七周期</div>
+      <div class="card-value" style="font-size:18px;color:#ff9900">主升期</div>
+      <div class="card-sub">七周期：成长期</div>
+    </div>
+    <div class="card" style="--accent:#ffaa00">
+      <div class="card-label">建议仓位</div>
+      <div class="card-value" style="color:#ffaa00">60%</div>
+      <div class="card-sub">半仓布局</div>
+    </div>
+    <div class="card" style="--accent:#ff4d4d">
+      <div class="card-label">次日强弱预测</div>
+      <div class="card-value" style="font-size:18px;color:#ff4d4d">明日偏强</div>
+      <div class="card-sub">概率估算：95%</div>
+    </div>
+    <div class="card">
+      <div class="card-label">竞价强弱 | 收盘强弱</div>
+      <div class="card-value" style="font-size:16px">强 | 强</div>
+      <div class="card-sub">竞价比=1.73 | 收盘比=1.96 | 强弱一致</div>
+    </div>
+    <div class="card">
+      <div class="card-label">赚亏效应 | 情绪变化</div>
+      <div class="card-value" style="font-size:14px">赚钱效应确认</div>
+      <div class="card-sub">回暖信号🔥</div>
+    </div>
+  </div>
+
+  <!-- 关键差值快照 -->
+  <div class="signal-box">
+    <div style="color:#00d4ff;font-size:12px;font-weight:bold;margin-bottom:8px">🔢 关键差值快照</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;font-size:11px">
+      <div>竞价红/绿：<b style="color:#ff4d4d">38</b>/<b style="color:#00ff88">22</b></div>
+      <div>收盘红/绿：<b style="color:#ff4d4d">90</b>/<b style="color:#00ff88">46</b></div>
+      <div>日内红扩：<b style="color:#ff4d4d">+52</b></div>
+      <div>日内绿扩：<b style="color:#ff4d4d">+24</b></div>
+      <div>两日竞价红扩：<b style="color:#ff4d4d">+26</b></div>
+      <div>两日竞价绿扩：<b style="color:#00ff88">-5</b></div>
+      <div>综合净差：<b style="color:#ff4d4d">+28</b></div>
+      <div>Z-Score：<b style="color:#888">0.83</b></div>
+    </div>
+  </div>
+
+  <!-- 抢筹/铁律信号框 -->
+
+  <div class="signal-box ok">
+    <div style="color:#00ff88;font-weight:bold;margin-bottom:5px">🚀 抢筹真实度极强（做多方向）</div>
+    <div style="font-size:11px">竞价红38>昨12 且 日内红扩(+52)>昨日红扩(+30) => 抢筹真实度极强 可能反转</div>
+  </div>
+
+  <div class="signal-box info">
+    <div style="color:#00aaff;font-weight:bold;margin-bottom:5px">🔥 情绪回暖信号</div>
+    <div style="font-size:11px">两日竞价红扩(+26)>绿扩(-5) 且 竞价红(38)>绿(22)</div>
+  </div>
+
+
+  <!-- 近5日Z-Score统计 -->
+  <div class="stat-card">
+    <div style="color:#00d4ff;font-size:12px;font-weight:bold;margin-bottom:8px">📐 近5日统计 Z-Score分布（极端值=概率拐点信号）</div>
+    <table class="data-table">
+      <thead><tr>
+        <th>日期</th><th>情绪分</th><th>Z-Score</th><th>位置</th><th>百分位</th><th>次日预测</th>
+      </tr></thead>
+      <tbody><tr><td>06/12(周五)</td><td>46</td><td style="color:#888">+0.25</td><td>正常</td><td>60%</td><td>明日偏强</td></tr><tr><td>06/15(周一)</td><td>47</td><td style="color:#888">+0.39</td><td>正常</td><td>70%</td><td>明日中性</td></tr><tr><td>06/16(周二)</td><td>52</td><td style="color:#888">+0.76</td><td>正常</td><td>85%</td><td>明日中性</td></tr><tr><td>06/17(周三)</td><td>31</td><td style="color:#888">-0.94</td><td>正常</td><td>20%</td><td>明日偏弱</td></tr><tr><td>06/18(周四)</td><td>53</td><td style="color:#888">+0.83</td><td>正常</td><td>90%</td><td>明日偏强</td></tr></tbody>
+    </table>
+    <div style="font-size:10px;color:#445566;margin-top:6px">
+      Z-Score>+2=极端高位（概率均值回归，减仓信号）| Z-Score<-2=极端低位（概率反弹，低吸机会）
+    </div>
+  </div>
+</div>
+
+<!-- ==================== TAB 1: 可视化图表 ==================== -->
+<div class="tab-content" id="tab1">
+  <div class="charts-grid">
+    <!-- 图1: 情绪温度计+回归线+极端温度+周一/周五 -->
+    <div class="chart-card" style="grid-column:1/-1">
+      <div class="chart-title">📊 情绪综合温度计 + 回归趋势线 + 极端温度标注 + 周一/周五标注</div>
+      <div class="chart-desc">🔵蓝线=情绪分 | 🟡黄虚=20日回归趋势 | 🔴红虚=极强≥85 | 🟢绿虚=极弱≤25 | ◆菱形=极端拐点 | ▲三角=周一/周五 | 正态分布Z-Score判断概率位置</div>
+      <canvas id="chart1" height="90"></canvas>
+    </div>
+    
+    <!-- 图7: 抢筹/抛压概率折线图（v9新增） -->
+    <div class="chart-card" style="grid-column:1/-1">
+      <div class="chart-title">🎯 抢筹真实度 & 抛压真实度 概率折线图 + 综合多空信号（v9.0新增）</div>
+      <div class="chart-desc">🔴红线=做多抢筹概率（竞价红扩大且日内红扩增强） | 🟢绿线=做空抛压概率（竞价绿扩大且日内绿扩增强） | 🟡黄线=综合多空信号强度（>60偏多/<40偏空）</div>
+      <canvas id="chart7" height="80"></canvas>
+    </div>
+    <!-- 图2: 竞价红绿+收盘红绿 -->
+    <div class="chart-card">
+      <div class="chart-title">📈 竞价红绿 vs 收盘红绿折线（强弱分析）</div>
+      <div class="chart-desc">实粗=竞价 | 虚细=收盘 | 收>竞=日内动能增强 | 收&lt;竞=日内动能减弱</div>
+      <canvas id="chart2" height="150"></canvas>
+    </div>
+    <!-- 图3: 日内红扩/绿扩差值 -->
+    <div class="chart-card">
+      <div class="chart-title">📊 日内红扩/绿扩差值柱状图（赚亏效应强度）</div>
+      <div class="chart-desc">🔴正柱=红扩（赚钱增强） | 🟢负柱=绿扩（亏钱增强） | 🟡黄线=综合净差趋势</div>
+      <canvas id="chart3" height="150"></canvas>
+    </div>
+    <!-- 图4: 两日竞价红扩 vs 绿扩 -->
+    <div class="chart-card">
+      <div class="chart-title">🔄 两日竞价红扩 vs 绿扩（赚亏效应周期转换）</div>
+      <div class="chart-desc">红线上穿绿线+竞价红>绿=情绪回暖🔥 | 绿线上穿红线+竞价绿>红=情绪转弱❄️</div>
+      <canvas id="chart4" height="150"></canvas>
+    </div>
+    <!-- 图5: 涨停/跌停 -->
+    <div class="chart-card">
+      <div class="chart-title">📉 涨停/跌停走势（连板梯队健康度）</div>
+      <div class="chart-desc">🔴红=涨停（赚钱效应扩散） | 🟢绿=跌停（亏钱效应扩散）| 涨停>50=高潮信号</div>
+      <canvas id="chart5" height="150"></canvas>
+    </div>
+    <!-- 图6: 六阶段七周期联动 -->
+    <div class="chart-card">
+      <div class="chart-title">🌀 六阶段七周期联动折线（仓位定位矩阵）</div>
+      <div class="chart-desc">🔵蓝=六阶段(0冰点→5退潮) | 🟠橙=七周期(0婴儿→6衰退) | 两线共振=最优操作节点</div>
+      <canvas id="chart6" height="150"></canvas>
+    </div>
+    
+  </div>
+</div>
+
+<!-- ==================== TAB 2: 赚亏效应周期 ==================== -->
+<div class="tab-content" id="tab2">
+  <div style="color:#ffcc00;font-size:13px;font-weight:bold;margin-bottom:14px;padding:10px;background:#1a1200;border-radius:6px">
+    💹 近5日赚亏效应周期深度分析 | 差值铁律：连续2天红差值正=赚钱效应确认 | 连续2天绿差值扩大=亏钱效应确认
+  </div>
+
+  <div class="signal-box" style="margin-bottom:12px">
+    <div style="color:#00d4ff;font-weight:bold;margin-bottom:8px;font-size:12px">📋 综合判断</div>
+    <div style="font-size:12px;color:#aabbcc;line-height:1.9">
+      <div>赚钱效应周期：连续5天红差值为正，赚钱效应确认✅</div>
+      <div>亏钱效应周期：连续2天绿差值为正（绿扩大），亏钱效应确认⚠️</div>
+      <div style="color:#ffcc00;margin-top:6px;font-weight:bold">综合：两日红扩>绿扩 且竞价红>绿 → 情绪回暖，赚钱效应启动🔥</div>
+    </div>
+  </div>
+
+  <div class="section-title">近5日差值明细</div>
+  <div style="overflow-x:auto;margin-bottom:14px">
+    <table class="data-table">
+      <thead><tr>
+        <th>日期</th><th>竞价绿/红</th><th>收盘绿/红</th>
+        <th>日内红扩<br>(收红-竞红)</th><th>日内绿扩<br>(收绿-竞绿)</th>
+        <th>竞红跨日<br>vs前日</th><th>竞绿跨日<br>vs前日</th>
+        <th>赚亏判断</th>
+      </tr></thead>
+      <tbody><tr><td>06/12(周五)</td><td>32/40</td><td>47/47</td><td style="color:#ff4d4d">+7</td><td style="color:#ff4d4d">+15</td><td style="color:#ff4d4d">+1</td><td style="color:#00ff88">-2</td><td>赚钱效应确认</td></tr><tr><td>06/15(周一)</td><td>26/13</td><td>27/74</td><td style="color:#ff4d4d">+61</td><td style="color:#ff4d4d">+1</td><td style="color:#00ff88">-27</td><td style="color:#00ff88">-6</td><td>赚钱效应确认</td></tr><tr><td>06/16(周二)</td><td>24/21</td><td>10/72</td><td style="color:#ff4d4d">+51</td><td style="color:#00ff88">-14</td><td style="color:#ff4d4d">+8</td><td style="color:#00ff88">-2</td><td>赚钱效应确认</td></tr><tr><td>06/17(周三)</td><td>27/12</td><td>44/42</td><td style="color:#ff4d4d">+30</td><td style="color:#ff4d4d">+17</td><td style="color:#00ff88">-9</td><td style="color:#ff4d4d">+3</td><td>赚钱效应确认</td></tr><tr><td>06/18(周四)</td><td>22/38</td><td>46/90</td><td style="color:#ff4d4d">+52</td><td style="color:#ff4d4d">+24</td><td style="color:#ff4d4d">+26</td><td style="color:#00ff88">-5</td><td>赚钱效应确认</td></tr></tbody>
+    </table>
+    <div style="font-size:10px;color:#445566;margin-top:5px;line-height:1.7">
+      日内红扩=收盘红-竞价红（正=赚钱增强🔴）| 日内绿扩=收盘绿-竞价绿（正=亏钱增强🔴，负=亏钱减弱🟢）<br>
+      竞红跨日=今日竞价红-前日竞价红（正=红扩大🔴）| 竞绿跨日=今日竞价绿-前日竞价绿（正=绿扩大=亏钱增强🔴）
+    </div>
+  </div>
+
+  <hr class="section-divider">
+
+  <div class="profit-grid">
+    <div class="profit-panel">
+      <div class="profit-title" style="color:#ff4d4d">🔴 赚钱效应周期（竞价红/收盘红对比）</div>
+      <div style="font-size:10px;color:#445566;margin-bottom:8px">竞价红持续扩大且收盘红>竞价红=赚钱效应主导</div>
+      <canvas id="chartR5a" height="180"></canvas>
+    </div>
+    <div class="profit-panel">
+      <div class="profit-title" style="color:#00ff88">🟢 亏钱效应周期（竞价绿/收盘绿对比）</div>
+      <div style="font-size:10px;color:#445566;margin-bottom:8px">竞价绿持续扩大且收盘绿>竞价绿=亏钱效应主导</div>
+      <canvas id="chartR5b" height="180"></canvas>
+    </div>
+    <div class="profit-panel">
+      <div class="profit-title" style="color:#ffcc00">⚡ 日内红扩/绿扩差值（强弱确认）</div>
+      <div style="font-size:10px;color:#445566;margin-bottom:8px">红扩为正=日内赚钱动能增强🔴 | 绿扩为正=日内亏钱动能增强🔴</div>
+      <canvas id="chartR5c" height="180"></canvas>
+    </div>
+    <div class="profit-panel">
+      <div class="profit-title" style="color:#00aaff">🔄 两日竞价红/绿跨日扩散（周期转换）</div>
+      <div style="font-size:10px;color:#445566;margin-bottom:8px">红扩>绿扩 且 今日竞价红>绿=情绪回暖🔥信号</div>
+      <canvas id="chartR5d" height="180"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== TAB 3: 每日操作流程 ==================== -->
+<div class="tab-content" id="tab3">
+  <div style="color:#ffcc00;font-size:13px;font-weight:bold;margin-bottom:12px;padding:10px;background:#1a1200;border-radius:6px">
+    ⚡ 用流程替代感觉，形成固定动作。每笔交易前完成以下检查清单。按情绪周期定仓位，按节点做盈亏比最高方向。
+  </div>
+  <div class="signal-box info" style="margin-bottom:12px">
+    <div style="color:#00aaff;font-weight:bold;margin-bottom:8px;font-size:12px">🧠 概率思维三问（买入前必答）</div>
+    <div style="font-size:11px;color:#99aabc;line-height:2.1">
+      <b>Q1：符合系统吗？</b>（情绪分 52分，阶段：主升期，竞价：强）→ ✅ 当前符合开仓条件<br>
+      <b>Q2：如果错了能接受止损吗？</b>（预设最大亏损2%，情绪转弱立即减仓，连续2笔止损立即空仓，不急于翻本）<br>
+      <b>Q3：盈亏比是否合适？</b>（当前节点：主升期，最高性价比：顺势做多（主升/高潮期最优盈亏比））
+    </div>
+  </div>
+<div class="flow-block" style="border-left:4px solid #00aaff"><div class="flow-title" style="color:#00aaff">🌅 盘前  盘前准备</div><ul class="flow-steps"><li>1. 情绪温度计：当前53分（情绪中性），六阶段=主升期</li><li>2. 七周期=成长期，建议仓位=半仓布局（60%）</li><li>3. 强反转铁律：无触发，按常规流程</li><li>4. 看题材主线：是否有唯一主线持续2-3天以上？高度是否抬升？连板晋级率>60%=健康</li><li>5. Z-Score=0.83 (百分位90%) → 正常区间</li></ul></div><div class="flow-block" style="border-left:4px solid #ffaa00"><div class="flow-title" style="color:#ffaa00">🔍 竞价  竞价观察 9:24:57-9:25:00</div><ul class="flow-steps"><li>6. 竞价红/绿=38/22，比值=1.73 → 竞价强（≥1.2=强，≤0.8=弱）</li><li>7. 两日竞价红扩=+26，绿扩=-5 → 情绪回暖🔥（加仓信号）</li><li>8. 抢筹信号：竞价红38>昨12 且 日内红扩(+52)>昨日红扩(+30) => 抢筹真实度极强 可能反转</li><li>9. 收盘强弱强，与竞价一致 → 信号可信✅</li><li>10. 赚亏效应：赚钱效应确认 | 两日铁律：连续2天红差值正=赚钱效应确认</li></ul></div><div class="flow-block" style="border-left:4px solid #ff4d4d"><div class="flow-title" style="color:#ff4d4d">🎯 决策  开仓决策（概率三问）</div><ul class="flow-steps"><li>11. ✅ 符合系统吗？情绪分≥45 且 竞价强 且 周期在成长/确认/成熟</li><li>     → 当前评估：情绪中性，竞价强 → ✅符合，可开仓</li><li>12. ✅ 如果错了能接受止损吗？预设最大亏损2%，到位坚决执行，不急于翻本</li><li>13. ✅ 盈亏比是否合适？当前节点：主升期，最优操作：顺势做多（主升期最优盈亏比）</li></ul></div><div class="flow-block" style="border-left:4px solid #00ff88"><div class="flow-title" style="color:#00ff88">📍 信号  买点/信号确认</div><ul class="flow-steps"><li>14. 竞价红绿比≥1.2=强信号，≤0.8=弱信号，中间=等待确认</li><li>15. 奇数日（1/3/7/9）易变盘拉升，注意节奏</li><li>16. 放量有承接可做，缩量放弃，不做流动性枯竭反核</li><li>17. 次日预测：明日偏强（概率95%）| 因子得分=+10</li><li>18. 今日是周四 → 普通交易日，按信号操作</li></ul></div><div class="flow-block" style="border-left:4px solid #cc66ff"><div class="flow-title" style="color:#cc66ff">🛡 风控  风控纪律</div><ul class="flow-steps"><li>19. 情绪高潮区（≥70分）：控制追高，缩短持仓周期，单股持仓≤5天</li><li>20. 情绪冰点区（≤25分）：严格空仓，等待竞价回暖信号再入场</li><li>21. 单日账户回撤>5%：当日及次日无条件空仓</li><li>22. 连续2笔止损：立即空仓复盘，禁止急于翻本</li><li>23. 前期高标低开5个点 || 集体高标核按钮 → 至少等两天</li></ul></div>
+  <div class="signal-box" style="margin-top:12px;border-color:#ffcc00">
+    <div style="color:#ffcc00;font-weight:bold;margin-bottom:8px;font-size:12px">🔮 次日强弱预测（基于竞价红绿周期分析）</div>
+    <div style="font-size:11px;color:#99aabc;line-height:1.8">
+      <b>竞价比：</b>1.73（强） | <b>两日红扩：</b>+26 | <b>两日绿扩：</b>-5<br>
+      <b>情绪回暖：</b>是🔥 | <b>情绪转弱：</b>否 | <b>抢筹信号：</b>做多极强🚀<br>
+      <b>次日预测概率条：</b>
+    </div>
+    <div class="prob-bar-wrap" style="margin-top:6px">
+      <span style="font-size:10px;color:#445566;min-width:80px">多方概率</span>
+      <div class="prob-bar-bg">
+        <div class="prob-bar-fill" style="width:95%;background:#ff4d4d"></div>
       </div>
-      <div style="color:#7090b0;font-size:13px">主升期 → 成长期</div>
+      <span class="prob-label">95%</span>
     </div>
-  </div>
-  
-  <div class="grid-4" style="margin-top:14px">
-    <div class="metric-box">
-      <div class="metric-label">仓位建议</div>
-      <div class="metric-value" style="color:#ffa500;font-size:22px">半仓</div>
-      <div class="metric-sub">50%</div>
-    </div>
-    <div class="metric-box">
-      <div class="metric-label">赚亏效应</div>
-      <div class="metric-value score-low" style="font-size:16px">亏钱效应确认</div>
-      <div class="metric-sub">日内赚钱</div>
-    </div>
-    <div class="metric-box">
-      <div class="metric-label">竞价强弱</div>
-      <div class="metric-value" style="color:#00bfff;font-size:22px">弱</div>
-      <div class="metric-sub">比值 0.47 | 红扩偏强</div>
-    </div>
-    <div class="metric-box">
-      <div class="metric-label">收盘强弱</div>
-      <div class="metric-value" style="color:#ffa500;font-size:22px">中</div>
-      <div class="metric-sub">与竞价背离</div>
+    <div style="color:#ff4d4d;font-size:13px;font-weight:bold;margin-top:6px">
+      综合判断：明日偏强（概率95%）
     </div>
   </div>
 </div>
 
-<div class="card">
-  <div class="card-title">📊 关键差值快照（今日）</div>
-  <div class="data-snapshot">
-    <div class="snap-item">
-      <div class="snap-val" style="color:#00ff88">-3</div>
-      <div class="snap-lbl">竞价差值(红-绿)</div>
-    </div>
-    <div class="snap-item">
-      <div class="snap-val" style="color:#ff4d4d">+62</div>
-      <div class="snap-lbl">收盘差值(红-绿)</div>
-    </div>
-    <div class="snap-item">
-      <div class="snap-val" style="color:#ff4d4d">+51</div>
-      <div class="snap-lbl">日内红扩(收-竞红)</div>
-    </div>
-    <div class="snap-item">
-      <div class="snap-val" style="color:#ff4d4d">-14</div>
-      <div class="snap-lbl">日内绿收(收-竞绿)</div>
-    </div>
-    <div class="snap-item">
-      <div class="snap-val" style="color:#ff4d4d">+8</div>
-      <div class="snap-lbl">两日红扩</div>
-    </div>
-    <div class="snap-item">
-      <div class="snap-val" style="color:#ff4d4d">-2</div>
-      <div class="snap-lbl">两日绿扩</div>
-    </div>
+<!-- ==================== TAB 4: 明细数据表 ==================== -->
+<div class="tab-content" id="tab4">
+  <div style="overflow-x:auto">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>日期</th><th>情绪分</th><th>竞价绿/红</th><th>收盘绿/红</th>
+          <th>日内红扩</th><th>日内绿扩</th><th>两日红扩</th><th>两日绿扩</th>
+          <th>阶段</th><th>信号</th><th>仓位%</th><th>Z-Score</th>
+        </tr>
+      </thead>
+      <tbody><tr><td>06/18(周四)</td><td style="color:#00ccff;font-weight:bold">53</td><td>22/38</td><td>46/90</td><td style="color:#ff4d4d">+52</td><td style="color:#ff4d4d">+24</td><td style="color:#ff4d4d">+26</td><td style="color:#00ff88">-5</td><td>主升期</td><td><span class="tag-buy">抢筹+</span><span class="tag-warm">回暖</span></td><td>60%</td><td style="color:#778899">+0.83</td></tr><tr><td>06/17(周三)</td><td style="color:#888;font-weight:bold">31</td><td>27/12</td><td>44/42</td><td style="color:#ff4d4d">+30</td><td style="color:#ff4d4d">+17</td><td style="color:#00ff88">-9</td><td style="color:#ff4d4d">+3</td><td>退潮期(铁律)</td><td><span class="tag-sell">抛压+</span><span class="tag-iron">铁律</span><span class="tag-cool">转弱</span></td><td>0%</td><td style="color:#778899">-0.94</td></tr><tr><td>06/16(周二)</td><td style="color:#00ccff;font-weight:bold">52</td><td>24/21</td><td>10/72</td><td style="color:#ff4d4d">+51</td><td style="color:#00ff88">-14</td><td style="color:#ff4d4d">+8</td><td style="color:#00ff88">-2</td><td>主升期</td><td></td><td>40%</td><td style="color:#778899">+0.76</td></tr><tr><td>06/15(周一)</td><td style="color:#00ccff;font-weight:bold">47</td><td>26/13</td><td>27/74</td><td style="color:#ff4d4d">+61</td><td style="color:#ff4d4d">+1</td><td style="color:#00ff88">-27</td><td style="color:#00ff88">-6</td><td>主升期</td><td><span class="tag-cool">转弱</span></td><td>40%</td><td style="color:#778899">+0.39</td></tr><tr><td>06/12(周五)</td><td style="color:#00ccff;font-weight:bold">46</td><td>32/40</td><td>47/47</td><td style="color:#ff4d4d">+7</td><td style="color:#ff4d4d">+15</td><td style="color:#ff4d4d">+1</td><td style="color:#00ff88">-2</td><td>主升期</td><td><span class="tag-warm">回暖</span></td><td>50%</td><td style="color:#778899">+0.25</td></tr><tr><td>06/11(周四)</td><td style="color:#888;font-weight:bold">39</td><td>34/39</td><td>68/86</td><td style="color:#ff4d4d">+47</td><td style="color:#ff4d4d">+34</td><td style="color:#ff4d4d">+20</td><td style="color:#00ff88">-5</td><td>退潮期(铁律)</td><td><span class="tag-buy">抢筹+</span><span class="tag-iron">铁律</span><span class="tag-warm">回暖</span></td><td>0%</td><td style="color:#778899">-0.31</td></tr><tr><td>06/10(周三)</td><td style="color:#888;font-weight:bold">21</td><td>39/19</td><td>94/48</td><td style="color:#ff4d4d">+29</td><td style="color:#ff4d4d">+55</td><td style="color:#00ff88">-13</td><td style="color:#ff4d4d">+15</td><td>冰点期</td><td><span class="tag-sell">抛压+</span><span class="tag-cool">转弱</span></td><td>0%</td><td style="color:#00ff88">-1.81</td></tr><tr><td>06/09(周二)</td><td style="color:#00ccff;font-weight:bold">59</td><td>24/32</td><td>44/91</td><td style="color:#ff4d4d">+59</td><td style="color:#ff4d4d">+20</td><td style="color:#ff4d4d">+49</td><td style="color:#00ff88">-61</td><td>退潮期(铁律)</td><td><span class="tag-buy">抢筹+</span><span class="tag-iron">铁律</span><span class="tag-warm">回暖</span></td><td>0%</td><td style="color:#ff4d4d">+1.38</td></tr><tr><td>06/08(周一)</td><td style="color:#888;font-weight:bold">18</td><td>85/-17</td><td>89/37</td><td style="color:#ff4d4d">+54</td><td style="color:#ff4d4d">+4</td><td style="color:#00ff88">-53</td><td style="color:#ff4d4d">+52</td><td>冰点期</td><td><span class="tag-cool">转弱</span></td><td>0%</td><td style="color:#00ff88">-2.04</td></tr><tr><td>06/05(周五)</td><td style="color:#888;font-weight:bold">42</td><td>33/36</td><td>80/53</td><td style="color:#ff4d4d">+17</td><td style="color:#ff4d4d">+47</td><td style="color:#ff4d4d">+4</td><td style="color:#00ff88">-3</td><td>试探期</td><td><span class="tag-warm">回暖</span></td><td>30%</td><td style="color:#778899">-0.02</td></tr><tr><td>06/04(周四)</td><td style="color:#888;font-weight:bold">35</td><td>36/32</td><td>49/83</td><td style="color:#ff4d4d">+51</td><td style="color:#ff4d4d">+13</td><td style="color:#00ff88">-18</td><td style="color:#00ff88">-4</td><td>试探期</td><td><span class="tag-cool">转弱</span></td><td>20%</td><td style="color:#778899">-0.61</td></tr><tr><td>06/03(周三)</td><td style="color:#888;font-weight:bold">43</td><td>40/50</td><td>32/104</td><td style="color:#ff4d4d">+54</td><td style="color:#00ff88">-8</td><td style="color:#ff4d4d">+21</td><td style="color:#ff4d4d">+23</td><td>试探期</td><td><span class="tag-buy">抢筹+</span></td><td>30%</td><td style="color:#778899">+0.05</td></tr><tr><td>06/02(周二)</td><td style="color:#00ccff;font-weight:bold">50</td><td>17/29</td><td>40/78</td><td style="color:#ff4d4d">+49</td><td style="color:#ff4d4d">+23</td><td style="color:#ff4d4d">+9</td><td style="color:#00ff88">-20</td><td>退潮期(铁律)</td><td><span class="tag-iron">铁律</span><span class="tag-warm">回暖</span></td><td>0%</td><td style="color:#778899">+0.65</td></tr><tr><td>06/01(周一)</td><td style="color:#888;font-weight:bold">39</td><td>37/20</td><td>63/77</td><td style="color:#ff4d4d">+57</td><td style="color:#ff4d4d">+26</td><td style="color:#00ff88">-27</td><td style="color:#ff4d4d">+13</td><td>试探期</td><td><span class="tag-cool">转弱</span></td><td>20%</td><td style="color:#778899">-0.31</td></tr><tr><td>05/29(周五)</td><td style="color:#00ccff;font-weight:bold">47</td><td>24/47</td><td>88/70</td><td style="color:#ff4d4d">+23</td><td style="color:#ff4d4d">+64</td><td style="color:#ff4d4d">+14</td><td style="color:#00ff88">-27</td><td>主升期</td><td><span class="tag-warm">回暖</span></td><td>50%</td><td style="color:#778899">+0.34</td></tr><tr><td>05/28(周四)</td><td style="color:#00ccff;font-weight:bold">47</td><td>51/33</td><td>61/86</td><td style="color:#ff4d4d">+53</td><td style="color:#ff4d4d">+10</td><td style="color:#ff4d4d">+25</td><td style="color:#ff4d4d">+13</td><td>主升期</td><td></td><td>40%</td><td style="color:#778899">+0.34</td></tr><tr><td>05/27(周三)</td><td style="color:#888;font-weight:bold">21</td><td>38/8</td><td>81/74</td><td style="color:#ff4d4d">+66</td><td style="color:#ff4d4d">+43</td><td style="color:#00ff88">-16</td><td style="color:#ff4d4d">+3</td><td>冰点期</td><td><span class="tag-cool">转弱</span></td><td>0%</td><td style="color:#00ff88">-1.76</td></tr><tr><td>05/26(周二)</td><td style="color:#888;font-weight:bold">24</td><td>35/24</td><td>88/65</td><td style="color:#ff4d4d">+41</td><td style="color:#ff4d4d">+53</td><td style="color:#00ff88">-25</td><td style="color:#ff4d4d">+5</td><td>退潮期(铁律)</td><td><span class="tag-sell">抛压+</span><span class="tag-iron">铁律</span><span class="tag-cool">转弱</span></td><td>0%</td><td style="color:#00ff88">-1.53</td></tr><tr><td>05/25(周一)</td><td style="color:#00ccff;font-weight:bold">51</td><td>30/49</td><td>58/73</td><td style="color:#ff4d4d">+24</td><td style="color:#ff4d4d">+28</td><td style="color:#ff4d4d">+15</td><td style="color:#00ff88">-9</td><td>主升期</td><td><span class="tag-warm">回暖</span></td><td>50%</td><td style="color:#778899">+0.71</td></tr><tr><td>05/22(周五)</td><td style="color:#888;font-weight:bold">44</td><td>39/34</td><td>37/110</td><td style="color:#ff4d4d">+76</td><td style="color:#00ff88">-2</td><td style="color:#00ff88">-20</td><td style="color:#ff4d4d">+4</td><td>退潮期(铁律)</td><td><span class="tag-iron">铁律</span><span class="tag-cool">转弱</span></td><td>0%</td><td style="color:#778899">+0.15</td></tr></tbody>
+    </table>
+  </div>
+  <div style="font-size:10px;color:#445566;margin-top:10px;line-height:1.8">
+    日内红扩=收盘红-竞价红（正=赚钱增强🔴）| 日内绿扩=收盘绿-竞价绿（正=亏钱增强🔴，负=亏钱减弱🟢）<br>
+    两日红扩=今日竞价红-昨日竞价红 | 两日绿扩=今日竞价绿-昨日竞价绿<br>
+    Z-Score>+2=极端高位（减仓信号）| Z-Score<-2=极端低位（低吸机会）
   </div>
 </div>
 
-<div class="card">
-  <div class="card-title">📉 近5日赚亏效应周期快照</div>
-  <table>
-    <thead><tr>
-      <th>日期</th><th>竞价差值</th><th>收盘差值</th><th>日内红扩</th><th>日内绿收</th><th>赚亏效应</th>
-    </tr></thead>
-    <tbody><tr><td>06-16</td><td style="color:#00ff88">-3</td><td style="color:#ff4d4d">+62</td><td style="color:#ff4d4d">+51</td><td style="color:#ff4d4d">-14</td><td>亏钱效应确认</td></tr><tr><td>06-15<span style="color:#ff4d4d;font-size:10px">周一</span></td><td style="color:#00ff88">-13</td><td style="color:#ff4d4d">+47</td><td style="color:#ff4d4d">+61</td><td style="color:#00ff88">+1</td><td>赚亏平衡</td></tr><tr><td>06-12<span style="color:#ffa500;font-size:10px">周五</span></td><td style="color:#ff4d4d">+8</td><td style="color:#888">+0</td><td style="color:#ff4d4d">+7</td><td style="color:#00ff88">+15</td><td>赚钱效应确认</td></tr><tr><td>06-11</td><td style="color:#ff4d4d">+5</td><td style="color:#ff4d4d">+18</td><td style="color:#ff4d4d">+47</td><td style="color:#00ff88">+34</td><td>赚钱效应萌芽</td></tr><tr><td>06-10</td><td style="color:#00ff88">-20</td><td style="color:#00ff88">-46</td><td style="color:#ff4d4d">+29</td><td style="color:#00ff88">+55</td><td>亏钱效应萌芽</td></tr></tbody>
-  </table>
-  <div style="margin-top:10px;padding:10px;background:#080c14;border-radius:8px;font-size:13px;color:#c0c8d8">
-    <strong style="color:#00d4ff">当前赚亏效应判断：</strong>
-    <span style="color:#ff4d4d">赚钱效应延续</span> ／ 
-    <span style="color:#00ff88">亏钱效应减弱</span>
+<!-- ==================== TAB 5: 体系手册 ==================== -->
+<div class="tab-content" id="tab5">
+  <div class="manual-section">
+    <div class="manual-title">💯 100分打分规则（量化因子系数控制中枢）</div>
+    <table class="manual-table">
+      <tr><th>维度</th><th>权重</th><th>算法</th></tr>
+      <tr><td>收盘红绿差值</td><td>30分</td><td>收盘红-绿差值量化，[-150~150]→[0~30]，每10差值=1分</td></tr>
+      <tr><td>竞价红绿（含两日对比）</td><td>20分</td><td>竞价绝对值12分 + 两日对比8分（红扩大于绿扩加分）</td></tr>
+      <tr><td>连板类（高度+涨停-跌停惩罚）</td><td>25分</td><td>高度10分+涨停数8分-跌停惩罚7分</td></tr>
+      <tr><td>涨跌家数</td><td>10分</td><td>涨家数/5300只A股×10分</td></tr>
+      <tr><td>外部事件</td><td>10分</td><td>有重大事件=5分，无=10分（干扰少=情绪纯净）</td></tr>
+      <tr><td>额外修正</td><td>±人工</td><td>人工加减分，直接加入总分</td></tr>
+    </table>
+  </div>
+  <div class="manual-section">
+    <div class="manual-title">📊 六阶段 × 七周期 对照（仓位定位矩阵）</div>
+    <table class="manual-table">
+      <tr><th>六阶段</th><th>分值区间</th><th>操作策略</th><th>仓位参考</th></tr>
+      <tr><td>冰点期</td><td>0-25</td><td>严格空仓，等待竞价回暖信号</td><td>0%</td></tr>
+      <tr><td>回暖期</td><td>26-35</td><td>轻仓试探，重点观察竞价红绿比</td><td>10%</td></tr>
+      <tr><td>试探期</td><td>36-45</td><td>半仓布局，设好止损，等待确认</td><td>20%</td></tr>
+      <tr><td>主升期</td><td>46-60</td><td>半仓以上，积极布局龙头（盈亏比最高节点）</td><td>40%</td></tr>
+      <tr><td>高潮期</td><td>61-80</td><td>重仓进攻，控制追高，单股≤5天</td><td>60%</td></tr>
+      <tr><td>退潮期</td><td>81-100极高后</td><td>快速减仓，保留利润，等待下一周期</td><td>10%</td></tr>
+    </table>
+    <br>
+    <table class="manual-table">
+      <tr><th>七周期</th><th>高度板数</th><th>特征</th><th>仓位修正</th></tr>
+      <tr><td>婴儿期</td><td>≤3板</td><td>萌芽，风险最高，跟踪为主</td><td>不加仓</td></tr>
+      <tr><td>成长期</td><td>4-5板</td><td>启动，进入观察区</td><td>维持</td></tr>
+      <tr><td>加速期</td><td>6板</td><td>加速，确认强度</td><td>维持</td></tr>
+      <tr><td>确认期</td><td>7板</td><td>最佳布局节点（确认期+主升=黄金仓位）</td><td>+15%</td></tr>
+      <tr><td>成熟期</td><td>8板以上</td><td>高潮，谨慎追高，控制仓位</td><td>+15%</td></tr>
+      <tr><td>混沌期</td><td>龙空龙</td><td>高度波动不规则，降低仓位</td><td>维持</td></tr>
+      <tr><td>衰退期</td><td>退潮</td><td>高度连续下降3日确认，出清操作</td><td>-20%</td></tr>
+    </table>
+  </div>
+  <div class="manual-section">
+    <div class="manual-title">⚡ 强反转铁律（最高优先级，覆盖所有信号）</div>
+    <div class="rule-item"><b>做多铁律：</b>破7板 + 涨停≥50 → 次日强走强（重仓进攻，仓位强制70%）</div>
+    <div class="rule-item"><b>做空铁律：</b>跌破4板 → 次日强走弱（清仓离场，仓位强制0%）</div>
+    <div class="rule-item"><b>退潮确认：</b>高度连续3日下降 → 退潮确认（出清操作，等待下一周期）</div>
+    <div class="rule-item"><b>龙头结束信号：</b>断板无反包+跌破5日线 → 连板周期结束</div>
+  </div>
+  <div class="manual-section">
+    <div class="manual-title">📐 差值铁律速查（赚亏效应周期判断）</div>
+    <div class="rule-item"><b>赚钱效应确认：</b>连续2天红差值正（收盘红>竞价红）→ 做多信号，加仓</div>
+    <div class="rule-item"><b>亏钱效应确认：</b>连续2天绿差值扩大（收盘绿>竞价绿即绿差值正）→ 做空/空仓</div>
+    <div class="rule-item"><b>情绪回暖：</b>两日红扩>绿扩 且 竞价红>绿 → 情绪回暖（加仓信号）</div>
+    <div class="rule-item"><b>情绪转弱：</b>两日绿扩>红扩 且 竞价绿>红 → 情绪转弱（减仓信号）</div>
+    <div class="rule-item"><b>竞价强弱标准：</b>红绿比≥1.2=强，≤0.8=弱；收盘与竞价强弱一致=信号可信；背离=降低仓位</div>
+    <div class="rule-item"><b style="color:#ff9900">做多抢筹（v9.0）：</b>今竞价红>昨竞价红 且 今内红扩>昨内红扩 → 抢筹真实度极强，可能反转向上</div>
+    <div class="rule-item"><b style="color:#00ff88">做空抛压（v9.0）：</b>今竞价绿>昨竞价绿 且 今内绿扩>昨内绿扩 → 抛压真实度极强，可能继续走弱</div>
+  </div>
+  <div class="manual-section">
+    <div class="manual-title">📈 统计学辅助（正态分布 Z-Score + 百分位）</div>
+    <div class="rule-item">Z-Score > +2：情绪极端高位（历史罕见，约2.3%概率），均值回归概率大，减仓信号</div>
+    <div class="rule-item">Z-Score < -2：情绪极端低位（历史罕见，约2.3%概率），反弹概率大，低吸机会</div>
+    <div class="rule-item">百分位 > 90%：历史90%的日子情绪低于今天，高度警戒追高风险</div>
+    <div class="rule-item">百分位 < 10%：历史90%的日子情绪高于今天，底部布局机会</div>
+    <div class="rule-item">Z-Score在±1之间：正常波动区（68%概率），按六阶段七周期常规操作</div>
+    <div class="rule-item"><b>20日回归线：</b>黄色虚线，斜率>0=情绪上升趋势，斜率<0=情绪下降趋势</div>
+  </div>
+  <div class="manual-section">
+    <div class="manual-title">🛡 风控纪律（绝对规则）</div>
+    <div class="rule-item"><b>前期高标低开5个点 || 集体高标核按钮 → 至少等两天</b></div>
+    <div class="rule-item">单日账户回撤超5%：当日及次日无条件空仓</div>
+    <div class="rule-item">连续2笔触发止损：立即空仓复盘，禁止急于翻本</div>
+    <div class="rule-item">绝不追高超过5%，严格按预案挂单，不撤单改单追涨</div>
+    <div class="rule-item">单只个股持仓周期≤5个交易日，到期无论盈亏必须清仓</div>
+    <div class="rule-item">时间>空间>位置，踩准情绪周期时间节点是核心竞争力</div>
+    <div class="rule-item">周五和周一、节前节后多空容易一致，节前砸不破=多，节后不一字=空</div>
+  </div>
+  <div class="manual-section">
+    <div class="manual-title">🎯 只做三种模式（盈亏比最高方向）</div>
+    <div class="rule-item"><b>高标分歧低吸：</b>高标前高出现爆量分歧，次日低开有承接，弱转强布局</div>
+    <div class="rule-item"><b>断板反核：</b>空间板断板后次日反包，竞价反包霸气，凹字洗盘后回封更佳</div>
+    <div class="rule-item"><b>龙头反包：</b>主线龙头断板后，竞价出现抢筹上跳，快速回封板</div>
   </div>
 </div>
 
-<div class="card">
-  <div class="card-title">🎯 次日强弱预测</div>
-  <div style="display:flex;align-items:center;gap:16px;margin-bottom:12px">
-    <div>
-      <div style="font-size:13px;color:#7090b0">预测结论</div>
-      <div style="font-size:24px;font-weight:700;color:#ffa500">次日略强</div>
-    </div>
-    <div style="flex:1">
-      <div style="font-size:12px;color:#7090b0;margin-bottom:4px">强弱概率 62.0%</div>
-      <div class="prob-bar"><div class="prob-fill prob-high" style="width:62.0%"></div></div>
-    </div>
-  </div>
-  <div style="color:#9090a0;font-size:13px">
-    <strong style="color:#ffa500">判断依据：</strong>情绪≥5日均线、阶段向前推进、亏钱效应确认、竞价比≤0.8弱
-  </div>
-</div>
-</div><div class="tab-pane" id="tab-1"><div class="card"><div class="card-title">🌡️ 情绪温度计 + 回归趋势线 + 极端温度标注（≥85极强/≤25极弱）</div><div class="chart-box-tall"><canvas id="c0"></canvas></div></div><div class="card"><div class="card-title">📊 竞价红绿 & 收盘红绿 折线图（强弱对比）</div><div class="chart-box"><canvas id="c1"></canvas></div></div><div class="card"><div class="card-title">📉 近5日亏钱/赚钱效应：当日vs前日竞绿/竞红对比差（周期判断）</div><div class="chart-box"><canvas id="c_5day"></canvas></div></div><div class="card"><div class="card-title">🔴 日内红扩/绿收差值 柱状+折线组合图</div><div class="chart-box"><canvas id="c2"></canvas></div></div><div class="card"><div class="card-title">⚡ 两日竞价红扩 vs 绿扩 折线（赚亏效应回暖/转弱）</div><div class="chart-box"><canvas id="c3"></canvas></div></div><div class="card"><div class="card-title">📈 涨停数/跌停数 走势</div><div class="chart-box"><canvas id="c4"></canvas></div></div><div class="card"><div class="card-title">🔄 六阶段 & 七周期 联动折线图</div><div class="chart-box"><canvas id="c5"></canvas></div></div></div><div class="tab-pane" id="tab-2"><div class="card"><div class="card-title">🧠 概率思维决策检查清单</div><p style="color:#7090b0;font-size:13px;margin-bottom:12px">买入前思考：符合系统？错了能接受止损？用流程替代感觉，形成固定动作。</p><div class="check-item check-ok"><div class="check-icon icon-ok">✓</div><div style="flex:1"><div style="font-weight:600;color:#d0d8f0;font-size:14px">当前情绪阶段符合系统吗？</div><div style="color:#9090a0;font-size:12px;margin-top:3px">阶段：主升期 | 情绪分：68 | 周期：成长期</div><div style="color:#ffa500;font-size:11px;margin-top:2px;font-style:italic">冰点/退潮期不开仓</div></div></div><div class="check-item check-warn"><div class="check-icon icon-warn">!</div><div style="flex:1"><div style="font-weight:600;color:#d0d8f0;font-size:14px">竞价红绿比确认了吗？</div><div style="color:#9090a0;font-size:12px;margin-top:3px">竞价比：0.47 (弱) | 9:24:57-9:25:00 最后3秒看了吗？</div><div style="color:#ffa500;font-size:11px;margin-top:2px;font-style:italic">抢筹上跳=弱转强，竞价下压=出货</div></div></div><div class="check-item check-warn"><div class="check-icon icon-warn">!</div><div style="flex:1"><div style="font-weight:600;color:#d0d8f0;font-size:14px">赚亏效应周期确认了吗？</div><div style="color:#9090a0;font-size:12px;margin-top:3px">亏钱效应确认 | 回暖信号：红扩偏强</div><div style="color:#ffa500;font-size:11px;margin-top:2px;font-style:italic">连续2天红差值正→赚钱效应确认</div></div></div><div class="check-item check-ok"><div class="check-icon icon-ok">✓</div><div style="flex:1"><div style="font-weight:600;color:#d0d8f0;font-size:14px">强反转铁律触发了吗？</div><div style="color:#9090a0;font-size:12px;margin-top:3px">未触发铁律（中性）</div><div style="color:#ffa500;font-size:11px;margin-top:2px;font-style:italic">铁律优先级最高，覆盖其他信号</div></div></div><div class="check-item check-ok"><div class="check-icon icon-ok">✓</div><div style="flex:1"><div style="font-weight:600;color:#d0d8f0;font-size:14px">错了能接受止损吗？</div><div style="color:#9090a0;font-size:12px;margin-top:3px">止损位设好？单笔风险≤2% | 账户回撤超5%→无条件空仓</div><div style="color:#ffa500;font-size:11px;margin-top:2px;font-style:italic">用流程替代感觉，纪律不可违</div></div></div></div><div class="card"><div class="card-title">⚡ 每日操作流程（固定动作）</div><div class="flow-step"><div class="flow-num" style="background:#00d4ff;color:#000">08:30</div><div class="flow-content"><div class="flow-title">盘前分析</div><div class="flow-desc">看题材/连板公告/分阵营/历史K线</div><div class="flow-note">情绪为道 主线为法 按情绪周期定仓位</div></div></div><div class="flow-step"><div class="flow-num" style="background:#00d4ff;color:#000">09:15-09:20</div><div class="flow-content"><div class="flow-title">模拟竞价</div><div class="flow-desc">允许撤单，可忽略，数据不真实</div><div class="flow-note">仅作参考，不作为决策依据</div></div></div><div class="flow-step"><div class="flow-num" style="background:#00d4ff;color:#000">09:21-09:25</div><div class="flow-content"><div class="flow-title">真实竞价</div><div class="flow-desc">不允许撤单！看高标/一字/板块共振</div><div class="flow-note">选一字或共振抢筹，不要反核</div></div></div><div class="flow-step"><div class="flow-num" style="background:#ff4d4d;color:#000">09:24:57</div><div class="flow-content"><div class="flow-title">最后3秒</div><div class="flow-desc">盯竞价抢筹上跳或竞价下压信号</div><div class="flow-note">⚡ 全天最重要3秒！</div></div></div><div class="flow-step"><div class="flow-num" style="background:#00d4ff;color:#000">09:30-09:45</div><div class="flow-content"><div class="flow-title">开盘承接</div><div class="flow-desc">前15分钟：低开快速拉回=强</div><div class="flow-note">放量有承接可做，缩量放弃</div></div></div><div class="flow-step"><div class="flow-num" style="background:#00d4ff;color:#000">买点</div><div class="flow-content"><div class="flow-title">进场信号</div><div class="flow-desc">T位/乖离位/回踩均线/五日线</div><div class="flow-note">奇数天1/3/7/9易拉升</div></div></div><div class="flow-step"><div class="flow-num" style="background:#00d4ff;color:#000">风控</div><div class="flow-content"><div class="flow-title">止损铁律</div><div class="flow-desc">前期高标低开5%+集体核按钮→等2天</div><div class="flow-note">单日回撤超5%→无条件空仓</div></div></div></div><div class="card"><div class="card-title">📈 竞价红绿周期分析 → 次日强弱预测</div><table><thead><tr><th>日期</th><th>竞价绿</th><th>竞价红</th><th>竞价比</th><th>竞价差值</th><th>回暖信号</th></tr></thead><tbody><tr><td>06-16</td><td style="color:#00ff88">24</td><td style="color:#ff4d4d">21</td><td>0.47 <span style="color:#00bfff">弱</span></td><td style="color:#00ff88">-3</td><td>红扩偏强</td></tr><tr><td>06-15</td><td style="color:#00ff88">26</td><td style="color:#ff4d4d">13</td><td>0.33 <span style="color:#00bfff">弱</span></td><td style="color:#00ff88">-13</td><td>情绪转弱</td></tr><tr><td>06-12</td><td style="color:#00ff88">32</td><td style="color:#ff4d4d">40</td><td>0.56 <span style="color:#00bfff">弱</span></td><td style="color:#ff4d4d">+8</td><td>情绪回暖</td></tr><tr><td>06-11</td><td style="color:#00ff88">34</td><td style="color:#ff4d4d">39</td><td>0.53 <span style="color:#00bfff">弱</span></td><td style="color:#ff4d4d">+5</td><td>情绪回暖</td></tr><tr><td>06-10</td><td style="color:#00ff88">39</td><td style="color:#ff4d4d">19</td><td>0.33 <span style="color:#00bfff">弱</span></td><td style="color:#00ff88">-20</td><td>情绪转弱</td></tr></tbody></table><div style="margin-top:12px;padding:12px;background:#080c14;border-radius:10px"><p style="color:#7090b0;font-size:12px">次日预测</p><p style="font-size:22px;font-weight:700;color:#ffa500;margin:4px 0">次日略强</p><div class="prob-bar"><div class="prob-fill prob-high" style="width:62%"></div></div><p style="color:#9090a0;font-size:12px;margin-top:6px">判断依据：情绪≥5日均线、阶段向前推进、亏钱效应确认、竞价比≤0.8弱</p></div></div></div><div class="tab-pane" id="tab-3"><div class="card"><div class="card-title">📋 近20日完整差值明细数据</div><div style="overflow-x:auto"><table><thead><tr><th>日期</th><th>情绪分</th><th>六阶段</th><th>七周期</th><th>竞绿</th><th>竞红</th><th>竞比/强</th><th>收绿</th><th>收红</th><th>收比/强</th><th>竞差</th><th>收差</th><th>红扩</th><th>绿收</th><th>涨/跌停</th><th>高度</th><th>赚亏</th><th>铁律</th></tr></thead><tbody><tr><td>06-16</td><td><strong class="score-low">68</strong></td><td><span class="phase-badge phase-3" style="font-size:11px">主升期</span></td><td>成长期</td><td style="color:#00ff88">24</td><td style="color:#ff4d4d">21</td><td style="color:#aaa;font-size:11px">0.47(弱)</td><td style="color:#00bfff">10</td><td style="color:#ffa500">72</td><td style="color:#aaa;font-size:11px">0.88(中)</td><td style="color:#00ff88">-3</td><td style="color:#ff4d4d">+62</td><td style="color:#ff4d4d">+51</td><td style="color:#ff4d4d">-14</td><td>138/11</td><td>4.0</td><td style="color:#00ff88;font-size:11px">亏钱效应确认</td><td style="color:#00bfff;font-size:11px">--</td></tr><tr><td>06-15<br><span style="color:#ff4d4d;font-size:10px">周一</span></td><td><strong class="score-low">60</strong></td><td><span class="phase-badge phase-2" style="font-size:11px">试探期</span></td><td>成长期</td><td style="color:#00ff88">26</td><td style="color:#ff4d4d">13</td><td style="color:#aaa;font-size:11px">0.33(弱)</td><td style="color:#00bfff">27</td><td style="color:#ffa500">74</td><td style="color:#aaa;font-size:11px">0.73(弱)</td><td style="color:#00ff88">-13</td><td style="color:#ff4d4d">+47</td><td style="color:#ff4d4d">+61</td><td style="color:#00ff88">+1</td><td>160/9</td><td>4.0</td><td style="color:#888;font-size:11px">赚亏平衡</td><td style="color:#00bfff;font-size:11px">--</td></tr><tr><td>06-12<br><span style="color:#ffa500;font-size:10px">周五</span></td><td><strong class="score-low">54</strong></td><td><span class="phase-badge phase-2" style="font-size:11px">试探期</span></td><td>成长期</td><td style="color:#00ff88">32</td><td style="color:#ff4d4d">40</td><td style="color:#aaa;font-size:11px">0.56(弱)</td><td style="color:#00bfff">47</td><td style="color:#ffa500">47</td><td style="color:#aaa;font-size:11px">0.50(弱)</td><td style="color:#ff4d4d">+8</td><td style="color:#888">+0</td><td style="color:#ff4d4d">+7</td><td style="color:#00ff88">+15</td><td>100/23</td><td>4.0</td><td style="color:#ff4d4d;font-size:11px">赚钱效应确认</td><td style="color:#00bfff;font-size:11px">--</td></tr><tr><td>06-11</td><td><strong class="score-low">42</strong></td><td><span class="phase-badge phase-1" style="font-size:11px">回暖期</span></td><td>婴儿期</td><td style="color:#00ff88">34</td><td style="color:#ff4d4d">39</td><td style="color:#aaa;font-size:11px">0.53(弱)</td><td style="color:#00bfff">68</td><td style="color:#ffa500">86</td><td style="color:#aaa;font-size:11px">0.56(弱)</td><td style="color:#ff4d4d">+5</td><td style="color:#ff4d4d">+18</td><td style="color:#ff4d4d">+47</td><td style="color:#00ff88">+34</td><td>78/50</td><td>3.0</td><td style="color:#ff4d4d;font-size:11px">赚钱效应萌芽</td><td style="color:#00bfff;font-size:11px">跌破4板 → 次日偏弱</td></tr><tr><td>06-10</td><td><strong class="score-low">13</strong><br><small class="score-low">极冷</small></td><td><span class="phase-badge phase-5" style="font-size:11px">退潮期</span></td><td>混沌期</td><td style="color:#00ff88">39</td><td style="color:#ff4d4d">19</td><td style="color:#aaa;font-size:11px">0.33(弱)</td><td style="color:#00bfff">94</td><td style="color:#ffa500">48</td><td style="color:#aaa;font-size:11px">0.34(弱)</td><td style="color:#00ff88">-20</td><td style="color:#00ff88">-46</td><td style="color:#ff4d4d">+29</td><td style="color:#00ff88">+55</td><td>75/65</td><td>4.0</td><td style="color:#00ff88;font-size:11px">亏钱效应萌芽</td><td style="color:#00bfff;font-size:11px">--</td></tr><tr><td>06-09</td><td><strong class="score-low">66</strong></td><td><span class="phase-badge phase-3" style="font-size:11px">主升期</span></td><td>婴儿期</td><td style="color:#00ff88">24</td><td style="color:#ff4d4d">32</td><td style="color:#aaa;font-size:11px">0.57(弱)</td><td style="color:#00bfff">44</td><td style="color:#ffa500">91</td><td style="color:#aaa;font-size:11px">0.67(弱)</td><td style="color:#ff4d4d">+8</td><td style="color:#ff4d4d">+47</td><td style="color:#ff4d4d">+59</td><td style="color:#00ff88">+20</td><td>142/16</td><td>3.0</td><td style="color:#ff4d4d;font-size:11px">赚钱效应萌芽</td><td style="color:#00bfff;font-size:11px">跌破4板 → 次日偏弱</td></tr><tr><td>06-08<br><span style="color:#ff4d4d;font-size:10px">周一</span></td><td><strong class="score-low">13</strong><br><small class="score-low">极冷</small></td><td><span class="phase-badge phase-2" style="font-size:11px">试探期</span></td><td>加速期</td><td style="color:#00ff88">85</td><td style="color:#ff4d4d">-17</td><td style="color:#aaa;font-size:11px">-0.25(弱)</td><td style="color:#00bfff">89</td><td style="color:#ffa500">37</td><td style="color:#aaa;font-size:11px">0.29(弱)</td><td style="color:#00ff88">-102</td><td style="color:#00ff88">-52</td><td style="color:#ff4d4d">+54</td><td style="color:#00ff88">+4</td><td>64/51</td><td>6.0</td><td style="color:#00ff88;font-size:11px">亏钱效应萌芽</td><td style="color:#00bfff;font-size:11px">--</td></tr><tr><td>06-05<br><span style="color:#ffa500;font-size:10px">周五</span></td><td><strong class="score-low">48</strong></td><td><span class="phase-badge phase-2" style="font-size:11px">试探期</span></td><td>成长期</td><td style="color:#00ff88">33</td><td style="color:#ff4d4d">36</td><td style="color:#aaa;font-size:11px">0.52(弱)</td><td style="color:#00bfff">80</td><td style="color:#ffa500">53</td><td style="color:#aaa;font-size:11px">0.40(弱)</td><td style="color:#ff4d4d">+3</td><td style="color:#00ff88">-27</td><td style="color:#ff4d4d">+17</td><td style="color:#00ff88">+47</td><td>84/17</td><td>5.0</td><td style="color:#ff4d4d;font-size:11px">赚钱效应萌芽</td><td style="color:#00bfff;font-size:11px">--</td></tr><tr><td>06-04</td><td><strong class="score-low">38</strong></td><td><span class="phase-badge phase-1" style="font-size:11px">回暖期</span></td><td>成长期</td><td style="color:#00ff88">36</td><td style="color:#ff4d4d">32</td><td style="color:#aaa;font-size:11px">0.47(弱)</td><td style="color:#00bfff">49</td><td style="color:#ffa500">83</td><td style="color:#aaa;font-size:11px">0.63(弱)</td><td style="color:#00ff88">-4</td><td style="color:#ff4d4d">+34</td><td style="color:#ff4d4d">+51</td><td style="color:#00ff88">+13</td><td>79/32</td><td>4.0</td><td style="color:#888;font-size:11px">赚亏平衡</td><td style="color:#00bfff;font-size:11px">--</td></tr><tr><td>06-03</td><td><strong class="score-low">59</strong></td><td><span class="phase-badge phase-2" style="font-size:11px">试探期</span></td><td>婴儿期</td><td style="color:#00ff88">40</td><td style="color:#ff4d4d">50</td><td style="color:#aaa;font-size:11px">0.56(弱)</td><td style="color:#00bfff">32</td><td style="color:#ffa500">104</td><td style="color:#aaa;font-size:11px">0.76(弱)</td><td style="color:#ff4d4d">+10</td><td style="color:#ff4d4d">+72</td><td style="color:#ff4d4d">+54</td><td style="color:#ff4d4d">-8</td><td>81/27</td><td>3.0</td><td style="color:#ff4d4d;font-size:11px">赚钱效应确认</td><td style="color:#00bfff;font-size:11px">--</td></tr><tr><td>06-02</td><td><strong class="score-low">51</strong></td><td><span class="phase-badge phase-2" style="font-size:11px">试探期</span></td><td>婴儿期</td><td style="color:#00ff88">17</td><td style="color:#ff4d4d">29</td><td style="color:#aaa;font-size:11px">0.63(弱)</td><td style="color:#00bfff">40</td><td style="color:#ffa500">78</td><td style="color:#aaa;font-size:11px">0.66(弱)</td><td style="color:#ff4d4d">+12</td><td style="color:#ff4d4d">+38</td><td style="color:#ff4d4d">+49</td><td style="color:#00ff88">+23</td><td>96/18</td><td>3.0</td><td style="color:#ff4d4d;font-size:11px">赚钱效应萌芽</td><td style="color:#00bfff;font-size:11px">跌破4板 → 次日偏弱</td></tr><tr><td>06-01<br><span style="color:#ff4d4d;font-size:10px">周一</span></td><td><strong class="score-low">42</strong></td><td><span class="phase-badge phase-1" style="font-size:11px">回暖期</span></td><td>成长期</td><td style="color:#00ff88">37</td><td style="color:#ff4d4d">20</td><td style="color:#aaa;font-size:11px">0.35(弱)</td><td style="color:#00bfff">63</td><td style="color:#ffa500">77</td><td style="color:#aaa;font-size:11px">0.55(弱)</td><td style="color:#00ff88">-17</td><td style="color:#ff4d4d">+14</td><td style="color:#ff4d4d">+57</td><td style="color:#00ff88">+26</td><td>166/23</td><td>4.0</td><td style="color:#00ff88;font-size:11px">亏钱效应萌芽</td><td style="color:#00bfff;font-size:11px">--</td></tr><tr><td>05-29<br><span style="color:#ffa500;font-size:10px">周五</span></td><td><strong class="score-low">42</strong></td><td><span class="phase-badge phase-5" style="font-size:11px">退潮期</span></td><td>成长期</td><td style="color:#00ff88">24</td><td style="color:#ff4d4d">47</td><td style="color:#aaa;font-size:11px">0.66(弱)</td><td style="color:#00bfff">88</td><td style="color:#ffa500">70</td><td style="color:#aaa;font-size:11px">0.44(弱)</td><td style="color:#ff4d4d">+23</td><td style="color:#00ff88">-18</td><td style="color:#ff4d4d">+23</td><td style="color:#00ff88">+64</td><td>67/60</td><td>5.0</td><td style="color:#ff4d4d;font-size:11px">赚钱效应萌芽</td><td style="color:#00bfff;font-size:11px">--</td></tr><tr><td>05-28</td><td><strong class="score-low">60</strong></td><td><span class="phase-badge phase-2" style="font-size:11px">试探期</span></td><td>成长期</td><td style="color:#00ff88">51</td><td style="color:#ff4d4d">33</td><td style="color:#aaa;font-size:11px">0.39(弱)</td><td style="color:#00bfff">61</td><td style="color:#ffa500">86</td><td style="color:#aaa;font-size:11px">0.58(弱)</td><td style="color:#00ff88">-18</td><td style="color:#ff4d4d">+25</td><td style="color:#ff4d4d">+53</td><td style="color:#00ff88">+10</td><td>126/12</td><td>4.0</td><td style="color:#00ff88;font-size:11px">亏钱效应确认</td><td style="color:#00bfff;font-size:11px">--</td></tr><tr><td>05-27</td><td><strong class="score-low">19</strong><br><small class="score-low">极冷</small></td><td><span class="phase-badge phase-5" style="font-size:11px">退潮期</span></td><td>婴儿期</td><td style="color:#00ff88">38</td><td style="color:#ff4d4d">8</td><td style="color:#aaa;font-size:11px">0.17(弱)</td><td style="color:#00bfff">81</td><td style="color:#ffa500">74</td><td style="color:#aaa;font-size:11px">0.48(弱)</td><td style="color:#00ff88">-30</td><td style="color:#00ff88">-7</td><td style="color:#ff4d4d">+66</td><td style="color:#00ff88">+43</td><td>61/32</td><td>3.0</td><td style="color:#00ff88;font-size:11px">亏钱效应确认</td><td style="color:#00bfff;font-size:11px">--</td></tr><tr><td>05-26</td><td><strong class="score-low">21</strong><br><small class="">低温</small></td><td><span class="phase-badge phase-0" style="font-size:11px">冰点期</span></td><td>混沌期</td><td style="color:#00ff88">35</td><td style="color:#ff4d4d">24</td><td style="color:#aaa;font-size:11px">0.41(弱)</td><td style="color:#00bfff">88</td><td style="color:#ffa500">65</td><td style="color:#aaa;font-size:11px">0.42(弱)</td><td style="color:#00ff88">-11</td><td style="color:#00ff88">-23</td><td style="color:#ff4d4d">+41</td><td style="color:#00ff88">+53</td><td>64/34</td><td>3.0</td><td style="color:#00ff88;font-size:11px">亏钱效应萌芽</td><td style="color:#00bfff;font-size:11px">跌破4板 → 次日偏弱</td></tr><tr><td>05-25<br><span style="color:#ff4d4d;font-size:10px">周一</span></td><td><strong class="score-low">56</strong></td><td><span class="phase-badge phase-2" style="font-size:11px">试探期</span></td><td>成长期</td><td style="color:#00ff88">30</td><td style="color:#ff4d4d">49</td><td style="color:#aaa;font-size:11px">0.62(弱)</td><td style="color:#00bfff">58</td><td style="color:#ffa500">73</td><td style="color:#aaa;font-size:11px">0.56(弱)</td><td style="color:#ff4d4d">+19</td><td style="color:#ff4d4d">+15</td><td style="color:#ff4d4d">+24</td><td style="color:#00ff88">+28</td><td>128/24</td><td>4.0</td><td style="color:#ff4d4d;font-size:11px">赚钱效应萌芽</td><td style="color:#00bfff;font-size:11px">--</td></tr><tr><td>05-22<br><span style="color:#ffa500;font-size:10px">周五</span></td><td><strong class="score-low">65</strong></td><td><span class="phase-badge phase-4" style="font-size:11px">高潮期</span></td><td>成熟期</td><td style="color:#00ff88">39</td><td style="color:#ff4d4d">34</td><td style="color:#aaa;font-size:11px">0.47(弱)</td><td style="color:#00bfff">37</td><td style="color:#ffa500">110</td><td style="color:#aaa;font-size:11px">0.75(弱)</td><td style="color:#00ff88">-5</td><td style="color:#ff4d4d">+73</td><td style="color:#ff4d4d">+76</td><td style="color:#ff4d4d">-2</td><td>60/18</td><td>9.0</td><td style="color:#00ff88;font-size:11px">亏钱效应萌芽</td><td style="color:#ff4d4d;font-size:11px">破7板+涨停≥50 → 次日</td></tr><tr><td>05-21</td><td><strong class="score-low">30</strong></td><td><span class="phase-badge phase-4" style="font-size:11px">高潮期</span></td><td>成熟期</td><td style="color:#00ff88">35</td><td style="color:#ff4d4d">54</td><td style="color:#aaa;font-size:11px">0.61(弱)</td><td style="color:#00bfff">98</td><td style="color:#ffa500">62</td><td style="color:#aaa;font-size:11px">0.39(弱)</td><td style="color:#ff4d4d">+19</td><td style="color:#00ff88">-36</td><td style="color:#ff4d4d">+8</td><td style="color:#00ff88">+63</td><td>58/30</td><td>9.0</td><td style="color:#ff4d4d;font-size:11px">赚钱效应确认</td><td style="color:#ff4d4d;font-size:11px">破7板+涨停≥50 → 次日</td></tr><tr><td>05-20</td><td><strong class="score-low">60</strong></td><td><span class="phase-badge phase-4" style="font-size:11px">高潮期</span></td><td>成熟期</td><td style="color:#00ff88">46</td><td style="color:#ff4d4d">72</td><td style="color:#aaa;font-size:11px">0.61(弱)</td><td style="color:#00bfff">96</td><td style="color:#ffa500">103</td><td style="color:#aaa;font-size:11px">0.52(弱)</td><td style="color:#ff4d4d">+26</td><td style="color:#ff4d4d">+7</td><td style="color:#ff4d4d">+31</td><td style="color:#00ff88">+50</td><td>69/38</td><td>8.0</td><td style="color:#ff4d4d;font-size:11px">赚钱效应萌芽</td><td style="color:#ff4d4d;font-size:11px">破7板+涨停≥50 → 次日</td></tr></tbody></table></div></div></div><div class="tab-pane" id="tab-4"><div class="card"><div class="card-title">📖 交易体系完整手册</div><div class="manual-section"><h3>❤️ 心法总诀</h3><p>情绪为道 → 主线为法 → 抢筹为术 → 助攻为器 → 无天量不龙头</p><p style="color:#ffa500;margin-top:6px">按情绪周期定仓位，按时间节点做盈亏比最高的方向，注意调整时间有节奏，技术有周期。</p></div><div class="section-sep"></div><div class="manual-section"><h3>🎯 100分打分规则</h3><ul><li>收盘红绿差值 <strong>30分</strong>：差值60→30分，40→25分，20→20分，0→15分，-20→10分，-40→5分</li><li>竞价红绿 <strong>20分</strong>：绝对值12分 + 两日对比8分；红>绿且红扩额外加分</li><li>连板类 <strong>25分</strong>：高度10分 + 涨停数8分 + 跌停惩罚7分</li><li>涨跌家数 <strong>10分</strong>：涨家数/总股数≈5300</li><li>外部事件 <strong>10分</strong>：重大事件8分，小事件5分，无事件3分</li><li>额外修正 <strong>±</strong>：人工填写额外分列</li></ul></div><div class="section-sep"></div><div class="manual-section"><h3>🌡️ 六阶段七周期对照</h3><ul><li>六阶段：<span class="phase-badge phase-0">冰点</span> → <span class="phase-badge phase-1">回暖</span> → <span class="phase-badge phase-2">试探</span> → <span class="phase-badge phase-3">主升</span> → <span class="phase-badge phase-4">高潮</span> → <span class="phase-badge phase-5">退潮</span></li><li>七周期：婴儿(≤3板) → 成长(4-5板) → 加速(6板) → 确认(7板) → 成熟(8板+) → 混沌(龙空龙) → 衰退(退潮)</li></ul></div><div class="section-sep"></div><div class="manual-section"><h3>⚡ 强反转铁律（最高优先级）</h3><ul><li><strong style="color:#ff4d4d">破7板 + 涨停≥50</strong> → 次日强走强（偏强）</li><li><strong style="color:#00bfff">跌破4板</strong> → 次日强走弱（偏弱）</li><li><strong style="color:#ffa500">高度连续3日下降</strong> → 退潮确认</li></ul></div><div class="section-sep"></div><div class="manual-section"><h3>📊 差值铁律（赚亏效应周期）</h3><ul><li>连续2天红差值正（竞价红>绿）→ <strong style="color:#ff4d4d">赚钱效应确认</strong></li><li>连续2天绿差值负（竞价绿>红）→ <strong style="color:#00ff88">亏钱效应确认</strong></li><li>两日红扩>绿扩 且 当日竞价红>绿 → <strong style="color:#ffa500">情绪回暖</strong></li><li>两日绿扩>红扩 且 当日竞价绿>红 → <strong style="color:#00bfff">情绪转弱</strong></li></ul></div><div class="section-sep"></div><div class="manual-section"><h3>💪 竞价/收盘红绿强弱标准</h3><ul><li>竞价红绿比 ≥ 1.2 → <strong style="color:#ff4d4d">强</strong>（看多积极）</li><li>竞价红绿比 ≤ 0.8 → <strong style="color:#00bfff">弱</strong>（看空积极）</li><li>当日绿 vs 前日绿：扩大→亏钱效应加剧；缩小→亏钱效应减弱</li><li>收盘强弱与竞价是否一致，不一致为背离信号</li></ul></div><div class="section-sep"></div><div class="manual-section"><h3>🛡️ 止损铁律</h3><ul><li>单日账户回撤超5% → 当日及次日无条件空仓</li><li>连续2笔交易触发止损 → 立即空仓复盘，禁止急于翻本</li><li>绝对不追高超过5%，绝不撤单改单追涨</li><li>单只个股持仓周期不超过5个交易日</li><li>前期高标低开5%+集体核按钮 → 至少等2天</li></ul></div><div class="section-sep"></div><div class="manual-section"><h3>📅 开仓停止信号（等2天）</h3><ul><li>前期高标低开5%</li><li>最高标集体核按钮</li><li>收盘最高标大阴-13</li><li>大盘大阴</li><li>情绪位/缺口/联动异常</li></ul></div></div></div></div></div><script>window.CHART_DATA = {"dates": ["05-06", "05-07", "05-08", "05-11", "05-12", "05-13", "05-14", "05-15", "05-18", "05-19", "05-20", "05-21", "05-22", "05-25", "05-26", "05-27", "05-28", "05-29", "06-01", "06-02", "06-03", "06-04", "06-05", "06-08", "06-09", "06-10", "06-11", "06-12", "06-15", "06-16"], "scores": [83.0, 70.0, 60.0, 84.0, 65.0, 74.0, 27.0, 44, 41, 63, 60.0, 30.0, 65.0, 56, 21, 19.0, 60, 42, 42, 51, 59, 38, 48, 13.0, 66.0, 13.0, 42, 54.0, 60.0, 68], "regression": [47.5, 47.6, 47.7, 47.8, 47.9, 47.9, 48.0, 48.1, 48.2, 48.3, 48.4, 48.4, 48.5, 48.6, 48.7, 48.8, 48.9, 48.9, 49.0, 49.1, 49.2, 49.3, 49.4, 49.4, 49.5, 49.6, 49.7, 49.8, 49.8, 49.9], "sma5": [53.6, 62.0, 64.2, 70.8, 72.4, 70.6, 62.0, 58.8, 50.2, 49.8, 47.0, 47.6, 51.8, 54.8, 46.4, 38.2, 44.2, 39.6, 36.8, 42.8, 50.8, 46.4, 47.6, 41.8, 44.8, 35.6, 36.4, 37.6, 47.0, 47.4], "sma20": [49.8, 52.7, 52.1, 53.2, 55.0, 56.2, 54.9, 53.6, 52.4, 53.4, 53.8, 51.7, 52.9, 53.8, 52.9, 52.4, 54.0, 53.6, 53.1, 52.9, 51.6, 50.0, 49.5, 45.9, 46.0, 42.9, 43.6, 44.1, 45.1, 45.4], "confidence_upper": [82.4, 82.5, 82.6, 82.7, 82.8, 82.8, 82.9, 83.0, 83.1, 83.2, 83.3, 83.3, 83.4, 83.5, 83.6, 83.7, 83.8, 83.8, 83.9, 84.0, 84.1, 84.2, 84.3, 84.3, 84.4, 84.5, 84.6, 84.7, 84.7, 84.8], "confidence_lower": [12.6, 12.7, 12.8, 12.9, 13.0, 13.0, 13.1, 13.2, 13.3, 13.4, 13.5, 13.5, 13.6, 13.7, 13.8, 13.9, 14.0, 14.0, 14.1, 14.2, 14.3, 14.4, 14.5, 14.5, 14.6, 14.7, 14.8, 14.9, 14.9, 15.0], "extreme_types": ["normal", "normal", "normal", "normal", "normal", "normal", "normal", "normal", "normal", "normal", "normal", "normal", "normal", "normal", "low", "extreme_low", "normal", "normal", "normal", "normal", "normal", "normal", "normal", "extreme_low", "normal", "extreme_low", "normal", "normal", "normal", "normal"], "extreme_temps": ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "低温", "极冷", "", "", "", "", "", "", "", "极冷", "", "极冷", "", "", "", ""], "is_monday": [false, false, false, true, false, false, false, false, true, false, false, false, false, true, false, false, false, false, true, false, false, false, false, true, false, false, false, false, true, false], "is_friday": [false, false, true, false, false, false, false, true, false, false, false, false, true, false, false, false, false, true, false, false, false, false, true, false, false, false, false, true, false, false], "weekday_cn": ["三", "四", "五", "一", "二", "三", "四", "五", "一", "二", "三", "四", "五", "一", "二", "三", "四", "五", "一", "二", "三", "四", "五", "一", "二", "三", "四", "五", "一", "二"], "bid_green": [0, 14, 38, 9, 20, 31, 40, 48, 52, 47, 46, 35, 39, 30, 35, 38, 51, 24, 37, 17, 40, 36, 33, 85, 24, 39, 34, 32, 26, 24], "bid_red": [60, 49, 32, 92, 65, 22, 54, 33, 35, 44, 72, 54, 34, 49, 24, 8, 33, 47, 20, 29, 50, 32, 36, -17, 32, 19, 39, 40, 13, 21], "cls_green": [2, 25, 41, 23, 44, 41, 98, 71, 86, 44, 96, 98, 37, 58, 88, 81, 61, 88, 63, 40, 32, 49, 80, 89, 44, 94, 68, 47, 27, 10], "cls_red": [110, 99, 77, 101, 100, 108, 32, 84, 84, 73, 103, 62, 110, 73, 65, 74, 86, 70, 77, 78, 104, 83, 53, 37, 91, 48, 86, 47, 74, 72], "bid_diff": [60, 35, -6, 83, 45, -9, 14, -15, -17, -3, 26, 19, -5, 19, -11, -30, -18, 23, -17, 12, 10, -4, 3, -102, 8, -20, 5, 8, -13, -3], "cls_diff": [108, 74, 36, 78, 56, 67, -66, 13, -2, 29, 7, -36, 73, 15, -23, -7, 25, -18, 14, 38, 72, 34, -27, -52, 47, -46, 18, 0, 47, 62], "red_expand": [50, 50, 45, 9, 35, 86, -22, 51, 49, 29, 31, 8, 76, 24, 41, 66, 53, 23, 57, 49, 54, 51, 17, 54, 59, 29, 47, 7, 61, 51], "green_expand": [2, 11, 3, 14, 24, 10, 58, 23, 34, -3, 50, 63, -2, 28, 53, 43, 10, 64, 26, 23, -8, 13, 47, 4, 20, 55, 34, 15, 1, -14], "bid_red_change": [19, -11, -17, 60, -27, -43, 32, -21, 2, 9, 28, -18, -20, 15, -25, -16, 25, 14, -27, 9, 21, -18, 4, -53, 49, -13, 20, 1, -27, 8], "bid_green_change": [-18, 14, 24, -29, 11, 11, 9, 8, 4, -5, -1, -11, 4, -9, 5, 3, 13, -27, 13, -20, 23, -4, -3, 52, -61, 15, -5, -2, -6, -2], "cls_red_change": [31, -11, -22, 24, -1, 8, -76, 52, 0, -11, 30, -41, 48, -37, -8, 9, 12, -16, 7, 1, 26, -21, -30, -16, 54, -43, 38, -39, 27, -2], "cls_green_change": [-55, 23, 16, -18, 21, -3, 57, -27, 15, -42, 52, 2, -61, 21, 30, -7, -20, 27, -25, -23, -8, 17, 31, 9, -45, 50, -26, -21, -20, -17], "limit_up": [125, 127, 125, 135, 94, 147, 80, 72, 102, 122, 69, 58, 60, 128, 64, 61, 126, 67, 166, 96, 81, 79, 84, 64, 142, 75, 78, 100, 160, 138], "limit_down": [63, 54, 33, 27, 32, 17, 44, 44, 53, 26, 38, 30, 18, 24, 34, 32, 12, 60, 23, 18, 27, 32, 17, 51, 16, 65, 50, 23, 9, 11], "phases": [5, 3, 2, 4, 3, 3, 3, 2, 2, 3, 4, 4, 4, 2, 0, 5, 2, 5, 1, 2, 2, 1, 2, 2, 3, 5, 1, 2, 2, 3], "cycles": [1, 1, 1, 1, 1, 2, 3, 2, 2, 3, 4, 4, 4, 1, 5, 0, 1, 1, 1, 0, 0, 1, 1, 2, 0, 5, 0, 1, 1, 1], "recent5_dates": ["06-10", "06-11", "06-12", "06-15", "06-16"], "recent5_bid_green": [39, 34, 32, 26, 24], "recent5_bid_red": [19, 39, 40, 13, 21], "recent5_cls_green": [94, 68, 47, 27, 10], "recent5_cls_red": [48, 86, 47, 74, 72], "recent5_bid_diff": [-20, 5, 8, -13, -3], "recent5_cls_diff": [-46, 18, 0, 47, 62]};</script><script>
-function switchTab(idx) {
-    var btns = document.querySelectorAll('.tab-btn');
-    var panes = document.querySelectorAll('.tab-pane');
-    for (var i=0; i<btns.length; i++) {
-        btns[i].classList.toggle('active', i===idx);
-        panes[i].classList.toggle('active', i===idx);
-    }
-    if (idx===1) { setTimeout(function(){ var insts=Chart.instances; for(var k in insts){ insts[k].resize(); } }, 120); }
+<script>
+// 数据注入（window.CHART_DATA，避免Python f-string花括号冲突）
+window.CHART_DATA = {"labels": ["05/22 周五", "05/25 周一", "05/26 周二", "05/27 周三", "05/28 周四", "05/29 周五", "06/01 周一", "06/02 周二", "06/03 周三", "06/04 周四", "06/05 周五", "06/08 周一", "06/09 周二", "06/10 周三", "06/11 周四", "06/12 周五", "06/15 周一", "06/16 周二", "06/17 周三", "06/18 周四"], "scores": [44.5, 51.2, 24.1, 21.3, 46.8, 46.7, 38.9, 50.5, 43.2, 35.3, 42.4, 17.9, 59.4, 20.7, 38.9, 45.7, 47.3, 51.8, 31.2, 52.7], "regression": [38.1, 38.4, 38.6, 38.9, 39.1, 39.4, 39.6, 39.9, 40.1, 40.4, 40.7, 40.9, 41.2, 41.4, 41.7, 41.9, 42.2, 42.4, 42.7, 42.9], "extreme_points": [{"x": 2, "y": 24.1, "label": "极弱"}, {"x": 3, "y": 21.3, "label": "极弱"}, {"x": 11, "y": 17.9, "label": "极弱"}, {"x": 13, "y": 20.7, "label": "极弱"}], "mon_fri_points": [{"x": 0, "y": 44.5, "label": "周五", "wday": 4}, {"x": 1, "y": 51.2, "label": "周一", "wday": 0}, {"x": 5, "y": 46.7, "label": "周五", "wday": 4}, {"x": 6, "y": 38.9, "label": "周一", "wday": 0}, {"x": 10, "y": 42.4, "label": "周五", "wday": 4}, {"x": 11, "y": 17.9, "label": "周一", "wday": 0}, {"x": 15, "y": 45.7, "label": "周五", "wday": 4}, {"x": 16, "y": 47.3, "label": "周一", "wday": 0}], "bid_r": [34, 49, 24, 8, 33, 47, 20, 29, 50, 32, 36, -17, 32, 19, 39, 40, 13, 21, 12, 38], "bid_g": [39, 30, 35, 38, 51, 24, 37, 17, 40, 36, 33, 85, 24, 39, 34, 32, 26, 24, 27, 22], "cls_r": [110, 73, 65, 74, 86, 70, 77, 78, 104, 83, 53, 37, 91, 48, 86, 47, 74, 72, 42, 90], "cls_g": [37, 58, 88, 81, 61, 88, 63, 40, 32, 49, 80, 89, 44, 94, 68, 47, 27, 10, 44, 46], "red_diff": [76, 24, 41, 66, 53, 23, 57, 49, 54, 51, 17, 54, 59, 29, 47, 7, 61, 51, 30, 52], "grn_diff": [-2, 28, 53, 43, 10, 64, 26, 23, -8, 13, 47, 4, 20, 55, 34, 15, 1, -14, 17, 24], "net_diff": [78, -4, -12, 23, 43, -41, 31, 26, 62, 38, -30, 50, 39, -26, 13, -8, 60, 65, 13, 28], "bid_r_expand": [-20, 15, -25, -16, 25, 14, -27, 9, 21, -18, 4, -53, 49, -13, 20, 1, -27, 8, -9, 26], "bid_g_expand": [4, -9, 5, 3, 13, -27, 13, -20, 23, -4, -3, 52, -61, 15, -5, -2, -6, -2, 3, -5], "zt": [60, 128, 64, 61, 126, 67, 166, 96, 81, 79, 84, 64, 142, 75, 78, 100, 160, 138, 96, 101], "dt": [18, 24, 34, 32, 12, 60, 23, 18, 27, 32, 17, 51, 16, 65, 50, 23, 9, 11, 18, 34], "phase": [5, 3, 5, 0, 3, 3, 2, 5, 2, 2, 2, 0, 5, 0, 5, 3, 3, 3, 5, 3], "cycle": [0, 1, 6, 5, 1, 1, 1, 6, 5, 1, 1, 2, 0, 5, 0, 1, 1, 1, 0, 1], "z_score": [0.15, 0.71, -1.53, -1.76, 0.34, 0.34, -0.31, 0.65, 0.05, -0.61, -0.02, -2.04, 1.38, -1.81, -0.31, 0.25, 0.39, 0.76, -0.94, 0.83], "percentile": [40.0, 60.0, 0.0, 0.0, 50.0, 45.0, 30.0, 55.0, 35.0, 20.0, 40.0, 0.0, 90.0, 5.0, 40.0, 60.0, 70.0, 85.0, 20.0, 90.0], "rush_buy_prob": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 58.3, 0.0, 0.0, 0.0, 100.0, 0.0, 66.7, 0.0, 0.0, 0.0, 0.0, 79.0], "rush_sell_prob": [0.0, 0.0, 60.6, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 73.8, 0.0, 0.0, 0.0, 0.0, 73.4, 0.0], "comp_bull": [10, 70, 10, 20, 45, 80, 25, 10, 85, 40, 65, 25, 10, 0, 10, 85, 40, 55, 10, 100], "rush_buy_pts": [8, 12, 14, 19], "rush_sell_pts": [2, 13, 18], "iron_pts": [0, 2, 7, 12, 14, 18], "warmup_pts": [1, 5, 7, 10, 12, 14, 15, 19], "cooldown_pts": [0, 2, 3, 6, 9, 11, 13, 16, 18], "extreme_high": 85, "extreme_low": 25, "r5_labels": ["06/12 周五", "06/15 周一", "06/16 周二", "06/17 周三", "06/18 周四"], "r5_bid_r": [40, 13, 21, 12, 38], "r5_bid_g": [32, 26, 24, 27, 22], "r5_cls_r": [47, 74, 72, 42, 90], "r5_cls_g": [47, 27, 10, 44, 46], "r5_red_diff": [7, 61, 51, 30, 52], "r5_grn_diff": [15, 1, -14, 17, 24], "r5_bid_r_exp": [1, -27, 8, -9, 26], "r5_bid_g_exp": [-2, -6, -2, 3, -5], "r5_bid_r_vs_prev": [1, -27, 8, -9, 26], "r5_bid_g_vs_prev": [-2, -6, -2, 3, -5]};
+
+// Tab切换
+function switchTab(n) {
+  document.querySelectorAll('.tab').forEach(function(t,i){ t.classList.toggle('active', i===n); });
+  document.querySelectorAll('.tab-content').forEach(function(c,i){ c.classList.toggle('active', i===n); });
+  if(n===1) setTimeout(initCharts, 80);
+  if(n===2) setTimeout(initProfit5Charts, 80);
+}
+
+var CI = {};
+function destroyChart(id) {
+  if(CI[id]) { CI[id].destroy(); delete CI[id]; }
 }
 
 function initCharts() {
-    var D = window.CHART_DATA || {};
-    if (!D.dates) return;
+  var D = window.CHART_DATA;
+  var labels = D.labels;
 
-    var baseOpts = {
-        responsive: true, maintainAspectRatio: false,
-        interaction: { mode: 'index', intersect: false },
-        plugins: { legend: { labels: { color:'#9090b0', font:{size:12} } } },
-        scales: {
-            y: { ticks:{color:'#8090a0'}, grid:{color:'rgba(255,255,255,0.05)'} },
-            x: { ticks:{color:'#8090a0', maxRotation:45, font:{size:11}}, grid:{color:'rgba(255,255,255,0.03)'} }
-        }
+  // ─── 图1: 情绪温度计 + 回归线 + 极端温度 + 周一周五 ───
+  destroyChart('c1');
+  var ann1 = {};
+  ann1['eh'] = {
+    type:'line', yMin:D.extreme_high, yMax:D.extreme_high,
+    borderColor:'rgba(255,77,77,0.7)', borderWidth:1.5, borderDash:[5,4],
+    label:{display:true, content:'极强≥'+D.extreme_high, position:'end',
+           color:'#ff4d4d', font:{size:10}, backgroundColor:'rgba(0,0,0,0.6)'}
+  };
+  ann1['el'] = {
+    type:'line', yMin:D.extreme_low, yMax:D.extreme_low,
+    borderColor:'rgba(0,255,136,0.7)', borderWidth:1.5, borderDash:[5,4],
+    label:{display:true, content:'极弱≤'+D.extreme_low, position:'end',
+           color:'#00ff88', font:{size:10}, backgroundColor:'rgba(0,0,0,0.6)'}
+  };
+  // 周一/周五竖线
+  D.mon_fri_points.forEach(function(pt, i) {
+    ann1['mf'+i] = {
+      type:'line', xMin:pt.x, xMax:pt.x,
+      borderColor: pt.wday===0 ? 'rgba(255,200,0,0.45)' : 'rgba(0,200,255,0.45)',
+      borderWidth:1.5, borderDash:[3,4],
+      label:{display:true, content:pt.label, position:'end',
+             color:pt.wday===0?'#ffcc00':'#00ccff', font:{size:9},
+             backgroundColor:'rgba(0,0,0,0.55)'}
     };
-
-    // === 图表0：情绪温度计 + 回归线 + 极端温度 + 周一/周五标注 ===
-    var c0_point_colors = D.extreme_types.map(function(t, i) {
-        if (t==='extreme_high') return '#ff1a1a';
-        if (t==='high') return '#ff8c00';
-        if (t==='extreme_low') return '#00f0ff';
-        if (t==='low') return '#0088ff';
-        // 周一/周五特殊标注
-        if (D.is_monday[i]) return '#ff4d4d';
-        if (D.is_friday[i]) return '#ffa500';
-        return '#00d4ff';
-    });
-    var c0_point_radius = D.extreme_types.map(function(t, i) {
-        if (t!=='normal') return 10;
-        if (D.is_monday[i] || D.is_friday[i]) return 7;
-        return 3;
-    });
-    // 构建带周一/周五注解的标签
-    var annotLabels = D.dates.map(function(d, i) {
-        var s = d;
-        if (D.is_monday[i]) s += ' (一)';
-        else if (D.is_friday[i]) s += ' (五)';
-        return s;
-    });
-
-    new Chart(document.getElementById('c0'), {
-        type: 'line',
-        data: {
-            labels: D.dates,
-            datasets: [
-                {
-                    label: '情绪温度', data: D.scores,
-                    borderColor: '#00d4ff', backgroundColor: 'rgba(0,212,255,0.08)',
-                    fill: true, tension: 0.35,
-                    pointRadius: c0_point_radius,
-                    pointBackgroundColor: c0_point_colors,
-                    pointBorderColor: c0_point_colors,
-                    borderWidth: 2
-                },
-                {
-                    label: '全局回归线', data: D.regression,
-                    borderColor: '#ffa500', borderDash: [6,4], borderWidth: 2,
-                    pointRadius: 0, fill: false
-                },
-                {
-                    label: 'SMA5', data: D.sma5,
-                    borderColor: '#00ff88', borderWidth: 1.5,
-                    pointRadius: 0, fill: false
-                },
-                {
-                    label: 'SMA20', data: D.sma20,
-                    borderColor: '#556677', borderWidth: 1.5,
-                    pointRadius: 0, fill: false
-                },
-                {
-                    label: '极强阈值(85)', data: D.dates.map(function(){ return 85; }),
-                    borderColor: 'rgba(255,77,77,0.35)', borderDash: [3,5], borderWidth: 1.5,
-                    pointRadius: 0, fill: false
-                },
-                {
-                    label: '极弱阈值(25)', data: D.dates.map(function(){ return 25; }),
-                    borderColor: 'rgba(0,191,255,0.35)', borderDash: [3,5], borderWidth: 1.5,
-                    pointRadius: 0, fill: false
-                }
-            ]
-        },
-        options: Object.assign({}, baseOpts, {
-            plugins: Object.assign({}, baseOpts.plugins, {
-                tooltip: {
-                    callbacks: {
-                        afterLabel: function(ctx) {
-                            var i = ctx.dataIndex;
-                            var extras = [];
-                            if (D.extreme_temps[i]) extras.push('🌡️ ' + D.extreme_temps[i]);
-                            if (D.is_monday[i]) extras.push('📅 周一');
-                            if (D.is_friday[i]) extras.push('📅 周五');
-                            return extras;
-                        }
-                    }
-                }
-            })
-        })
-    });
-
-    // === 图表1：竞价红绿 & 收盘红绿折线 ===
-    new Chart(document.getElementById('c1'), {
-        type: 'line',
-        data: {
-            labels: D.dates,
-            datasets: [
-                { label:'竞价红', data:D.bid_red, borderColor:'#ff4d4d', tension:0.3, pointRadius:3, borderWidth:2 },
-                { label:'竞价绿', data:D.bid_green, borderColor:'#00ff88', tension:0.3, pointRadius:3, borderWidth:2 },
-                { label:'收盘红', data:D.cls_red, borderColor:'#ff9900', tension:0.3, pointRadius:2, borderWidth:2, borderDash:[4,2] },
-                { label:'收盘绿', data:D.cls_green, borderColor:'#00bfff', tension:0.3, pointRadius:2, borderWidth:2, borderDash:[4,2] }
-            ]
-        },
-        options: baseOpts
-    });
-
-    // === 图表c_5day：近5日竞价绿/红变化折线（亏钱/赚钱效应周期）===
-    var d5 = D.recent5_dates;
-    var bidGreenDiff5 = [];
-    var bidRedDiff5 = [];
-    var clsGreenDiff5 = [];
-    var clsRedDiff5 = [];
-    for (var i=1; i<d5.length; i++) {
-        bidGreenDiff5.push(D.recent5_bid_green[i] - D.recent5_bid_green[i-1]);
-        bidRedDiff5.push(D.recent5_bid_red[i] - D.recent5_bid_red[i-1]);
-        clsGreenDiff5.push(D.recent5_cls_green[i] - D.recent5_cls_green[i-1]);
-        clsRedDiff5.push(D.recent5_cls_red[i] - D.recent5_cls_red[i-1]);
+  });
+  // 铁律信号竖线
+  D.iron_pts.forEach(function(idx, i) {
+    ann1['iron'+i] = {
+      type:'line', xMin:idx, xMax:idx,
+      borderColor:'rgba(255,68,0,0.6)', borderWidth:2,
+      label:{display:true, content:'铁律', position:'start',
+             color:'#ff4400', font:{size:9}, backgroundColor:'rgba(0,0,0,0.6)'}
+    };
+  });
+  var extPts = D.extreme_points.map(function(pt){ return {x:labels[pt.x], y:pt.y}; });
+  var mfPts  = D.mon_fri_points.map(function(pt){ return {x:labels[pt.x], y:pt.y}; });
+  CI['c1'] = new Chart(document.getElementById('chart1').getContext('2d'), {
+    data:{
+      labels:labels,
+      datasets:[
+        {type:'line', label:'情绪温度', data:D.scores,
+         borderColor:'#00d4ff', backgroundColor:'rgba(0,212,255,0.07)',
+         borderWidth:2.5, pointRadius:3, tension:0.35, fill:true, yAxisID:'y'},
+        {type:'line', label:'20日回归趋势', data:D.regression,
+         borderColor:'#ffcc00', borderWidth:2, borderDash:[8,5],
+         pointRadius:0, tension:0, yAxisID:'y', spanGaps:true},
+        {type:'scatter', label:'极端点', data:extPts,
+         backgroundColor:'#ff4d4d', pointStyle:'rectRot', radius:9, yAxisID:'y'},
+        {type:'scatter', label:'周一/周五', data:mfPts,
+         backgroundColor:'#ffcc00', pointStyle:'triangle', radius:8, yAxisID:'y'},
+      ]
+    },
+    options:{
+      responsive:true, interaction:{mode:'index', intersect:false},
+      plugins:{
+        legend:{labels:{color:'#99aabc', font:{size:10}}},
+        annotation:{annotations:ann1}
+      },
+      scales:{
+        x:{ticks:{color:'#445566', font:{size:9}, maxRotation:50},
+           grid:{color:'rgba(30,58,95,0.4)'}},
+        y:{min:0, max:100,
+           ticks:{color:'#445566'},
+           grid:{color:'rgba(30,58,95,0.35)'},
+           title:{display:true, text:'情绪分(0-100)', color:'#445566', font:{size:10}}}
+      }
     }
-    var d5labels = d5.slice(1);
-    new Chart(document.getElementById('c_5day'), {
-        type: 'bar',
-        data: {
-            labels: d5labels,
-            datasets: [
-                { label:'竞价绿日变化(+扩=亏效应)', data:bidGreenDiff5, backgroundColor:bidGreenDiff5.map(function(v){return v>0?'rgba(0,255,136,0.7)':'rgba(0,255,136,0.25)';}), borderRadius:4 },
-                { label:'竞价红日变化(+扩=赚效应)', data:bidRedDiff5, backgroundColor:bidRedDiff5.map(function(v){return v>0?'rgba(255,77,77,0.7)':'rgba(255,77,77,0.25)';}), borderRadius:4 },
-                { label:'收盘绿日变化', data:clsGreenDiff5, type:'line', borderColor:'#00ff88', borderWidth:2, pointRadius:5, fill:false, tension:0.3 },
-                { label:'收盘红日变化', data:clsRedDiff5, type:'line', borderColor:'#ff4d4d', borderWidth:2, pointRadius:5, fill:false, tension:0.3 }
-            ]
-        },
-        options: Object.assign({}, baseOpts, {
-            scales: Object.assign({}, baseOpts.scales, {
-                y: Object.assign({}, baseOpts.scales.y, {
-                    title: { display:true, text:'日变化量（正=扩大）', color:'#7090b0' }
-                })
-            })
-        })
-    });
+  });
 
-    // === 图表2：日内红扩/绿收组合图 ===
-    new Chart(document.getElementById('c2'), {
-        type: 'bar',
-        data: {
-            labels: D.dates,
-            datasets: [
-                { label:'日内红扩(收红-竞红)', data:D.red_expand, backgroundColor:D.red_expand.map(function(v){return v>0?'rgba(255,77,77,0.65)':'rgba(255,77,77,0.2)';}), borderRadius:4 },
-                { label:'日内绿收(收绿-竞绿)', data:D.green_expand, backgroundColor:D.green_expand.map(function(v){return v>0?'rgba(0,255,136,0.65)':'rgba(0,255,136,0.2)';}), borderRadius:4 },
-                { label:'竞价差值', data:D.bid_diff, type:'line', borderColor:'#ffa500', borderWidth:2, pointRadius:3, fill:false, tension:0.3 }
-            ]
-        },
-        options: baseOpts
-    });
+  // ─── 图2: 竞价红绿 vs 收盘红绿 ───
+  destroyChart('c2');
+  CI['c2'] = new Chart(document.getElementById('chart2').getContext('2d'), {
+    type:'line',
+    data:{
+      labels:labels,
+      datasets:[
+        {label:'竞价红', data:D.bid_r,
+         borderColor:'#ff4d4d', borderWidth:2.5, pointRadius:2, tension:0.3},
+        {label:'竞价绿', data:D.bid_g,
+         borderColor:'#00ff88', borderWidth:2.5, pointRadius:2, tension:0.3},
+        {label:'收盘红', data:D.cls_r,
+         borderColor:'#ff9999', borderWidth:1.5, borderDash:[5,3], pointRadius:2, tension:0.3},
+        {label:'收盘绿', data:D.cls_g,
+         borderColor:'#66ffbb', borderWidth:1.5, borderDash:[5,3], pointRadius:2, tension:0.3},
+      ]
+    },
+    options:{
+      responsive:true, interaction:{mode:'index', intersect:false},
+      plugins:{legend:{labels:{color:'#99aabc', font:{size:10}}}},
+      scales:{
+        x:{ticks:{color:'#445566', font:{size:9}, maxRotation:50},
+           grid:{color:'rgba(30,58,95,0.4)'}},
+        y:{ticks:{color:'#445566'}, grid:{color:'rgba(30,58,95,0.35)'}}
+      }
+    }
+  });
 
-    // === 图表3：两日竞价红扩 vs 绿扩折线 ===
-    new Chart(document.getElementById('c3'), {
-        type: 'line',
-        data: {
-            labels: D.dates,
-            datasets: [
-                { label:'两日红扩(竞价红日变化)', data:D.bid_red_change, borderColor:'#ff4d4d', tension:0.3, pointRadius:4, fill:false, borderWidth:2 },
-                { label:'两日绿扩(竞价绿日变化)', data:D.bid_green_change, borderColor:'#00bfff', tension:0.3, pointRadius:4, fill:false, borderWidth:2 },
-                { label:'收盘红变化', data:D.cls_red_change, borderColor:'#ffa500', tension:0.3, pointRadius:2, fill:false, borderWidth:1.5, borderDash:[4,2] },
-                { label:'收盘绿变化', data:D.cls_green_change, borderColor:'#00ff88', tension:0.3, pointRadius:2, fill:false, borderWidth:1.5, borderDash:[4,2] },
-                { label:'零轴', data:D.dates.map(function(){return 0;}), borderColor:'rgba(255,255,255,0.1)', borderWidth:1, pointRadius:0, fill:false }
-            ]
-        },
-        options: baseOpts
-    });
+  // ─── 图3: 日内红扩/绿扩 + 综合净差 ───
+  destroyChart('c3');
+  var rdC = D.red_diff.map(function(v){ return v>0?'rgba(255,77,77,0.75)':'rgba(0,255,136,0.45)'; });
+  var gdC = D.grn_diff.map(function(v){ return v>0?'rgba(255,77,77,0.45)':'rgba(0,255,136,0.75)'; });
+  CI['c3'] = new Chart(document.getElementById('chart3').getContext('2d'), {
+    data:{
+      labels:labels,
+      datasets:[
+        {type:'bar', label:'日内红扩', data:D.red_diff, backgroundColor:rdC, yAxisID:'y'},
+        {type:'bar', label:'日内绿扩', data:D.grn_diff, backgroundColor:gdC, yAxisID:'y'},
+        {type:'line', label:'综合净差', data:D.net_diff,
+         borderColor:'#ffcc00', borderWidth:2, pointRadius:2, tension:0.3, yAxisID:'y2'},
+      ]
+    },
+    options:{
+      responsive:true, interaction:{mode:'index', intersect:false},
+      plugins:{
+        legend:{labels:{color:'#99aabc', font:{size:10}}},
+        annotation:{annotations:{zero:{type:'line', yMin:0, yMax:0,
+          borderColor:'rgba(255,255,255,0.15)', borderWidth:1}}}
+      },
+      scales:{
+        x:{ticks:{color:'#445566', font:{size:9}, maxRotation:50},
+           grid:{color:'rgba(30,58,95,0.4)'}},
+        y:{ticks:{color:'#445566'}, grid:{color:'rgba(30,58,95,0.35)'},
+           title:{display:true, text:'日内扩散', color:'#667788', font:{size:9}}},
+        y2:{position:'right', ticks:{color:'#ffcc00'}, grid:{drawOnChartArea:false},
+            title:{display:true, text:'净差', color:'#ffcc00', font:{size:9}}}
+      }
+    }
+  });
 
-    // === 图表4：涨停/跌停走势 ===
-    new Chart(document.getElementById('c4'), {
-        type: 'line',
-        data: {
-            labels: D.dates,
-            datasets: [
-                { label:'涨停数', data:D.limit_up, borderColor:'#ff4d4d', backgroundColor:'rgba(255,77,77,0.1)', fill:true, tension:0.3, borderWidth:2 },
-                { label:'跌停数', data:D.limit_down, borderColor:'#00bfff', backgroundColor:'rgba(0,191,255,0.1)', fill:true, tension:0.3, borderWidth:2 }
-            ]
-        },
-        options: baseOpts
-    });
+  // ─── 图4: 两日竞价红扩 vs 绿扩 ───
+  destroyChart('c4');
+  CI['c4'] = new Chart(document.getElementById('chart4').getContext('2d'), {
+    type:'line',
+    data:{
+      labels:labels,
+      datasets:[
+        {label:'两日竞价红扩', data:D.bid_r_expand,
+         borderColor:'#ff4d4d', backgroundColor:'rgba(255,77,77,0.08)',
+         fill:true, borderWidth:2.5, pointRadius:3, tension:0.3},
+        {label:'两日竞价绿扩', data:D.bid_g_expand,
+         borderColor:'#00ff88', backgroundColor:'rgba(0,255,136,0.08)',
+         fill:true, borderWidth:2.5, pointRadius:3, tension:0.3},
+      ]
+    },
+    options:{
+      responsive:true, interaction:{mode:'index', intersect:false},
+      plugins:{
+        legend:{labels:{color:'#99aabc', font:{size:10}}},
+        annotation:{annotations:{zero:{type:'line', yMin:0, yMax:0,
+          borderColor:'rgba(255,255,255,0.2)', borderWidth:1}}}
+      },
+      scales:{
+        x:{ticks:{color:'#445566', font:{size:9}, maxRotation:50},
+           grid:{color:'rgba(30,58,95,0.4)'}},
+        y:{ticks:{color:'#445566'}, grid:{color:'rgba(30,58,95,0.35)'}}
+      }
+    }
+  });
 
-    // === 图表5：六阶段 & 七周期联动折线图 ===
-    var phaseLabels = ['冰点','回暖','试探','主升','高潮','退潮'];
-    var cycleLabels = ['婴儿','成长','加速','确认','成熟','混沌','衰退'];
-    new Chart(document.getElementById('c5'), {
-        type: 'line',
-        data: {
-            labels: D.dates,
-            datasets: [
-                {
-                    label: '六阶段', data: D.phases,
-                    borderColor: '#ffa500', backgroundColor: 'rgba(255,165,0,0.08)',
-                    fill: true, tension: 0.2, pointRadius: 5, stepped: 'before',
-                    borderWidth: 2.5
-                },
-                {
-                    label: '七周期', data: D.cycles,
-                    borderColor: '#00d4ff', backgroundColor: 'rgba(0,212,255,0.06)',
-                    fill: true, tension: 0.2, pointRadius: 5, stepped: 'before',
-                    borderWidth: 2.5
-                }
-            ]
-        },
-        options: Object.assign({}, baseOpts, {
-            scales: {
-                y: {
-                    ticks: {
-                        color: '#8090a0',
-                        callback: function(v) {
-                            if (Number.isInteger(v)) {
-                                var labels = (v<=5) ? phaseLabels : cycleLabels;
-                                return v + ':' + (labels[v]||'');
-                            }
-                            return v;
-                        }
-                    },
-                    grid: { color: 'rgba(255,255,255,0.05)' },
-                    min: 0, max: 6
-                },
-                x: baseOpts.scales.x
-            }
-        })
-    });
+  // ─── 图5: 涨停/跌停 ───
+  destroyChart('c5');
+  CI['c5'] = new Chart(document.getElementById('chart5').getContext('2d'), {
+    type:'line',
+    data:{
+      labels:labels,
+      datasets:[
+        {label:'涨停数', data:D.zt,
+         borderColor:'#ff4d4d', backgroundColor:'rgba(255,77,77,0.07)',
+         fill:true, borderWidth:2, pointRadius:2, tension:0.3},
+        {label:'跌停数', data:D.dt,
+         borderColor:'#00ff88', backgroundColor:'rgba(0,255,136,0.07)',
+         fill:true, borderWidth:2, pointRadius:2, tension:0.3},
+      ]
+    },
+    options:{
+      responsive:true, interaction:{mode:'index', intersect:false},
+      plugins:{legend:{labels:{color:'#99aabc', font:{size:10}}}},
+      scales:{
+        x:{ticks:{color:'#445566', font:{size:9}, maxRotation:50},
+           grid:{color:'rgba(30,58,95,0.4)'}},
+        y:{ticks:{color:'#445566'}, grid:{color:'rgba(30,58,95,0.35)'}}
+      }
+    }
+  });
+
+  // ─── 图6: 六阶段七周期联动 ───
+  destroyChart('c6');
+  CI['c6'] = new Chart(document.getElementById('chart6').getContext('2d'), {
+    type:'line',
+    data:{
+      labels:labels,
+      datasets:[
+        {label:'六阶段(0冰点→5退潮)', data:D.phase,
+         borderColor:'#00aaff', backgroundColor:'rgba(0,170,255,0.08)',
+         fill:true, borderWidth:3, pointRadius:4, tension:0.2, yAxisID:'y'},
+        {label:'七周期(0婴儿→6衰退)', data:D.cycle,
+         borderColor:'#ffaa00', fill:false,
+         borderWidth:2.5, pointRadius:3, tension:0.2, yAxisID:'y2'},
+      ]
+    },
+    options:{
+      responsive:true, interaction:{mode:'index', intersect:false},
+      plugins:{legend:{labels:{color:'#99aabc', font:{size:10}}}},
+      scales:{
+        x:{ticks:{color:'#445566', font:{size:9}, maxRotation:50},
+           grid:{color:'rgba(30,58,95,0.4)'}},
+        y:{min:0, max:5, ticks:{color:'#00aaff', stepSize:1,
+             callback:function(v){return ['冰点','回暖','试探','主升','高潮','退潮'][v]||v;}},
+           grid:{color:'rgba(30,58,95,0.35)'}},
+        y2:{position:'right', min:0, max:6,
+            ticks:{color:'#ffaa00', stepSize:1,
+                   callback:function(v){return ['婴儿','成长','加速','确认','成熟','混沌','衰退'][v]||v;}},
+            grid:{drawOnChartArea:false}}
+      }
+    }
+  });
+
+  // ─── 图7: 抢筹真实度概率折线图（v9新增）───
+  destroyChart('c7');
+  CI['c7'] = new Chart(document.getElementById('chart7').getContext('2d'), {
+    type:'line',
+    data:{
+      labels:labels,
+      datasets:[
+        {label:'做多抢筹概率%', data:D.rush_buy_prob,
+         borderColor:'#ff4d4d', backgroundColor:'rgba(255,77,77,0.07)',
+         fill:false, borderWidth:2.5, pointRadius:3, tension:0.3},
+        {label:'做空抛压概率%', data:D.rush_sell_prob,
+         borderColor:'#00ff88', backgroundColor:'rgba(0,255,136,0.07)',
+         fill:false, borderWidth:2.5, pointRadius:3, tension:0.3},
+        {label:'综合多空信号', data:D.comp_bull,
+         borderColor:'#ffcc00', borderWidth:2, borderDash:[6,4],
+         pointRadius:2, tension:0.35},
+      ]
+    },
+    options:{
+      responsive:true, interaction:{mode:'index', intersect:false},
+      plugins:{
+        legend:{labels:{color:'#99aabc', font:{size:10}}},
+        annotation:{annotations:{
+          mid:{type:'line', yMin:50, yMax:50,
+               borderColor:'rgba(255,255,255,0.2)', borderWidth:1, borderDash:[4,4],
+               label:{display:true, content:'中性线50', position:'end',
+                      color:'#667788', font:{size:9}}},
+          hi:{type:'line', yMin:70, yMax:70,
+              borderColor:'rgba(255,77,77,0.4)', borderWidth:1, borderDash:[4,4]},
+          lo:{type:'line', yMin:30, yMax:30,
+              borderColor:'rgba(0,255,136,0.4)', borderWidth:1, borderDash:[4,4]},
+        }}
+      },
+      scales:{
+        x:{ticks:{color:'#445566', font:{size:9}, maxRotation:50},
+           grid:{color:'rgba(30,58,95,0.4)'}},
+        y:{min:0, max:100, ticks:{color:'#445566'},
+           grid:{color:'rgba(30,58,95,0.35)'},
+           title:{display:true, text:'概率%', color:'#445566', font:{size:10}}}
+      }
+    }
+  });
 }
 
-var _chartReady = setInterval(function(){
-    if (document.getElementById('c0') && typeof Chart !== 'undefined') {
-        clearInterval(_chartReady);
-        initCharts();
+// 赚亏效应近5日图表
+function initProfit5Charts() {
+  var D = window.CHART_DATA;
+  var lb5 = D.r5_labels;
+
+  // 赚钱效应：竞价红 vs 收盘红
+  destroyChart('rpa');
+  CI['rpa'] = new Chart(document.getElementById('chartR5a').getContext('2d'), {
+    type:'line',
+    data:{
+      labels:lb5,
+      datasets:[
+        {label:'竞价红', data:D.r5_bid_r,
+         borderColor:'#ff4d4d', borderWidth:2.5, pointRadius:5, tension:0.2},
+        {label:'收盘红', data:D.r5_cls_r,
+         borderColor:'#ff9999', borderWidth:2, borderDash:[5,3], pointRadius:4, tension:0.2},
+      ]
+    },
+    options:{
+      responsive:true, interaction:{mode:'index', intersect:false},
+      plugins:{
+        legend:{labels:{color:'#99aabc', font:{size:10}}},
+        tooltip:{callbacks:{afterBody:function(items){
+          var i=items[0].dataIndex;
+          var rd=D.r5_red_diff[i];
+          return ['日内红扩: '+(rd>=0?'+':'')+rd+(rd>0?' ✅赚钱增强':' ⚠️赚钱减弱')];
+        }}}
+      },
+      scales:{
+        x:{ticks:{color:'#445566', font:{size:10}}, grid:{color:'rgba(30,58,95,0.4)'}},
+        y:{ticks:{color:'#445566'}, grid:{color:'rgba(30,58,95,0.35)'}}
+      }
     }
-}, 200);
-</script></body></html>
+  });
+
+  // 亏钱效应：竞价绿 vs 收盘绿
+  destroyChart('rpb');
+  CI['rpb'] = new Chart(document.getElementById('chartR5b').getContext('2d'), {
+    type:'line',
+    data:{
+      labels:lb5,
+      datasets:[
+        {label:'竞价绿', data:D.r5_bid_g,
+         borderColor:'#00ff88', borderWidth:2.5, pointRadius:5, tension:0.2},
+        {label:'收盘绿', data:D.r5_cls_g,
+         borderColor:'#66ffbb', borderWidth:2, borderDash:[5,3], pointRadius:4, tension:0.2},
+      ]
+    },
+    options:{
+      responsive:true, interaction:{mode:'index', intersect:false},
+      plugins:{
+        legend:{labels:{color:'#99aabc', font:{size:10}}},
+        tooltip:{callbacks:{afterBody:function(items){
+          var i=items[0].dataIndex;
+          var gd=D.r5_grn_diff[i];
+          return ['日内绿扩: '+(gd>=0?'+':'')+gd+(gd>0?' ⚠️亏钱增强':' ✅亏钱减弱')];
+        }}}
+      },
+      scales:{
+        x:{ticks:{color:'#445566', font:{size:10}}, grid:{color:'rgba(30,58,95,0.4)'}},
+        y:{ticks:{color:'#445566'}, grid:{color:'rgba(30,58,95,0.35)'}}
+      }
+    }
+  });
+
+  // 日内差值确认
+  destroyChart('rpc');
+  var rdC5 = D.r5_red_diff.map(function(v){ return v>0?'rgba(255,77,77,0.8)':'rgba(0,255,136,0.5)'; });
+  var gdC5 = D.r5_grn_diff.map(function(v){ return v>0?'rgba(255,77,77,0.5)':'rgba(0,255,136,0.8)'; });
+  CI['rpc'] = new Chart(document.getElementById('chartR5c').getContext('2d'), {
+    data:{
+      labels:lb5,
+      datasets:[
+        {type:'bar', label:'日内红扩(收红-竞红)', data:D.r5_red_diff, backgroundColor:rdC5, yAxisID:'y'},
+        {type:'bar', label:'日内绿扩(收绿-竞绿)', data:D.r5_grn_diff, backgroundColor:gdC5, yAxisID:'y'},
+      ]
+    },
+    options:{
+      responsive:true, interaction:{mode:'index', intersect:false},
+      plugins:{
+        legend:{labels:{color:'#99aabc', font:{size:10}}},
+        annotation:{annotations:{zero:{type:'line', yMin:0, yMax:0,
+          borderColor:'rgba(255,255,255,0.2)', borderWidth:1}}}
+      },
+      scales:{
+        x:{ticks:{color:'#445566', font:{size:10}}, grid:{color:'rgba(30,58,95,0.4)'}},
+        y:{ticks:{color:'#445566'}, grid:{color:'rgba(30,58,95,0.35)'}}
+      }
+    }
+  });
+
+  // 两日竞价红扩 vs 绿扩（近5日）
+  destroyChart('rpd');
+  CI['rpd'] = new Chart(document.getElementById('chartR5d').getContext('2d'), {
+    type:'line',
+    data:{
+      labels:lb5,
+      datasets:[
+        {label:'竞价红跨日扩散', data:D.r5_bid_r_vs_prev,
+         borderColor:'#ff4d4d', backgroundColor:'rgba(255,77,77,0.1)',
+         fill:true, borderWidth:2.5, pointRadius:5, tension:0.2},
+        {label:'竞价绿跨日扩散', data:D.r5_bid_g_vs_prev,
+         borderColor:'#00ff88', backgroundColor:'rgba(0,255,136,0.1)',
+         fill:true, borderWidth:2.5, pointRadius:5, tension:0.2},
+      ]
+    },
+    options:{
+      responsive:true, interaction:{mode:'index', intersect:false},
+      plugins:{
+        legend:{labels:{color:'#99aabc', font:{size:10}}},
+        annotation:{annotations:{zero:{type:'line', yMin:0, yMax:0,
+          borderColor:'rgba(255,255,255,0.2)', borderWidth:1}}}
+      },
+      scales:{
+        x:{ticks:{color:'#445566', font:{size:10}}, grid:{color:'rgba(30,58,95,0.4)'}},
+        y:{ticks:{color:'#445566'}, grid:{color:'rgba(30,58,95,0.35)'}}
+      }
+    }
+  });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  // Tab0无需图表初始化
+});
+</script>
+</body>
+</html>
