@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>A股超短情绪周期分析 v9.0</title>
+<title>A股超短情绪周期分析 v10.0</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
 <style>
@@ -84,7 +84,7 @@ body{background:#080d18;color:#e0e6f0;font-family:'Microsoft YaHei',sans-serif;m
 
 <div class="header">
   <div>
-    <div class="header-title">📊 A股超短情绪周期分析系统 v9.0</div>
+    <div class="header-title">📊 A股超短情绪周期分析系统 v10.0</div>
     <div class="header-sub">心法：情绪为道 主线为法 抢筹为术 助攻为器 | 按周期定仓位 按节点做盈亏比 | 最后更新：2026-06-18 (周四) </div>
   </div>
   <div style="text-align:right;font-size:11px">
@@ -198,6 +198,20 @@ body{background:#080d18;color:#e0e6f0;font-family:'Microsoft YaHei',sans-serif;m
       <div class="chart-desc">🔴红线=做多抢筹概率（竞价红扩大且日内红扩增强） | 🟢绿线=做空抛压概率（竞价绿扩大且日内绿扩增强） | 🟡黄线=综合多空信号强度（>60偏多/<40偏空）</div>
       <canvas id="chart7" height="80"></canvas>
     </div>
+    
+        <!-- 图8: 统计预测 - 实际vs预测收盘净差（v10.0新增）-->
+    <div class="chart-card" style="grid-column:1/-1">
+      <div class="chart-title">🔮 图8：统计预测 — 实际 vs 预测收盘净差（基于Sheet2竞价数据，线性回归）v10.0</div>
+      <div class="chart-desc">🔵蓝实线=实际收盘净差(红-绿) | 🟠橙虚线=模型预测收盘净差 | 灰色区间=95%置信区间 | 🟡黄=竞价净差(输入) | 模型：收盘净差=0.673×竞价净差+13.95 | R²=0.185 | 方向命中率=72.2%</div>
+      <canvas id="chart8" height="90"></canvas>
+    </div>
+    <!-- 图9: 次日竞价预测（v10.0新增）-->
+    <div class="chart-card" style="grid-column:1/-1">
+      <div class="chart-title">🔮 图9：统计预测 — 实际 vs 预测次日竞价净差（当日收盘净差→次日竞价净差）v10.0</div>
+      <div class="chart-desc">🔴红实线=次日实际竞价净差 | 🟡黄虚线=模型预测次日竞价 | 灰色区间=95%置信区间 | 模型：次日竞价净差=0.207×收盘净差+1.48 | R²=0.104 | 方向命中率=64.1% | 今日预测：+10.6</div>
+      <canvas id="chart9" height="90"></canvas>
+    </div>
+    
     <!-- 图2: 竞价红绿+收盘红绿 -->
     <div class="chart-card">
       <div class="chart-title">📈 竞价红绿 vs 收盘红绿折线（强弱分析）</div>
@@ -228,6 +242,7 @@ body{background:#080d18;color:#e0e6f0;font-family:'Microsoft YaHei',sans-serif;m
       <div class="chart-desc">🔵蓝=六阶段(0冰点→5退潮) | 🟠橙=七周期(0婴儿→6衰退) | 两线共振=最优操作节点</div>
       <canvas id="chart6" height="150"></canvas>
     </div>
+
     
   </div>
 </div>
@@ -235,19 +250,29 @@ body{background:#080d18;color:#e0e6f0;font-family:'Microsoft YaHei',sans-serif;m
 <!-- ==================== TAB 2: 赚亏效应周期 ==================== -->
 <div class="tab-content" id="tab2">
   <div style="color:#ffcc00;font-size:13px;font-weight:bold;margin-bottom:14px;padding:10px;background:#1a1200;border-radius:6px">
-    💹 近5日赚亏效应周期深度分析 | 差值铁律：连续2天红差值正=赚钱效应确认 | 连续2天绿差值扩大=亏钱效应确认
+    💹 近10日赚亏效应周期深度分析（v10.0升级）| 差值铁律：连续2天红差值正=赚钱效应确认 | 连续2天绿差值扩大=亏钱效应确认
+  </div>
+
+  <!-- v10.0新增：统计预测结果摘要 -->
+  <div class="signal-box info" style="margin-bottom:12px">
+    <div style="color:#00aaff;font-weight:bold;margin-bottom:8px;font-size:12px">🔮 统计预测摘要（Sheet2竞价→收盘+次日竞价）</div>
+    <div style="font-size:11px;color:#99aabc;line-height:1.9">
+      <b>收盘预测模型：</b>R²=0.185 | 历史方向命中率=<b style="color:#ffcc00">72.2%</b> | 标准误SE=35.4 | 公式：收盘净差=0.673×竞价净差+13.95<br>
+      <b>次日竞价模型：</b>R²=0.104 | 历史方向命中率=<b style="color:#ffcc00">64.1%</b> | 标准误SE=23.8 | 公式：次日竞价净差=0.207×收盘净差+1.48<br>
+      <b>今日预测：</b>竞价净差 +16 → 预测收盘净差 +24.7（95%区间：[-44.7, +94.1]，方向：偏多(红>绿)）| 预测次日竞价净差 +10.6（95%区间：[-36.1, +57.3]，方向：偏多）
+    </div>
   </div>
 
   <div class="signal-box" style="margin-bottom:12px">
     <div style="color:#00d4ff;font-weight:bold;margin-bottom:8px;font-size:12px">📋 综合判断</div>
     <div style="font-size:12px;color:#aabbcc;line-height:1.9">
-      <div>赚钱效应周期：连续5天红差值为正，赚钱效应确认✅</div>
+      <div>赚钱效应周期：连续10天红差值为正，赚钱效应确认✅</div>
       <div>亏钱效应周期：连续2天绿差值为正（绿扩大），亏钱效应确认⚠️</div>
       <div style="color:#ffcc00;margin-top:6px;font-weight:bold">综合：两日红扩>绿扩 且竞价红>绿 → 情绪回暖，赚钱效应启动🔥</div>
     </div>
   </div>
 
-  <div class="section-title">近5日差值明细</div>
+  <div class="section-title">近10日差值明细（v10.0升级）</div>
   <div style="overflow-x:auto;margin-bottom:14px">
     <table class="data-table">
       <thead><tr>
@@ -256,7 +281,7 @@ body{background:#080d18;color:#e0e6f0;font-family:'Microsoft YaHei',sans-serif;m
         <th>竞红跨日<br>vs前日</th><th>竞绿跨日<br>vs前日</th>
         <th>赚亏判断</th>
       </tr></thead>
-      <tbody><tr><td>06/12(周五)</td><td>32/40</td><td>47/47</td><td style="color:#ff4d4d">+7</td><td style="color:#ff4d4d">+15</td><td style="color:#ff4d4d">+1</td><td style="color:#00ff88">-2</td><td>赚钱效应确认</td></tr><tr><td>06/15(周一)</td><td>26/13</td><td>27/74</td><td style="color:#ff4d4d">+61</td><td style="color:#ff4d4d">+1</td><td style="color:#00ff88">-27</td><td style="color:#00ff88">-6</td><td>赚钱效应确认</td></tr><tr><td>06/16(周二)</td><td>24/21</td><td>10/72</td><td style="color:#ff4d4d">+51</td><td style="color:#00ff88">-14</td><td style="color:#ff4d4d">+8</td><td style="color:#00ff88">-2</td><td>赚钱效应确认</td></tr><tr><td>06/17(周三)</td><td>27/12</td><td>44/42</td><td style="color:#ff4d4d">+30</td><td style="color:#ff4d4d">+17</td><td style="color:#00ff88">-9</td><td style="color:#ff4d4d">+3</td><td>赚钱效应确认</td></tr><tr><td>06/18(周四)</td><td>22/38</td><td>46/90</td><td style="color:#ff4d4d">+52</td><td style="color:#ff4d4d">+24</td><td style="color:#ff4d4d">+26</td><td style="color:#00ff88">-5</td><td>赚钱效应确认</td></tr></tbody>
+      <tbody><tr><td>06/05(周五)</td><td>33/36</td><td>80/53</td><td style="color:#ff4d4d">+17</td><td style="color:#ff4d4d">+47</td><td style="color:#ff4d4d">+4</td><td style="color:#00ff88">-3</td><td>赚钱效应确认</td></tr><tr><td>06/08(周一)</td><td>85/-17</td><td>89/37</td><td style="color:#ff4d4d">+54</td><td style="color:#ff4d4d">+4</td><td style="color:#00ff88">-53</td><td style="color:#ff4d4d">+52</td><td>赚钱效应确认</td></tr><tr><td>06/09(周二)</td><td>24/32</td><td>44/91</td><td style="color:#ff4d4d">+59</td><td style="color:#ff4d4d">+20</td><td style="color:#ff4d4d">+49</td><td style="color:#00ff88">-61</td><td>赚钱效应确认</td></tr><tr><td>06/10(周三)</td><td>39/19</td><td>94/48</td><td style="color:#ff4d4d">+29</td><td style="color:#ff4d4d">+55</td><td style="color:#00ff88">-13</td><td style="color:#ff4d4d">+15</td><td>赚钱效应确认</td></tr><tr><td>06/11(周四)</td><td>34/39</td><td>68/86</td><td style="color:#ff4d4d">+47</td><td style="color:#ff4d4d">+34</td><td style="color:#ff4d4d">+20</td><td style="color:#00ff88">-5</td><td>赚钱效应确认</td></tr><tr><td>06/12(周五)</td><td>32/40</td><td>47/47</td><td style="color:#ff4d4d">+7</td><td style="color:#ff4d4d">+15</td><td style="color:#ff4d4d">+1</td><td style="color:#00ff88">-2</td><td>赚钱效应确认</td></tr><tr><td>06/15(周一)</td><td>26/13</td><td>27/74</td><td style="color:#ff4d4d">+61</td><td style="color:#ff4d4d">+1</td><td style="color:#00ff88">-27</td><td style="color:#00ff88">-6</td><td>赚钱效应确认</td></tr><tr><td>06/16(周二)</td><td>24/21</td><td>10/72</td><td style="color:#ff4d4d">+51</td><td style="color:#00ff88">-14</td><td style="color:#ff4d4d">+8</td><td style="color:#00ff88">-2</td><td>赚钱效应确认</td></tr><tr><td>06/17(周三)</td><td>27/12</td><td>44/42</td><td style="color:#ff4d4d">+30</td><td style="color:#ff4d4d">+17</td><td style="color:#00ff88">-9</td><td style="color:#ff4d4d">+3</td><td>赚钱效应确认</td></tr><tr><td>06/18(周四)</td><td>22/38</td><td>46/90</td><td style="color:#ff4d4d">+52</td><td style="color:#ff4d4d">+24</td><td style="color:#ff4d4d">+26</td><td style="color:#00ff88">-5</td><td>赚钱效应确认</td></tr></tbody>
     </table>
     <div style="font-size:10px;color:#445566;margin-top:5px;line-height:1.7">
       日内红扩=收盘红-竞价红（正=赚钱增强🔴）| 日内绿扩=收盘绿-竞价绿（正=亏钱增强🔴，负=亏钱减弱🟢）<br>
@@ -266,26 +291,51 @@ body{background:#080d18;color:#e0e6f0;font-family:'Microsoft YaHei',sans-serif;m
 
   <hr class="section-divider">
 
+  <!-- v10.0：近10日可视化（赚亏效应4图）-->
   <div class="profit-grid">
     <div class="profit-panel">
-      <div class="profit-title" style="color:#ff4d4d">🔴 赚钱效应周期（竞价红/收盘红对比）</div>
+      <div class="profit-title" style="color:#ff4d4d">🔴 赚钱效应周期（近10日 竞价红/收盘红）</div>
       <div style="font-size:10px;color:#445566;margin-bottom:8px">竞价红持续扩大且收盘红>竞价红=赚钱效应主导</div>
       <canvas id="chartR5a" height="180"></canvas>
     </div>
     <div class="profit-panel">
-      <div class="profit-title" style="color:#00ff88">🟢 亏钱效应周期（竞价绿/收盘绿对比）</div>
+      <div class="profit-title" style="color:#00ff88">🟢 亏钱效应周期（近10日 竞价绿/收盘绿）</div>
       <div style="font-size:10px;color:#445566;margin-bottom:8px">竞价绿持续扩大且收盘绿>竞价绿=亏钱效应主导</div>
       <canvas id="chartR5b" height="180"></canvas>
     </div>
     <div class="profit-panel">
-      <div class="profit-title" style="color:#ffcc00">⚡ 日内红扩/绿扩差值（强弱确认）</div>
+      <div class="profit-title" style="color:#ffcc00">⚡ 日内红扩/绿扩差值（近10日 强弱确认）</div>
       <div style="font-size:10px;color:#445566;margin-bottom:8px">红扩为正=日内赚钱动能增强🔴 | 绿扩为正=日内亏钱动能增强🔴</div>
       <canvas id="chartR5c" height="180"></canvas>
     </div>
     <div class="profit-panel">
-      <div class="profit-title" style="color:#00aaff">🔄 两日竞价红/绿跨日扩散（周期转换）</div>
+      <div class="profit-title" style="color:#00aaff">🔄 两日竞价红/绿跨日扩散（近10日 周期转换）</div>
       <div style="font-size:10px;color:#445566;margin-bottom:8px">红扩>绿扩 且 今日竞价红>绿=情绪回暖🔥信号</div>
       <canvas id="chartR5d" height="180"></canvas>
+    </div>
+  </div>
+
+  <hr class="section-divider">
+
+  <!-- v10.0新增：预测对比回测表 -->
+  <div class="section-title">📊 统计预测回测对比表（v10.0新增 — 近20日实际vs预测）</div>
+  <div style="overflow-x:auto;margin-bottom:14px">
+    <table class="data-table">
+      <thead><tr>
+        <th>日期</th>
+        <th>竞价净差<br>(输入)</th>
+        <th>实际收盘<br>净差</th>
+        <th>预测收盘<br>净差</th>
+        <th>方向<br>命中</th>
+        <th>实际次日<br>竞价净差</th>
+        <th>预测次日<br>竞价净差</th>
+        <th>次日方向<br>命中</th>
+      </tr></thead>
+      <tbody><tr><td>06/18(周四)</td><td>+16</td><td style="color:#ff4d4d">+44</td><td style="color:#ff4d4d">+25</td><td>✅</td><td style="color:#00ff88">—</td><td style="color:#ff4d4d">+11</td><td>—</td></tr><tr><td>06/17(周三)</td><td>-15</td><td style="color:#00ff88">-2</td><td style="color:#ff4d4d">+4</td><td>❌</td><td style="color:#ff4d4d">+16</td><td style="color:#ff4d4d">+1</td><td>✅</td></tr><tr><td>06/16(周二)</td><td>-3</td><td style="color:#ff4d4d">+62</td><td style="color:#ff4d4d">+12</td><td>✅</td><td style="color:#00ff88">-15</td><td style="color:#ff4d4d">+14</td><td>❌</td></tr><tr><td>06/15(周一)</td><td>-13</td><td style="color:#ff4d4d">+47</td><td style="color:#ff4d4d">+5</td><td>✅</td><td style="color:#00ff88">-3</td><td style="color:#ff4d4d">+11</td><td>❌</td></tr><tr><td>06/12(周五)</td><td>+8</td><td style="color:#00ff88">+0</td><td style="color:#ff4d4d">+19</td><td>❌</td><td style="color:#00ff88">-13</td><td style="color:#ff4d4d">+2</td><td>❌</td></tr><tr><td>06/11(周四)</td><td>+5</td><td style="color:#ff4d4d">+18</td><td style="color:#ff4d4d">+17</td><td>✅</td><td style="color:#ff4d4d">+8</td><td style="color:#ff4d4d">+5</td><td>✅</td></tr><tr><td>06/10(周三)</td><td>-20</td><td style="color:#00ff88">-46</td><td style="color:#ff4d4d">+0</td><td>❌</td><td style="color:#ff4d4d">+5</td><td style="color:#00ff88">-8</td><td>❌</td></tr><tr><td>06/09(周二)</td><td>+8</td><td style="color:#ff4d4d">+47</td><td style="color:#ff4d4d">+19</td><td>✅</td><td style="color:#00ff88">-20</td><td style="color:#ff4d4d">+11</td><td>❌</td></tr><tr><td>06/08(周一)</td><td>-102</td><td style="color:#00ff88">-52</td><td style="color:#00ff88">-55</td><td>✅</td><td style="color:#ff4d4d">+8</td><td style="color:#00ff88">-9</td><td>❌</td></tr><tr><td>06/05(周五)</td><td>+3</td><td style="color:#00ff88">-27</td><td style="color:#ff4d4d">+16</td><td>❌</td><td style="color:#00ff88">-102</td><td style="color:#00ff88">-4</td><td>✅</td></tr><tr><td>06/04(周四)</td><td>-4</td><td style="color:#ff4d4d">+34</td><td style="color:#ff4d4d">+11</td><td>✅</td><td style="color:#ff4d4d">+3</td><td style="color:#ff4d4d">+8</td><td>✅</td></tr><tr><td>06/03(周三)</td><td>+10</td><td style="color:#ff4d4d">+72</td><td style="color:#ff4d4d">+21</td><td>✅</td><td style="color:#00ff88">-4</td><td style="color:#ff4d4d">+16</td><td>❌</td></tr><tr><td>06/02(周二)</td><td>+12</td><td style="color:#ff4d4d">+38</td><td style="color:#ff4d4d">+22</td><td>✅</td><td style="color:#ff4d4d">+10</td><td style="color:#ff4d4d">+9</td><td>✅</td></tr><tr><td>06/01(周一)</td><td>-17</td><td style="color:#ff4d4d">+14</td><td style="color:#ff4d4d">+2</td><td>✅</td><td style="color:#ff4d4d">+12</td><td style="color:#ff4d4d">+4</td><td>✅</td></tr><tr><td>05/29(周五)</td><td>+23</td><td style="color:#00ff88">-18</td><td style="color:#ff4d4d">+29</td><td>❌</td><td style="color:#00ff88">-17</td><td style="color:#00ff88">-2</td><td>✅</td></tr><tr><td>05/28(周四)</td><td>-18</td><td style="color:#ff4d4d">+25</td><td style="color:#ff4d4d">+2</td><td>✅</td><td style="color:#ff4d4d">+23</td><td style="color:#ff4d4d">+7</td><td>✅</td></tr><tr><td>05/27(周三)</td><td>-30</td><td style="color:#00ff88">-7</td><td style="color:#00ff88">-6</td><td>✅</td><td style="color:#00ff88">-18</td><td style="color:#00ff88">+0</td><td>✅</td></tr><tr><td>05/26(周二)</td><td>-11</td><td style="color:#00ff88">-23</td><td style="color:#ff4d4d">+6</td><td>❌</td><td style="color:#00ff88">-30</td><td style="color:#00ff88">-3</td><td>✅</td></tr><tr><td>05/25(周一)</td><td>+19</td><td style="color:#ff4d4d">+15</td><td style="color:#ff4d4d">+27</td><td>✅</td><td style="color:#00ff88">-11</td><td style="color:#ff4d4d">+5</td><td>❌</td></tr><tr><td>05/22(周五)</td><td>-5</td><td style="color:#ff4d4d">+73</td><td style="color:#ff4d4d">+11</td><td>✅</td><td style="color:#ff4d4d">+19</td><td style="color:#ff4d4d">+17</td><td>✅</td></tr></tbody>
+    </table>
+    <div style="font-size:10px;color:#445566;margin-top:5px;line-height:1.7">
+      净差=红-绿（正=红>绿=偏多，负=绿>红=偏空）| 方向命中✅=预测与实际方向一致 ❌=不一致<br>
+      收盘命中率=72.2% | 次日竞价命中率=64.1% | 置信区间SE1=35.4 SE2=23.8
     </div>
   </div>
 </div>
@@ -428,7 +478,7 @@ body{background:#080d18;color:#e0e6f0;font-family:'Microsoft YaHei',sans-serif;m
 
 <script>
 // 数据注入（window.CHART_DATA，避免Python f-string花括号冲突）
-window.CHART_DATA = {"labels": ["05/22 周五", "05/25 周一", "05/26 周二", "05/27 周三", "05/28 周四", "05/29 周五", "06/01 周一", "06/02 周二", "06/03 周三", "06/04 周四", "06/05 周五", "06/08 周一", "06/09 周二", "06/10 周三", "06/11 周四", "06/12 周五", "06/15 周一", "06/16 周二", "06/17 周三", "06/18 周四"], "scores": [44.5, 51.2, 24.1, 21.3, 46.8, 46.7, 38.9, 50.5, 43.2, 35.3, 42.4, 17.9, 59.4, 20.7, 38.9, 45.7, 47.3, 51.8, 31.2, 52.7], "regression": [38.1, 38.4, 38.6, 38.9, 39.1, 39.4, 39.6, 39.9, 40.1, 40.4, 40.7, 40.9, 41.2, 41.4, 41.7, 41.9, 42.2, 42.4, 42.7, 42.9], "extreme_points": [{"x": 2, "y": 24.1, "label": "极弱"}, {"x": 3, "y": 21.3, "label": "极弱"}, {"x": 11, "y": 17.9, "label": "极弱"}, {"x": 13, "y": 20.7, "label": "极弱"}], "mon_fri_points": [{"x": 0, "y": 44.5, "label": "周五", "wday": 4}, {"x": 1, "y": 51.2, "label": "周一", "wday": 0}, {"x": 5, "y": 46.7, "label": "周五", "wday": 4}, {"x": 6, "y": 38.9, "label": "周一", "wday": 0}, {"x": 10, "y": 42.4, "label": "周五", "wday": 4}, {"x": 11, "y": 17.9, "label": "周一", "wday": 0}, {"x": 15, "y": 45.7, "label": "周五", "wday": 4}, {"x": 16, "y": 47.3, "label": "周一", "wday": 0}], "bid_r": [34, 49, 24, 8, 33, 47, 20, 29, 50, 32, 36, -17, 32, 19, 39, 40, 13, 21, 12, 38], "bid_g": [39, 30, 35, 38, 51, 24, 37, 17, 40, 36, 33, 85, 24, 39, 34, 32, 26, 24, 27, 22], "cls_r": [110, 73, 65, 74, 86, 70, 77, 78, 104, 83, 53, 37, 91, 48, 86, 47, 74, 72, 42, 90], "cls_g": [37, 58, 88, 81, 61, 88, 63, 40, 32, 49, 80, 89, 44, 94, 68, 47, 27, 10, 44, 46], "red_diff": [76, 24, 41, 66, 53, 23, 57, 49, 54, 51, 17, 54, 59, 29, 47, 7, 61, 51, 30, 52], "grn_diff": [-2, 28, 53, 43, 10, 64, 26, 23, -8, 13, 47, 4, 20, 55, 34, 15, 1, -14, 17, 24], "net_diff": [78, -4, -12, 23, 43, -41, 31, 26, 62, 38, -30, 50, 39, -26, 13, -8, 60, 65, 13, 28], "bid_r_expand": [-20, 15, -25, -16, 25, 14, -27, 9, 21, -18, 4, -53, 49, -13, 20, 1, -27, 8, -9, 26], "bid_g_expand": [4, -9, 5, 3, 13, -27, 13, -20, 23, -4, -3, 52, -61, 15, -5, -2, -6, -2, 3, -5], "zt": [60, 128, 64, 61, 126, 67, 166, 96, 81, 79, 84, 64, 142, 75, 78, 100, 160, 138, 96, 101], "dt": [18, 24, 34, 32, 12, 60, 23, 18, 27, 32, 17, 51, 16, 65, 50, 23, 9, 11, 18, 34], "phase": [5, 3, 5, 0, 3, 3, 2, 5, 2, 2, 2, 0, 5, 0, 5, 3, 3, 3, 5, 3], "cycle": [0, 1, 6, 5, 1, 1, 1, 6, 5, 1, 1, 2, 0, 5, 0, 1, 1, 1, 0, 1], "z_score": [0.15, 0.71, -1.53, -1.76, 0.34, 0.34, -0.31, 0.65, 0.05, -0.61, -0.02, -2.04, 1.38, -1.81, -0.31, 0.25, 0.39, 0.76, -0.94, 0.83], "percentile": [40.0, 60.0, 0.0, 0.0, 50.0, 45.0, 30.0, 55.0, 35.0, 20.0, 40.0, 0.0, 90.0, 5.0, 40.0, 60.0, 70.0, 85.0, 20.0, 90.0], "rush_buy_prob": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 58.3, 0.0, 0.0, 0.0, 100.0, 0.0, 66.7, 0.0, 0.0, 0.0, 0.0, 79.0], "rush_sell_prob": [0.0, 0.0, 60.6, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 73.8, 0.0, 0.0, 0.0, 0.0, 73.4, 0.0], "comp_bull": [10, 70, 10, 20, 45, 80, 25, 10, 85, 40, 65, 25, 10, 0, 10, 85, 40, 55, 10, 100], "rush_buy_pts": [8, 12, 14, 19], "rush_sell_pts": [2, 13, 18], "iron_pts": [0, 2, 7, 12, 14, 18], "warmup_pts": [1, 5, 7, 10, 12, 14, 15, 19], "cooldown_pts": [0, 2, 3, 6, 9, 11, 13, 16, 18], "extreme_high": 85, "extreme_low": 25, "r5_labels": ["06/12 周五", "06/15 周一", "06/16 周二", "06/17 周三", "06/18 周四"], "r5_bid_r": [40, 13, 21, 12, 38], "r5_bid_g": [32, 26, 24, 27, 22], "r5_cls_r": [47, 74, 72, 42, 90], "r5_cls_g": [47, 27, 10, 44, 46], "r5_red_diff": [7, 61, 51, 30, 52], "r5_grn_diff": [15, 1, -14, 17, 24], "r5_bid_r_exp": [1, -27, 8, -9, 26], "r5_bid_g_exp": [-2, -6, -2, 3, -5], "r5_bid_r_vs_prev": [1, -27, 8, -9, 26], "r5_bid_g_vs_prev": [-2, -6, -2, 3, -5]};
+window.CHART_DATA = {"labels": ["05/22 周五", "05/25 周一", "05/26 周二", "05/27 周三", "05/28 周四", "05/29 周五", "06/01 周一", "06/02 周二", "06/03 周三", "06/04 周四", "06/05 周五", "06/08 周一", "06/09 周二", "06/10 周三", "06/11 周四", "06/12 周五", "06/15 周一", "06/16 周二", "06/17 周三", "06/18 周四"], "scores": [44.5, 51.2, 24.1, 21.3, 46.8, 46.7, 38.9, 50.5, 43.2, 35.3, 42.4, 17.9, 59.4, 20.7, 38.9, 45.7, 47.3, 51.8, 31.2, 52.7], "regression": [38.1, 38.4, 38.6, 38.9, 39.1, 39.4, 39.6, 39.9, 40.1, 40.4, 40.7, 40.9, 41.2, 41.4, 41.7, 41.9, 42.2, 42.4, 42.7, 42.9], "extreme_points": [{"x": 2, "y": 24.1, "label": "极弱"}, {"x": 3, "y": 21.3, "label": "极弱"}, {"x": 11, "y": 17.9, "label": "极弱"}, {"x": 13, "y": 20.7, "label": "极弱"}], "mon_fri_points": [{"x": 0, "y": 44.5, "label": "周五", "wday": 4}, {"x": 1, "y": 51.2, "label": "周一", "wday": 0}, {"x": 5, "y": 46.7, "label": "周五", "wday": 4}, {"x": 6, "y": 38.9, "label": "周一", "wday": 0}, {"x": 10, "y": 42.4, "label": "周五", "wday": 4}, {"x": 11, "y": 17.9, "label": "周一", "wday": 0}, {"x": 15, "y": 45.7, "label": "周五", "wday": 4}, {"x": 16, "y": 47.3, "label": "周一", "wday": 0}], "bid_r": [34, 49, 24, 8, 33, 47, 20, 29, 50, 32, 36, -17, 32, 19, 39, 40, 13, 21, 12, 38], "bid_g": [39, 30, 35, 38, 51, 24, 37, 17, 40, 36, 33, 85, 24, 39, 34, 32, 26, 24, 27, 22], "cls_r": [110, 73, 65, 74, 86, 70, 77, 78, 104, 83, 53, 37, 91, 48, 86, 47, 74, 72, 42, 90], "cls_g": [37, 58, 88, 81, 61, 88, 63, 40, 32, 49, 80, 89, 44, 94, 68, 47, 27, 10, 44, 46], "red_diff": [76, 24, 41, 66, 53, 23, 57, 49, 54, 51, 17, 54, 59, 29, 47, 7, 61, 51, 30, 52], "grn_diff": [-2, 28, 53, 43, 10, 64, 26, 23, -8, 13, 47, 4, 20, 55, 34, 15, 1, -14, 17, 24], "net_diff": [78, -4, -12, 23, 43, -41, 31, 26, 62, 38, -30, 50, 39, -26, 13, -8, 60, 65, 13, 28], "bid_r_expand": [-20, 15, -25, -16, 25, 14, -27, 9, 21, -18, 4, -53, 49, -13, 20, 1, -27, 8, -9, 26], "bid_g_expand": [4, -9, 5, 3, 13, -27, 13, -20, 23, -4, -3, 52, -61, 15, -5, -2, -6, -2, 3, -5], "zt": [60, 128, 64, 61, 126, 67, 166, 96, 81, 79, 84, 64, 142, 75, 78, 100, 160, 138, 96, 101], "dt": [18, 24, 34, 32, 12, 60, 23, 18, 27, 32, 17, 51, 16, 65, 50, 23, 9, 11, 18, 34], "phase": [5, 3, 5, 0, 3, 3, 2, 5, 2, 2, 2, 0, 5, 0, 5, 3, 3, 3, 5, 3], "cycle": [0, 1, 6, 5, 1, 1, 1, 6, 5, 1, 1, 2, 0, 5, 0, 1, 1, 1, 0, 1], "z_score": [0.15, 0.71, -1.53, -1.76, 0.34, 0.34, -0.31, 0.65, 0.05, -0.61, -0.02, -2.04, 1.38, -1.81, -0.31, 0.25, 0.39, 0.76, -0.94, 0.83], "percentile": [40.0, 60.0, 0.0, 0.0, 50.0, 45.0, 30.0, 55.0, 35.0, 20.0, 40.0, 0.0, 90.0, 5.0, 40.0, 60.0, 70.0, 85.0, 20.0, 90.0], "rush_buy_prob": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 58.3, 0.0, 0.0, 0.0, 100.0, 0.0, 66.7, 0.0, 0.0, 0.0, 0.0, 79.0], "rush_sell_prob": [0.0, 0.0, 60.6, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 73.8, 0.0, 0.0, 0.0, 0.0, 73.4, 0.0], "comp_bull": [10, 70, 10, 20, 45, 80, 25, 10, 85, 40, 65, 25, 10, 0, 10, 85, 40, 55, 10, 100], "rush_buy_pts": [8, 12, 14, 19], "rush_sell_pts": [2, 13, 18], "iron_pts": [0, 2, 7, 12, 14, 18], "warmup_pts": [1, 5, 7, 10, 12, 14, 15, 19], "cooldown_pts": [0, 2, 3, 6, 9, 11, 13, 16, 18], "extreme_high": 85, "extreme_low": 25, "r5_labels": ["06/12 周五", "06/15 周一", "06/16 周二", "06/17 周三", "06/18 周四"], "r5_bid_r": [40, 13, 21, 12, 38], "r5_bid_g": [32, 26, 24, 27, 22], "r5_cls_r": [47, 74, 72, 42, 90], "r5_cls_g": [47, 27, 10, 44, 46], "r5_red_diff": [7, 61, 51, 30, 52], "r5_grn_diff": [15, 1, -14, 17, 24], "r5_bid_r_exp": [1, -27, 8, -9, 26], "r5_bid_g_exp": [-2, -6, -2, 3, -5], "r5_bid_r_vs_prev": [1, -27, 8, -9, 26], "r5_bid_g_vs_prev": [-2, -6, -2, 3, -5], "r10_labels": ["06/05 周五", "06/08 周一", "06/09 周二", "06/10 周三", "06/11 周四", "06/12 周五", "06/15 周一", "06/16 周二", "06/17 周三", "06/18 周四"], "r10_bid_r": [36, -17, 32, 19, 39, 40, 13, 21, 12, 38], "r10_bid_g": [33, 85, 24, 39, 34, 32, 26, 24, 27, 22], "r10_cls_r": [53, 37, 91, 48, 86, 47, 74, 72, 42, 90], "r10_cls_g": [80, 89, 44, 94, 68, 47, 27, 10, 44, 46], "r10_red_diff": [17, 54, 59, 29, 47, 7, 61, 51, 30, 52], "r10_grn_diff": [47, 4, 20, 55, 34, 15, 1, -14, 17, 24], "r10_bid_r_exp": [4, -53, 49, -13, 20, 1, -27, 8, -9, 26], "r10_bid_g_exp": [-3, 52, -61, 15, -5, -2, -6, -2, 3, -5], "r10_bid_r_vs_prev": [4, -53, 49, -13, 20, 1, -27, 8, -9, 26], "r10_bid_g_vs_prev": [-3, 52, -61, 15, -5, -2, -6, -2, 3, -5], "pred_labels": ["05/22", "05/25", "05/26", "05/27", "05/28", "05/29", "06/01", "06/02", "06/03", "06/04", "06/05", "06/08", "06/09", "06/10", "06/11", "06/12", "06/15", "06/16", "06/17", "06/18"], "pred_cls_actual": [73, 15, -23, -7, 25, -18, 14, 38, 72, 34, -27, -52, 47, -46, 18, 0, 47, 62, -2, 44], "pred_cls_pred": [10.6, 26.7, 6.5, -6.2, 1.8, 29.4, 2.5, 22.0, 20.7, 11.3, 16.0, -54.7, 19.3, 0.5, 17.3, 19.3, 5.2, 11.9, 3.9, 24.7], "pred_cls_ci_lo": [-58.8, -42.7, -62.9, -75.6, -67.6, -40.0, -66.9, -47.4, -48.7, -58.1, -53.4, -124.1, -50.1, -68.9, -52.1, -50.1, -64.2, -57.5, -65.5, -44.7], "pred_cls_ci_hi": [80.0, 96.1, 75.9, 63.2, 71.2, 98.8, 71.9, 91.4, 90.1, 80.7, 85.4, 14.7, 88.7, 69.9, 86.7, 88.7, 74.6, 81.3, 73.3, 94.1], "pred_bid_net": [-5, 19, -11, -30, -18, 23, -17, 12, 10, -4, 3, -102, 8, -20, 5, 8, -13, -3, -15, 16], "pred_next_actual": [19, -11, -30, -18, 23, -17, 12, 10, -4, 3, -102, 8, -20, 5, 8, -13, -3, -15, 16, null], "pred_next_pred": [16.6, 4.6, -3.3, 0.0, 6.6, -2.2, 4.4, 9.3, 16.3, 8.5, -4.1, -9.3, 11.2, -8.0, 5.2, 1.5, 11.2, 14.3, 1.1, 10.6], "pred_next_ci_lo": [-30.1, -42.1, -50.0, -46.7, -40.1, -48.9, -42.3, -37.4, -30.4, -38.2, -50.8, -56.0, -35.5, -54.7, -41.5, -45.2, -35.5, -32.4, -45.6, -36.1], "pred_next_ci_hi": [63.3, 51.3, 43.4, 46.7, 53.3, 44.5, 51.1, 56.0, 63.0, 55.2, 42.6, 37.4, 57.9, 38.7, 51.9, 48.2, 57.9, 61.0, 47.8, 57.3], "model1": {"slope": 0.673, "intercept": 13.95, "se": 35.4, "r2": 0.185, "dir_acc": 72.2}, "model2": {"slope": 0.207, "intercept": 1.48, "se": 23.8, "r2": 0.104, "dir_acc": 64.1}};
 
 // Tab切换
 function switchTab(n) {
@@ -707,12 +757,100 @@ function initCharts() {
       }
     }
   });
+
+  // ─── 图8: 实际vs预测收盘净差（v10.0新增）───
+  if(document.getElementById('chart8')) {
+    destroyChart('c8');
+    var predLabels = D.pred_labels || [];
+    var ciHiData = (D.pred_cls_ci_hi || []).map(function(v,i){
+      return {x:i, y:v};
+    });
+    var ciLoData = (D.pred_cls_ci_lo || []).map(function(v,i){
+      return {x:i, y:v};
+    });
+    CI['c8'] = new Chart(document.getElementById('chart8').getContext('2d'), {
+      data:{
+        labels: predLabels,
+        datasets:[
+          {type:'line', label:'95%置信区间上界', data: D.pred_cls_ci_hi||[],
+           borderColor:'rgba(200,160,0,0.25)', borderWidth:1, pointRadius:0,
+           tension:0.3, fill:'+1', backgroundColor:'rgba(255,170,0,0.08)'},
+          {type:'line', label:'95%置信区间下界', data: D.pred_cls_ci_lo||[],
+           borderColor:'rgba(200,160,0,0.25)', borderWidth:1, pointRadius:0,
+           tension:0.3, fill:false},
+          {type:'line', label:'竞价净差(输入)', data: D.pred_bid_net||[],
+           borderColor:'rgba(255,204,0,0.5)', borderWidth:1.5,
+           borderDash:[3,4], pointRadius:2, tension:0.3},
+          {type:'line', label:'预测收盘净差', data: D.pred_cls_pred||[],
+           borderColor:'#ffaa00', borderWidth:2.5,
+           borderDash:[7,4], pointRadius:3, tension:0.3},
+          {type:'line', label:'实际收盘净差', data: D.pred_cls_actual||[],
+           borderColor:'#00d4ff', borderWidth:3, pointRadius:4, tension:0.3},
+        ]
+      },
+      options:{
+        responsive:true, interaction:{mode:'index', intersect:false},
+        plugins:{
+          legend:{labels:{color:'#99aabc', font:{size:10}}},
+          annotation:{annotations:{
+            zero:{type:'line', yMin:0, yMax:0,
+                  borderColor:'rgba(255,255,255,0.15)', borderWidth:1, borderDash:[4,4]}
+          }}
+        },
+        scales:{
+          x:{ticks:{color:'#445566', font:{size:9}, maxRotation:50},
+             grid:{color:'rgba(30,58,95,0.4)'}},
+          y:{ticks:{color:'#445566'}, grid:{color:'rgba(30,58,95,0.35)'},
+             title:{display:true, text:'净差(红-绿)', color:'#445566', font:{size:10}}}
+        }
+      }
+    });
+  }
+
+  // ─── 图9: 实际vs预测次日竞价净差（v10.0新增）───
+  if(document.getElementById('chart9')) {
+    destroyChart('c9');
+    CI['c9'] = new Chart(document.getElementById('chart9').getContext('2d'), {
+      data:{
+        labels: D.pred_labels||[],
+        datasets:[
+          {type:'line', label:'95%置信区间上界', data: D.pred_next_ci_hi||[],
+           borderColor:'rgba(0,200,100,0.2)', borderWidth:1, pointRadius:0,
+           tension:0.3, fill:'+1', backgroundColor:'rgba(0,255,136,0.07)'},
+          {type:'line', label:'95%置信区间下界', data: D.pred_next_ci_lo||[],
+           borderColor:'rgba(0,200,100,0.2)', borderWidth:1, pointRadius:0,
+           tension:0.3, fill:false},
+          {type:'line', label:'预测次日竞价净差', data: D.pred_next_pred||[],
+           borderColor:'#ffcc00', borderWidth:2.5,
+           borderDash:[7,4], pointRadius:3, tension:0.3},
+          {type:'line', label:'实际次日竞价净差', data: D.pred_next_actual||[],
+           borderColor:'#ff4d4d', borderWidth:3, pointRadius:4, tension:0.3},
+        ]
+      },
+      options:{
+        responsive:true, interaction:{mode:'index', intersect:false},
+        plugins:{
+          legend:{labels:{color:'#99aabc', font:{size:10}}},
+          annotation:{annotations:{
+            zero:{type:'line', yMin:0, yMax:0,
+                  borderColor:'rgba(255,255,255,0.15)', borderWidth:1, borderDash:[4,4]}
+          }}
+        },
+        scales:{
+          x:{ticks:{color:'#445566', font:{size:9}, maxRotation:50},
+             grid:{color:'rgba(30,58,95,0.4)'}},
+          y:{ticks:{color:'#445566'}, grid:{color:'rgba(30,58,95,0.35)'},
+             title:{display:true, text:'净差(红-绿)', color:'#445566', font:{size:10}}}
+        }
+      }
+    });
+  }
 }
 
-// 赚亏效应近5日图表
+// 赚亏效应近10日图表（v10.0升级，数据源改为r10_）
 function initProfit5Charts() {
   var D = window.CHART_DATA;
-  var lb5 = D.r5_labels;
+  var lb5 = D.r10_labels;
 
   // 赚钱效应：竞价红 vs 收盘红
   destroyChart('rpa');
@@ -721,9 +859,9 @@ function initProfit5Charts() {
     data:{
       labels:lb5,
       datasets:[
-        {label:'竞价红', data:D.r5_bid_r,
+        {label:'竞价红', data:D.r10_bid_r,
          borderColor:'#ff4d4d', borderWidth:2.5, pointRadius:5, tension:0.2},
-        {label:'收盘红', data:D.r5_cls_r,
+        {label:'收盘红', data:D.r10_cls_r,
          borderColor:'#ff9999', borderWidth:2, borderDash:[5,3], pointRadius:4, tension:0.2},
       ]
     },
@@ -733,7 +871,7 @@ function initProfit5Charts() {
         legend:{labels:{color:'#99aabc', font:{size:10}}},
         tooltip:{callbacks:{afterBody:function(items){
           var i=items[0].dataIndex;
-          var rd=D.r5_red_diff[i];
+          var rd=D.r10_red_diff[i];
           return ['日内红扩: '+(rd>=0?'+':'')+rd+(rd>0?' ✅赚钱增强':' ⚠️赚钱减弱')];
         }}}
       },
@@ -751,9 +889,9 @@ function initProfit5Charts() {
     data:{
       labels:lb5,
       datasets:[
-        {label:'竞价绿', data:D.r5_bid_g,
+        {label:'竞价绿', data:D.r10_bid_g,
          borderColor:'#00ff88', borderWidth:2.5, pointRadius:5, tension:0.2},
-        {label:'收盘绿', data:D.r5_cls_g,
+        {label:'收盘绿', data:D.r10_cls_g,
          borderColor:'#66ffbb', borderWidth:2, borderDash:[5,3], pointRadius:4, tension:0.2},
       ]
     },
@@ -763,7 +901,7 @@ function initProfit5Charts() {
         legend:{labels:{color:'#99aabc', font:{size:10}}},
         tooltip:{callbacks:{afterBody:function(items){
           var i=items[0].dataIndex;
-          var gd=D.r5_grn_diff[i];
+          var gd=D.r10_grn_diff[i];
           return ['日内绿扩: '+(gd>=0?'+':'')+gd+(gd>0?' ⚠️亏钱增强':' ✅亏钱减弱')];
         }}}
       },
@@ -776,14 +914,14 @@ function initProfit5Charts() {
 
   // 日内差值确认
   destroyChart('rpc');
-  var rdC5 = D.r5_red_diff.map(function(v){ return v>0?'rgba(255,77,77,0.8)':'rgba(0,255,136,0.5)'; });
-  var gdC5 = D.r5_grn_diff.map(function(v){ return v>0?'rgba(255,77,77,0.5)':'rgba(0,255,136,0.8)'; });
+  var rdC5 = D.r10_red_diff.map(function(v){ return v>0?'rgba(255,77,77,0.8)':'rgba(0,255,136,0.5)'; });
+  var gdC5 = D.r10_grn_diff.map(function(v){ return v>0?'rgba(255,77,77,0.5)':'rgba(0,255,136,0.8)'; });
   CI['rpc'] = new Chart(document.getElementById('chartR5c').getContext('2d'), {
     data:{
       labels:lb5,
       datasets:[
-        {type:'bar', label:'日内红扩(收红-竞红)', data:D.r5_red_diff, backgroundColor:rdC5, yAxisID:'y'},
-        {type:'bar', label:'日内绿扩(收绿-竞绿)', data:D.r5_grn_diff, backgroundColor:gdC5, yAxisID:'y'},
+        {type:'bar', label:'日内红扩(收红-竞红)', data:D.r10_red_diff, backgroundColor:rdC5, yAxisID:'y'},
+        {type:'bar', label:'日内绿扩(收绿-竞绿)', data:D.r10_grn_diff, backgroundColor:gdC5, yAxisID:'y'},
       ]
     },
     options:{
@@ -800,17 +938,17 @@ function initProfit5Charts() {
     }
   });
 
-  // 两日竞价红扩 vs 绿扩（近5日）
+  // 两日竞价红扩 vs 绿扩（近10日）
   destroyChart('rpd');
   CI['rpd'] = new Chart(document.getElementById('chartR5d').getContext('2d'), {
     type:'line',
     data:{
       labels:lb5,
       datasets:[
-        {label:'竞价红跨日扩散', data:D.r5_bid_r_vs_prev,
+        {label:'竞价红跨日扩散', data:D.r10_bid_r_vs_prev,
          borderColor:'#ff4d4d', backgroundColor:'rgba(255,77,77,0.1)',
          fill:true, borderWidth:2.5, pointRadius:5, tension:0.2},
-        {label:'竞价绿跨日扩散', data:D.r5_bid_g_vs_prev,
+        {label:'竞价绿跨日扩散', data:D.r10_bid_g_vs_prev,
          borderColor:'#00ff88', backgroundColor:'rgba(0,255,136,0.1)',
          fill:true, borderWidth:2.5, pointRadius:5, tension:0.2},
       ]
